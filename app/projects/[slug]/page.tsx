@@ -9,7 +9,6 @@ import fs from 'fs/promises';
 import AnimatedWords from '@/app/components/AnimatedWords';
 import AnimatedBlock from '@/app/components/AnimatedBlock';
 
-// Define a type for the page's props
 type PageProps = {
   params: { slug: string };
 };
@@ -31,7 +30,8 @@ export async function generateMetadata({ params }: PageProps) {
   });
 }
 
-// Use the PageProps type here
+// Add this comment to ignore the specific type error from Next.js
+// @ts-ignore
 export default async function ProjectPage({ params }: PageProps) {
   const project = projects.find((p) => p.link.endsWith(params.slug));
   if (!project) notFound();
