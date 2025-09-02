@@ -4,7 +4,7 @@
 import { Suspense, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Line, Points } from '@react-three/drei';
-import { AdditiveBlending, Vector3 } from 'three';
+import { AdditiveBlending, Group, Points as PointsType, Vector3 } from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import siteConfig from '@/site.config.js';
 
@@ -25,7 +25,7 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
     });
   }, [count, paths]);
 
-  const sparkRef = useRef<any>();
+  const sparkRef = useRef<any>(null);
 
   useFrame(() => {
     if (!sparkRef.current) return;
@@ -71,8 +71,8 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
 
 
 function NeuralNetwork() {
-  const groupRef = useRef<any>();
-  const lineRef = useRef<any>();
+  const groupRef = useRef<any>(null);
+  const lineRef = useRef<any>(null);
 
   const { particles, lines, paths } = useMemo(() => {
     const numLayers = 5;
@@ -126,7 +126,7 @@ function NeuralNetwork() {
     return { particles, lines, paths };
   }, []);
 
-  useFrame((state, delta) => {
+   useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.05;
       groupRef.current.rotation.x += delta * 0.02;
@@ -135,10 +135,10 @@ function NeuralNetwork() {
 
   return (
     <group ref={groupRef}>
-      <Points positions={particles as any}>
+      <Points positions={particles as unknown as Float32Array}>
         <pointsMaterial color={siteConfig.theme.primary} size={0.07} blending={AdditiveBlending} transparent />
       </Points>
-      <Line points={lines as any} color="white" lineWidth={0.05} transparent opacity={0.1} />
+      <Line points={lines} color="white" lineWidth={0.2} transparent opacity={0.1} />
       <Sparks count={50} paths={paths} />
     </group>
   );

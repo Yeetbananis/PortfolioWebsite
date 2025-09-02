@@ -32,10 +32,10 @@ export default async function ProjectPage({ params }: { params: { slug: string }
 
   // This is the logic that was missing from the previous snippet
   const filePath = path.join(process.cwd(), 'projects', `${params.slug}.mdx`);
-  let mdxSource;
+let mdxSource;
   try {
     mdxSource = await fs.readFile(filePath, 'utf8');
-  } catch (error) {
+  } catch (_) { // Changed 'error' to '_'
     notFound();
   }
 

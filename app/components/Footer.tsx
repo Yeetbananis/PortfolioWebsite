@@ -1,5 +1,4 @@
 // app/components/Footer.tsx
-import Link from 'next/link';
 import siteConfig from '@/site.config.js';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 

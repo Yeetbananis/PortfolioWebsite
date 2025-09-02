@@ -4,9 +4,15 @@
 import ProjectCard from "./ProjectCard";
 import AnimatedWords from "./AnimatedWords";
 import { motion } from "framer-motion";
-import { projects } from "@/data/content";
 
-export default function ProjectsPageContent({ projects }: { projects: any[] }) {
+type Project = {
+  title: string;
+  description: string;
+  image: string;
+  link: string;
+};
+
+export default function ProjectsPageContent({ projects }: { projects: Project[] }) {
   return (
     <motion.div
       className="container mx-auto max-w-5xl px-4"

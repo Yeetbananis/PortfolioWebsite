@@ -2,15 +2,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import React, { ElementType, ComponentPropsWithoutRef } from 'react';
 
-type AnimatedWordsProps = {
+type AnimatedWordsProps<T extends ElementType = 'p'> = {
   text: string;
-  el?: keyof JSX.IntrinsicElements;
+  el?: T;
   className?: string;
   delay?: number;
-};
-
-const AnimatedWords = ({ text, el: Wrapper = 'p', className, delay = 0 }: AnimatedWordsProps) => {
+} & Omit<ComponentPropsWithoutRef<T>, 'text' | 'el' | 'className' | 'delay'>;
+const AnimatedWords = <T extends ElementType = 'p'>({ text, el: Wrapper = 'p' as T, className, delay = 0, ...rest }: AnimatedWordsProps<T>) => {
   const words = text.split(' ');
 
   const containerVariants = {
@@ -55,7 +55,7 @@ const AnimatedWords = ({ text, el: Wrapper = 'p', className, delay = 0 }: Animat
   };
 
   return (
-    <Wrapper className={className}>
+    <Wrapper className={className} {...rest}>
       <motion.span
         variants={containerVariants}
         initial="hidden"
