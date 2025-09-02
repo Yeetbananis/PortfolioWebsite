@@ -30,8 +30,7 @@ export async function generateMetadata({ params }: PageProps) {
   });
 }
 
-// Add this comment to ignore the specific type error from Next.js
-// @ts-ignore
+// @ts-expect-error
 export default async function ProjectPage({ params }: PageProps) {
   const project = projects.find((p) => p.link.endsWith(params.slug));
   if (!project) notFound();
