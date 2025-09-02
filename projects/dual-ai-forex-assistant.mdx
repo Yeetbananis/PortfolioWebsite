@@ -1,0 +1,107 @@
+# Autonomous GBP/JPY Trading Assistant with Dual AI Architecture
+
+### High-Level Summary
+
+This project is a fully autonomous, end-to-end trading assistant designed to trade a specific "liquidity sweep and reversal" pattern on the GBP/JPY 5-minute chart. The system's core innovation is a unique dual AI architecture that separates the task of trade identification from trade management. A supervised LSTM **"Scout"** finds high-probability setups, while a Reinforcement Learning **"Manager"** determines the optimal exit strategy. The entire system operates autonomously, connecting to the OANDA brokerage API for live paper trade execution, with real-time monitoring via Telegram.
+
+---
+
+## System Architecture
+
+The system is composed of two primary AI agents working in sequence within a single execution engine:
+
+* **Component 1: The "Scout" (LSTM Pattern Recognition):** Analyzes the market continuously to find potential trade setups.
+* **Component 2: The "Manager" (RL Trade Execution):** Takes control once a trade is opened, deciding the optimal time to close the position.
+
+---
+
+## Component I: The "Scout" - Multi-Task LSTM
+
+The Scout is a sophisticated pattern recognition model designed for deep market analysis.
+
+* **Model:** A multi-head Long Short-Term Memory (LSTM) network built in **PyTorch**. The model was specifically designed with unrolled `LSTMCell` layers to maintain compatibility with SHAP for explainability.
+* **Multi-Task Learning:** Instead of a simple buy/sell signal, the model is trained to predict four distinct outputs simultaneously for any given setup:
+    * **Setup Quality:** A 1-5 star classification rating.
+    * **Reward:Risk Ratio (R:R):** A regression output predicting the likely profit potential.
+    * **Failure Probability:** A regression output predicting the probability of the trade hitting its stop loss.
+    * **Directional Bias:** A regression output (-1 to 1) indicating conviction for a sell vs. a buy.
+* **Data & Feature Engineering:** The model is trained on a sequence of 24 candles (2 hours). The feature set is extensive and includes standard OHLCV data, technical indicators (ATR, Volume MA), and a **Hybrid Support/Resistance Engine** that combines:
+    * **Price-Action Clustering:** Uses DBSCAN on 2 years of historical daily data to find major price inflection zones.
+    * **Volume Profiling:** Calculates the Point of Control (POC) on multiple timeframes to identify areas of high liquidity.
+* **Explainable AI (XAI):** After each high-quality prediction, **SHAP** (SHapley Additive exPlanations) is used to provide a "Top 5" list of the market features that most influenced the model's decision, offering full transparency.
+* **Model Optimization:** The training process is wrapped in an optimization script (`optimize_training.py`) that runs multiple training sessions to find the model with the lowest validation loss.
+
+---
+
+## Component II: The "Manager" - Reinforcement Learning Agent
+
+The Manager is an expert at one thing: knowing when to exit a trade.
+
+* **Model:** A Reinforcement Learning agent using the **Proximal Policy Optimization (PPO)** algorithm from the `stable-baselines3` library.
+* **Custom Environment:** The agent was trained in a custom `TradingEnv` built with **Gymnasium**.
+    * **State:** Observes a complex state including all current market features plus trade-specific information like current P&L (in R-multiples) and time elapsed.
+    * **Actions:** The agent has two choices every 5 minutes: `HOLD` or `CLOSE POSITION`.
+    * **Reward:** The agent is rewarded based on the final P&L of the trade, incentivizing it to learn a policy that maximizes profit.
+
+---
+
+## The Autonomous Trading Engine (`run_live_assistant.py`)
+
+This is the central nervous system that integrates the AIs and automates the entire trading process.
+
+* **Workflow:** The script runs in a continuous loop during the 9 PM - 1 AM PST session. It analyzes the market, and if a setup meets criteria (e.g., `MIN_QUALITY >= 4`), it calculates a dynamic position size and places a market order via the OANDA API. Once live, the Manager takes over.
+* **Broker Integration:** A clean, object-oriented `BrokerConnector` class handles all communication with the OANDA API, using the `tenacity` library for robust, exponential-backoff retries.
+* **Monitoring & Logging:** The system sends real-time alerts to a **Telegram bot** and logs every trade to a `prediction_log.csv` file for performance analysis.
+
+---
+
+## Workflow: A Night in the Life of the Assistant
+
+#### 1. Launching the Assistant
+It's just before 9 PM. You start the assistant with a single command:
+```bash
+(.venv) PS C:\Users\timof\GBPJPY_Trading_Assistant> python run_live_assistant.py
+The script initializes, showing it's ready.
+
+-- GBP/JPY Live Paper Trading Assistant --- 
+Initial Balance: $100,000.00, Risk: 1.0% 
+RL Trade Manager loaded successfully. 
+Assistant activated. Monitoring for trading session...
+(Press Ctrl+C to stop)
+2. A High-Quality Setup is Detected
+At 9:35 PM, the LSTM "Scout" finds a pattern that meets the strict criteria. The system immediately enters a paper trade.
+
+Terminal Output:
+
+[2025-08-18 21:35:05 PDT] Active Session: Running check...
+-> LSTM Analysis Complete: Quality=5*, R:R=4.15
+-> !!! HIGH-QUALITY SETUP DETECTED !!!
+-> Notification Sent!
+-> Trade entry logged to prediction_log.csv
+!!! PAPER TRADE ENTERED: Sell GBP/JPY !!!
+- Entry: 199.85000, Size: 3,330 units
+- SL: 200.15000, TP: 198.87500
+- Risking $1,000.00 on this trade.
+RL TRADE MANAGER ACTIVATED. Monitoring open position... <<
+Telegram Notification:
+
+🤖 Trade Entry Alert: SELL GBP/JPY
+Quality: ★★★★★ | R:R: 4.15
+Entry: 199.850 | SL: 200.150 | TP: 198.875
+
+3. The RL "Manager" Takes Over
+The Manager now provides a HOLD or CLOSE recommendation every 5 minutes. After detecting fading momentum, it decides to close the trade.
+
+[21:50:15 PDT] Active Session: Running check...
+-> Managing open trade. Current P/L: +0.70R
+-> RL Agent Recommendation: CLOSE POSITION
+The system automatically closes the trade and reports the final P&L.
+
+***********************************************************
+!!! PAPER TRADE CLOSED !!!
+- Reason: RL Agent Exit
+- Exit Price: 199.63000
+- P/L: +$733.33 | Outcome: +0.73R
+- New Account Balance: $100,733.33
+***********************************************************
+-> Trade outcome updated in prediction_log.csv

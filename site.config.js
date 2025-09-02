@@ -4,11 +4,12 @@ const siteConfig = {
   // Website Identity
   title: "Tim Generalov",
   author: "Tim Generalov",
+  email: "timofeygen@gmail.com",
 
   // Social Media Links - UPDATE THESE
   socials: {
-    github: "https://github.com/your-username",
-    linkedin: "https://www.linkedin.com/in/your-profile/",
+    github: "https://github.com/Yeetbananis",
+    linkedin: "https://www.linkedin.com/in/tim-generalov/",
   },
 
   // Site Theme (Monaco)
@@ -19,10 +20,11 @@ const siteConfig = {
     textSecondary: '#a1a1aa' // Muted Gray for subtitles
   },
 
-  // Navigation Links
+ // Navigation Links
   navLinks: [
     { title: 'Projects', path: '/' },
     { title: 'About', path: '/about' },
+    { title: 'Articles', path: '/articles' }, // Add this new line
   ],
 };
 

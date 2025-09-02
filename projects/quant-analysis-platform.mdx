@@ -1,0 +1,113 @@
+# Quantitative Equity & Derivatives Analysis Platform
+
+The Quantitative Equity & Derivatives Analysis Platform is a sophisticated, full-featured desktop application built in Python designed to serve as an all-in-one workstation for retail and semi-professional options traders. It seamlessly integrates data acquisition, idea generation, deep analysis, strategy backtesting, and portfolio management into a single, cohesive user experience. The application is architected with a modular design, allowing users to move fluidly between eight distinct suites.
+
+---
+
+## 1. The Home Dashboard (`dashboard.py`)
+The application's central command center, providing a dynamic, at-a-glance overview of the market and serving as the primary navigation hub.
+
+* **UI & Core Components:**
+    * **Customizable Grid Layout:** A 2x2 grid that is fully customizable. Users can drag, drop, and swap panes, with the layout saved between sessions.
+    * **Header Bar:** A persistent top bar displays a real-time Fear & Greed Index, a live clock, and a market status indicator.
+    * **Sliding Side Menu:** A modern, animated navigation menu for one-click access to all major suites.
+    * **Watchlist Pane:** A user-configurable watchlist with scrolling ticker tiles, detailed tooltips, and context menus.
+    * **News Pane:** Aggregates market news and uses **NLTK VADER** to score each headline for sentiment, calculating an overall market sentiment score.
+* **Backend & Logic:**
+    * **Data Management:** Powered by a `HomeDataManager` that fetches and auto-refreshes all necessary data in the background every 30 seconds.
+
+---
+
+## 2. The Options Analysis Suite
+The scientific core of the application, designed for deep, quantitative analysis of a single options contract or thesis.
+
+* **Workflow: A Three-Step Process**
+    1.  **Input Parameters:** A dedicated window prompts the user for the Ticker, Stock Price, Strike Price, IV, and other core inputs.
+    2.  **Model Selection:** Users can choose from four distinct stochastic process models for the Monte Carlo simulation:
+        * Black-Scholes (Geometric Brownian Motion)
+        * Merton Jump-Diffusion
+        * Heston Model (Stochastic Volatility)
+        * **Rough Bergomi (rBergomi):** An advanced fractal volatility model implemented via a hybrid FFT scheme.
+    3.  **Backend Calculation:** A background thread runs a 100,000-path Monte Carlo simulation and calculates a theoretical fair value using a C-accelerated binomial tree pricer.
+* **The Results Hub:**
+    * **Visualizations:** Generate and view complex plots, including simulation paths, trigger distributions, a 2D P&L heatmap, and a **3D interactive volatility surface**.
+    * **Advanced Analysis:**
+        * **Greeks Dashboard:** A full dashboard analyzing the position's sensitivity to first and second-order Greeks.
+        * **Explain Position (LLM):** Leverages the **Google Gemini API** to provide a qualitative, strategic analysis of the trade's rationale and risks.
+
+---
+
+## 3. The Multi-Leg Strategy Builder (`strategy_builder.py`)
+A highly interactive environment focused on constructing, visualizing, and stress-testing complex, multi-leg options strategies.
+
+* **UI & Core Components:**
+    * **Dual-Pane Layout:** A control panel on the left for building the strategy and a large interactive Matplotlib plot on the right.
+    * **Templates Tab:** A library of over 15 pre-built templates for common strategies (Iron Condor, Straddle, etc.).
+* **Strategy Creation & Recommendation:**
+    * **AI Strategy Generation:** A dedicated "LLM Strat" button prompts the user for their market outlook and uses the Gemini API to return a fully formed, multi-leg strategy.
+    * **Heuristic Recommendation:** A `StrategyRecommender` class uses a heuristic scoring model to analyze the user's inputs and provide a ranked list of suitable strategies.
+* **Integrated Analysis Tools:**
+    * **Interactive P&L Chart:** Visualizes the strategy's P&L at expiration, automatically calculating max profit, max loss, and break-even points.
+    * **"What-If" Scenario Sliders:** Model the P&L impact of changes in underlying price, implied volatility, or time decay.
+    * **Built-in Monte Carlo Simulator:** Calculate the statistical Probability of Profit (POP) for any custom strategy.
+
+---
+
+## 4. The Idea Suite (`idea_suite_view.py`)
+A powerful discovery engine that scans the market to generate unique, data-driven trading ideas.
+
+* **UI & Core Components:**
+    * **Categorized Tabs:** Automatically organizes ideas into thematic tabs like "Volatility," "Earnings," and "Social Sentiment."
+    * **AI Co-Pilot:** A dedicated tab allows users to ask the Google Gemini API natural language questions about the generated ideas.
+* **Backend: The IdeaEngine:**
+    * The engine runs a user-defined stock universe through 12 distinct **Detectors**.
+    * **Data-Driven Detectors Include:** Unusual IV, Momentum Patterns (Golden/Death Crosses), Fundamental Value (QARP metrics), and Social Sentiment (Reddit & Google Trends).
+    * **Data Orchestration:** A multi-threaded `MarketDataService` fetches and caches all necessary metrics.
+
+---
+
+## 5. The Stock Research Suite (`StockResearchSuite.py`)
+A comprehensive, standalone window for a deep dive into a single stock.
+
+* **UI & Core Components:**
+    * **Multi-Tabbed Interface:** Includes an overview with an interactive chart, full financial statements, news & sentiment, a full options chain viewer, and technicals/fundamentals tables.
+* **Backend & Logic:**
+    * **`ResearchOrchestrator`:** A powerful, multi-threaded orchestrator manages all data fetching for fast loading times.
+    * **Hybrid Data Sourcing:** Primarily uses `yfinance` but has intelligent fallbacks to other sources like the Finnhub API or direct scraping (using `curl-cffi` to prevent blocks).
+
+---
+
+## 6. The Strategy Tester (`strategy_tester.py`)
+A professional-grade environment for rigorously backtesting options strategies over historical data.
+
+* **Backend: `BacktestEngine`:**
+    * An **event-driven** engine that iterates day-by-day through historical data.
+    * Accurately models multi-leg options positions and calculates their mark-to-market value using the Black-Scholes model.
+* **Key Feature: Parameter Optimization (`BatchRunner`)**
+    * A grid-search optimizer that allows users to define a range of values for multiple strategy parameters.
+    * The `BatchRunner` runs a backtest for every possible combination in the background and identifies the optimal settings.
+
+---
+
+## 7. The Portfolio Dashboard (`portfolio_view.py`)
+A complete, standalone portfolio analytics application that runs in its own process for maximum stability and performance.
+
+* **UI & Core Components:**
+    * **Goal Setting & Simulation:** Runs a Monte Carlo simulation to project the portfolio's growth and calculate the probability of achieving a user-defined financial goal.
+    * **Analysis Lab:** Includes advanced tools like a "Portfolio DNA" radar chart, rolling volatility and VaR calculations, a correlation matrix, and stress testing against historical market crashes.
+* **Advanced Tax Center:**
+    * Tracks unrealized gains/losses for each individual **tax lot**.
+    * Calculates a "Tax Efficiency Score."
+    * Includes a "What-If" Sale Simulator that models the exact tax impact of selling specific lots and automatically flags potential **wash sales**.
+
+---
+
+## 8. The Financial Chatbot (`Chatbot.py`)
+A standalone AI assistant, running in an isolated process, that provides quick access to financial information.
+
+* **Architecture: Dual-Mode LLM**
+    * **Intent Parsing:** First, it uses the Google Gemini API to classify a query and extract entities (e.g., parsing "price of TSLA" into a `price` command and a `TSLA` entity).
+    * **AI Fallback:** If the query doesn't match a known command, it is sent to a second, more open-ended prompt where the LLM acts as a financial analyst.
+* **Features:**
+    * Tracks API token usage to manage costs.
+    * Can render rich content like tables and Matplotlib charts directly in the chat window.
