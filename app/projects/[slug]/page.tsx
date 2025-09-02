@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PageProps) {
   });
 }
 
-// @ts-expect-error
+// @ts-expect-error - Next.js v15 can pass promise-like props in this context
 export default async function ProjectPage({ params }: PageProps) {
   const project = projects.find((p) => p.link.endsWith(params.slug));
   if (!project) notFound();
