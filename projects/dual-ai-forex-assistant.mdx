@@ -1,8 +1,79 @@
+# Preface
+
+### Recommended familiarity
+
+- **Basic order types** (buy, sell, stop loss, take profit).
+- **Time frames in charts** (1 minute, 1 hour, daily, weekly).
+- **Candlestick charts** (all examples are candlestick-based).
+- **Market sessions** (London, New York, Asian) and why they matter.
+- **Volume** as a concept in trading
+
+---
+
+## Liquidity
+
+**Major zones of liquidity**: before defining what I refer to when I say “major zones of liquidity”, I will first define liquidity. Traditionally liquidity is defined as “the availability of liquid assets to a market or company”, with high liquidity meaning there are a significant number of buyers and sellers in the market for your asset, and low liquidity meaning there are a small number of buyers and sellers, therefore when attempting to buy or sell assets with low liquidity you may face various issues such as having to wait for a buyer or seller to transact with, not getting your desired price, or not even knowing the price of an asset because of infrequent and inconsistent price data. In forex this is exactly what liquidity is behind the scenes, with a **liquidity zone** being an area in the chart where there is an influx of **buy or sell orders**, creating a point of “control” or interest for traders. An example of a liquidity zone would be a daily, weekly, monthly, or yearly high or low of an asset:  
+
+<ImageWithFullscreen src="/images/HourlyHL.png" alt="Hourly High/Low Liquidity Zones" />
+
+The reason these are liquidity zones is because traders often set stop loss orders or take profit orders in these areas, therefore when price “sweeps” (goes through) these zones it often activates these orders and causes a “bounce” off with an increase in volume, or a “break” through the zone with significant volume as well:  
+
+<ImageWithFullscreen src="/images/SweepExample.png" alt="Liquidity Sweep Example" />
+
+---
+
+## Buy vs Sell side liquidity
+
+When trying to utilize liquidity on the chart as a trader you can think of two types:
+
+- **Buy side liquidity**: Liquidity created from buyers in the market, usually located at **highs of different times frames** (1HR, Daily, Weekly etc). If you are a buyer in the market, your take profit (sell order), is usually one of these highs, therefore when price sweeps a zone like this your order triggered and contributes to pushing price down. If you are a seller in the market, your stop loss (buy order) is usually one of these highs, therefore when price sweeps these zones you are forced to sell and your order pushes the price up.
+- **Sell side liquidity**: Liquidity created from sellers in the market, usually located at **lows of different time frames**. If you are a seller in the market, your take profit is usually the low of a certain time frame, therefore when price sweeps this low your buy order activates and you push price up. If you are a buyer in the market your stop loss is usually the low of a certain time frame, therefore when price sweeps this zone your sell order activates and you push price down.
+
+Of course a single buy or sell order doesn't significantly impact the price, however when a significant amount of traders use a similar mindset to place their orders, these zones become genuine points of interest in the chart as large quantities of orders are executed, acting as a sort of “boost” for price. Here is how various zones look like on an hourly timeframe as an example:  
+
+<ImageWithFullscreen src="/images/ZonesLabels.png" alt="Hourly Liquidity Zones Labels" />
+
+The strongest buyside liquidity zone is the highest red line, where you can clearly see multiple clean reversals, and the speed of the reversals (how many candles/how long it takes to bounce off) is quick, meaning that the zone has a significant amount of sell orders and is a well respected zone to watch for. The strongest sell side liquidity zone is the lowest red line on the chart. To emphasize what I mean by the “speed” of reversals, here is a clean example of a strong zone being respected with a speedy reversal:  
+
+<ImageWithFullscreen src="/images/LiqSpeed.png" alt="Strong Zone Speed Example" />
+
+---
+
+## Major vs Minor zones
+
+When referring to “major/significant liquidity zones”, I mean buy or sell side liquidity zones based off higher timeframes or ones that have been “respected” (price has swept and reversed from the zone before multiple times). Ultimately it comes down to your trading style (swing trading/longer term or scalp trading/shorter term), however lower time frame zones (1 minute, 5 minute, 15 minute), are considered weak liquidity zones, because the majority of significantly sized stop loss or take profit orders aren’t based off of these. Assuming you are a swing trader, if you have a short order in the market, you are more likely to decide your stop loss based off of a daily, weekly or otherwise well respected zone than a low time frame zone such as a 5 minute zone (low time frame traders decide their orders based off these, however low time frame traders trade with less capital creating a smaller volume effect when these are swept).  
+
+These lower time frame zones are definitely still present though, and although i will be focusing on stronger zones, these zones are still worth noting, here is an example of a 5 minute time frame analysis:  
+
+<ImageWithFullscreen src="/images/5minZoneLabels.png" alt="5 Min Zone Labels" />
+
+
+---
+
+## My pattern using liquidity
+
+Now that major liquidity zones are defined, i can breakdown the reversal pattern I’ve been observing on GBP/JPY:  
+
+In the transition window between London session (GBP) and Asian session (JPY) of 9PM - 1AM PST, if price is near a significant zone of liquidity (doesn’t matter if it’s buyside or sellside), i often noticed that the zone gets cleanly swept, and a strong reversal happens. This pattern does not occur everyday, however if those conditions are true and the zone is swept I await a confirmation signal in the form of a trend shift (from uptrend to downtrend or vice versa) such as break of structure, and i enter a trade with the stop loss just above that zone (if it sweeps this area again then my pattern has failed and I should exit the market), and take profit at the nearest opposite liquidity (if the zone that was just swept was buyside liquidity ex. an hourly high, then my take profit is the nearest sellside liquidity ex. hourly low).
+
+---
+
+## Challenges/Motivation for project
+
+Now there are three problems I’ve faced trading this by simply “eye balling” or “market intuition”:
+
+1. **Psychological bias**: When actively looking for a trade, I may see a quick reversal from other factors, and since I’m in the mindset of hunting for an entry I may convince myself that the reversal was from a major liquidity zone sweep, and price may swiftly push back up to hit my stop loss and then sweep the actual zone, causing me to lose money and miss out on a quality trade. A second perspective to help quantify major liquidity zones would help combat this.
+2. **Ambiguities in “major liquidity” zone definitions**: Major liquidity zones are easy to identify in hindsight, however when you are working with live data and need to identify the current major liquidity zones, you can assign a wide variety of zones such a label. You can either set concrete rules for identifying zones or gain a solid “market intuition” with practice, however it would be beneficial to get another perspective.
+3. **Hidden factors in executing clean trades**: The market is very complex and there is never a guaranteed trade, there are only probabilities of success in trades, and all you can do is hope to maximize your probability of success when trading. Trading is a game of information, and the more information you have the larger your advantage, which is why simply entering trades based off candlesticks and patterns would be a poor decision since factors like news, technical factors behind the scenes (volume, RSI, etc), psychological factors (near a price area of historical importance in the chart) and many other factors can ruin your “perfect” setup. Knowing as much of these factors as possible can help you adjust your strategy, stay out of the market, or simply account for them, and having another perspective that brings some of these to your attention is very useful.
+
+To address these problems, I’ve decided to use machine learning concepts to make a neural network powered forex trading assistant which was trained on manually inputted trade data to learn my pattern and infer on live data.
+
+
 # Autonomous GBP/JPY Trading Assistant with Dual AI Architecture
 
 ### High-Level Summary
 
-This project is a fully autonomous, end-to-end trading assistant designed to trade a specific "liquidity sweep and reversal" pattern on the GBP/JPY 5-minute chart. The system's core innovation is a unique dual AI architecture that separates the task of trade identification from trade management. A supervised LSTM **"Scout"** finds high-probability setups, while a Reinforcement Learning **"Manager"** determines the optimal exit strategy. The entire system operates autonomously, connecting to the OANDA brokerage API for live paper trade execution, with real-time monitoring via Telegram.
+This project is a fully autonomous, end-to-end trading assistant designed to trade the pattern desribed above on the GBP/JPY 5-minute chart. The system's core innovation is a unique dual AI architecture that separates the task of trade identification from trade management. A supervised LSTM **"Scout"** finds high-probability setups, while a Reinforcement Learning **"Manager"** determines the optimal exit strategy. The entire system operates autonomously, connecting to the OANDA brokerage API for live paper trade execution, with real-time monitoring via Telegram.
 
 ---
 
@@ -17,21 +88,26 @@ The system is composed of two primary AI agents working in sequence within a sin
 
 ## Component I: The "Scout" - Multi-Task LSTM
 
-The Scout is a sophisticated pattern recognition model designed for deep market analysis.
+The Scout is a sophisticated pattern recognition model designed for deep market analysis and robust trade identification.
 
-* **Model:** A multi-head Long Short-Term Memory (LSTM) network built in **PyTorch**. The model was specifically designed with unrolled `LSTMCell` layers to maintain compatibility with SHAP for explainability.
-* **Multi-Task Learning:** Instead of a simple buy/sell signal, the model is trained to predict four distinct outputs simultaneously for any given setup:
+* **Model:** A multi-head Long Short-Term Memory (LSTM) network built in **PyTorch**, using unrolled `LSTMCell` layers to maintain compatibility with SHAP for explainability.  
+* **Multi-Task Learning:** Rather than producing a simple buy/sell signal, the model predicts four outputs simultaneously for any given setup:
     * **Setup Quality:** A 1-5 star classification rating.
-    * **Reward:Risk Ratio (R:R):** A regression output predicting the likely profit potential.
-    * **Failure Probability:** A regression output predicting the probability of the trade hitting its stop loss.
-    * **Directional Bias:** A regression output (-1 to 1) indicating conviction for a sell vs. a buy.
-* **Data & Feature Engineering:** The model is trained on a sequence of 24 candles (2 hours). The feature set is extensive and includes standard OHLCV data, technical indicators (ATR, Volume MA), and a **Hybrid Support/Resistance Engine** that combines:
-    * **Price-Action Clustering:** Uses DBSCAN on 2 years of historical daily data to find major price inflection zones.
-    * **Volume Profiling:** Calculates the Point of Control (POC) on multiple timeframes to identify areas of high liquidity.
-* **Explainable AI (XAI):** After each high-quality prediction, **SHAP** (SHapley Additive exPlanations) is used to provide a "Top 5" list of the market features that most influenced the model's decision, offering full transparency.
-* **Model Optimization:** The training process is wrapped in an optimization script (`optimize_training.py`) that runs multiple training sessions to find the model with the lowest validation loss.
+    * **Reward:Risk Ratio (R:R):** Predicts likely profit potential.
+    * **Failure Probability:** Predicts probability of hitting the stop loss.
+    * **Directional Bias:** Conviction for a sell vs. a buy (-1 to 1).  
+* **Data & Feature Engineering:** The model processes sequences of 24 candles (2 hours) with features including OHLCV data, technical indicators (ATR, Volume MA), and a **Hybrid Support/Resistance Engine**, which combines:
+    * **Price-Action Clustering:** DBSCAN clustering on 2 years of daily data to identify major inflection zones.
+    * **Volume Profiling:** Multi-timeframe Point of Control (POC) calculations to detect areas of high liquidity.  
+  The system also calculates **recent short- and long-term support/resistance levels** using historical highs/lows and volume-based POCs to guide feature construction for higher predictive quality.
+* **Explainable AI (XAI):** SHAP (SHapley Additive exPlanations) provides a "Top 5" list of features influencing each prediction, ensuring transparency.  
+* **Reducing Randomness & Ensuring Robustness:** To minimize stochastic variation and improve reliability, the training pipeline incorporates multiple strategies:
+    * **Repeated Optimization Runs:** The `optimize_training.py` script executes multiple independent training sessions, selecting the model with the lowest validation loss as the “champion.”
+    * **K-Fold Cross-Validation:** Five-fold CV evaluates model performance across diverse train/test splits, mitigating test-set bias and ensuring generalization.
+    * **Hyperparameter Tuning:** Grid search over learning rate, batch size, and hidden layer size identifies the optimal configuration for stable, high-quality predictions.  
 
----
+This combined approach ensures that the Scout not only identifies high-probability trade setups but does so consistently, with minimal randomness, producing outputs that can be reliably used by the Manager.
+
 
 ## Component II: The "Manager" - Reinforcement Learning Agent
 
@@ -42,6 +118,7 @@ The Manager is an expert at one thing: knowing when to exit a trade.
     * **State:** Observes a complex state including all current market features plus trade-specific information like current P&L (in R-multiples) and time elapsed.
     * **Actions:** The agent has two choices every 5 minutes: `HOLD` or `CLOSE POSITION`.
     * **Reward:** The agent is rewarded based on the final P&L of the trade, incentivizing it to learn a policy that maximizes profit.
+
 
 ---
 
@@ -54,6 +131,22 @@ This is the central nervous system that integrates the AIs and automates the ent
 * **Monitoring & Logging:** The system sends real-time alerts to a **Telegram bot** and logs every trade to a `prediction_log.csv` file for performance analysis.
 
 ---
+
+
+import SmoothVideo from '../components/SmoothVideo';
+
+
+### Live Demo of the Autonomous Trading Engine
+
+<SmoothVideo
+  src="/videos/demo_gbpjpy.mp4"
+  poster="/images/video_poster.png"
+/>
+
+
+
+---
+
 
 ## Workflow: A Night in the Life of the Assistant
 

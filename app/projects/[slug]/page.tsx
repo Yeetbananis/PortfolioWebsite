@@ -1,7 +1,8 @@
-// app/projects/[slug]/page.tsx
 import { projects } from '@/data/content';
 import { generatePageMetadata } from '@/app/lib/metadata';
 import { notFound } from 'next/navigation';
+import ImageWithFullscreen from '@/app/components/ImageWithFullscreen';
+import SmoothVideo from '@/app/components/SmoothVideo'; // <-- add this
 import Image from 'next/image';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import path from 'path';
@@ -45,6 +46,10 @@ export default async function ProjectPage({ params }: PageProps) {
   const { content } = await compileMDX({
     source: mdxSource,
     options: { parseFrontmatter: false },
+    components: {
+      ImageWithFullscreen,
+      SmoothVideo, // <-- now MDX knows about it
+    },
   });
 
   return (
@@ -57,7 +62,7 @@ export default async function ProjectPage({ params }: PageProps) {
           <AnimatedWords text={project.description} delay={0.1} />
         </p>
       </div>
-      
+
       <AnimatedBlock delay={0.2}>
         <div className="relative mb-12 aspect-video w-full overflow-hidden rounded-lg shadow-lg">
           <Image src={project.image} alt={project.title} fill className="object-cover" />
