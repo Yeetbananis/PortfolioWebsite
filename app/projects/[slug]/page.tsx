@@ -1,6 +1,6 @@
 // app/projects/[slug]/page.tsx
 import { projects } from '@/data/content';
-import { generatePageMetadata } from '@/app/lib/metadata'; // Import helper
+import { generatePageMetadata } from '@/app/lib/metadata';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { compileMDX } from 'next-mdx-remote/rsc';
@@ -30,12 +30,11 @@ export default async function ProjectPage({ params }: { params: { slug: string }
   const project = projects.find((p) => p.link.endsWith(params.slug));
   if (!project) notFound();
 
-  // This is the logic that was missing from the previous snippet
   const filePath = path.join(process.cwd(), 'projects', `${params.slug}.mdx`);
-let mdxSource;
+  let mdxSource;
   try {
     mdxSource = await fs.readFile(filePath, 'utf8');
-  } catch (_) { // Changed 'error' to '_'
+  } catch { // The error variable is not needed, so it can be removed
     notFound();
   }
 
@@ -43,7 +42,6 @@ let mdxSource;
     source: mdxSource,
     options: { parseFrontmatter: false },
   });
-  // End of missing logic
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-16">

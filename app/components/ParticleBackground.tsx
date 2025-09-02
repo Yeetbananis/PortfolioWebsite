@@ -8,24 +8,20 @@ import { AdditiveBlending, Group, Points as PointsType, Vector3 } from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import siteConfig from '@/site.config.js';
 
-// This new component will manage and animate the traveling sparks
 function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
   const sparks = useMemo(() => {
     return Array.from({ length: count }, () => {
       const path = paths[Math.floor(Math.random() * paths.length)];
       return {
         path,
-        // progress along the path
         progress: Math.random(),
-        // speed of travel
         speed: Math.random() * 0.002 + 0.001,
-        // current position
         position: new Vector3(),
       };
     });
   }, [count, paths]);
 
-  const sparkRef = useRef<any>(null);
+  const sparkRef = useRef<PointsType>(null!);
 
   useFrame(() => {
     if (!sparkRef.current) return;
@@ -34,7 +30,6 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
       spark.progress += spark.speed;
       if (spark.progress > 1) {
         spark.progress = 0;
-        // Optional: switch to a new path when one is complete
         spark.path = paths[Math.floor(Math.random() * paths.length)];
       }
       
@@ -49,8 +44,7 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
       spark.position.lerpVectors(p1, p2, segmentProgress);
     });
 
-    // Update the positions of the Points component
-    const positions = sparkRef.current.geometry.attributes.position.array;
+    const positions = sparkRef.current.geometry.attributes.position.array as Float32Array;
     sparks.forEach((spark, i) => {
       positions[i * 3] = spark.position.x;
       positions[i * 3 + 1] = spark.position.y;
@@ -59,11 +53,10 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
     sparkRef.current.geometry.attributes.position.needsUpdate = true;
   });
 
-  // Use a simple array for the initial positions of the points
   const initialPositions = useMemo(() => new Float32Array(count * 3), [count]);
 
   return (
-    <Points ref={sparkRef} positions={initialPositions as any}>
+    <Points ref={sparkRef} positions={initialPositions}>
       <pointsMaterial color="white" size={0.04} blending={AdditiveBlending} transparent opacity={0.75} depthWrite={false} />
     </Points>
   );
@@ -71,8 +64,7 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
 
 
 function NeuralNetwork() {
-  const groupRef = useRef<any>(null);
-  const lineRef = useRef<any>(null);
+  const groupRef = useRef<Group>(null!);
 
   const { particles, lines, paths } = useMemo(() => {
     const numLayers = 5;
@@ -80,7 +72,7 @@ function NeuralNetwork() {
     const layerDepth = 2;
     const xySpread = 7;
     
-    const particles = [];
+    const particles: Vector3[] = [];
     const connections: number[][] = Array.from({ length: numLayers * pointsPerLayer }, () => []);
 
     for (let i = 0; i < numLayers; i++) {
@@ -92,7 +84,7 @@ function NeuralNetwork() {
       }
     }
 
-    const lines = [];
+    const lines: Vector3[] = [];
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const p1 = particles[i];
@@ -106,12 +98,11 @@ function NeuralNetwork() {
       }
     }
 
-    // Pathfinding for sparks
-    const paths = [];
-    for (let i = 0; i < 10; i++) { // Generate 10 random paths
-      const path = [];
+    const paths: Vector3[][] = [];
+    for (let i = 0; i < 10; i++) {
+      const path: Vector3[] = [];
       let current = Math.floor(Math.random() * particles.length);
-      for(let j=0; j < 50; j++) { // Path length
+      for(let j=0; j < 50; j++) {
         path.push(particles[current]);
         const neighbors = connections[current];
         if (neighbors.length > 0) {
@@ -126,7 +117,7 @@ function NeuralNetwork() {
     return { particles, lines, paths };
   }, []);
 
-   useFrame((state, delta) => {
+  useFrame((state, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.05;
       groupRef.current.rotation.x += delta * 0.02;
@@ -155,8 +146,7 @@ const ParticleBackground = () => {
           <Bloom luminanceThreshold={0.1} intensity={0.8} mipmapBlur />
         </EffectComposer>
       </Canvas>
-      {/* This new div is the semi-transparent overlay */}
-      <div className="absolute inset-0 bg-background opacity-40" />
+      <div className="absolute inset-0 bg-background opacity-80" />
     </div>
   );
 };
