@@ -13,13 +13,15 @@ export default function ArticlesPageContent() {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <section className="py-32 text-center">
-        <AnimatedWords el="h1" className="text-4xl font-bold md:text-5xl" text="Articles & Insights" />
-        <AnimatedWords 
-          el="p" 
-          className="mt-4 mx-auto max-w-2xl text-lg text-text-secondary" 
-          text="A collection of my thoughts and deep dives into quantitative finance, trading strategies, and technology. The write-up on my understanding of options will be the first article featured here."
-          delay={0.1}
-        />
+        <h1 className="text-4xl font-bold md:text-5xl">
+          <AnimatedWords text="Articles & Insights" />
+        </h1>
+        <p className="mt-4 mx-auto max-w-2xl text-lg text-text-secondary">
+          <AnimatedWords 
+            text="A collection of my thoughts and deep dives into quantitative finance, trading strategies, and technology. The write-up on my understanding of options will be the first article featured here."
+            delay={0.1}
+          />
+        </p>
         <p className="mt-8 text-text-secondary">More content coming soon.</p>
       </section>
     </motion.div>

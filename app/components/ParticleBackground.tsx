@@ -2,7 +2,7 @@
 'use client';
 
 import { Suspense, useMemo, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, RootState } from '@react-three/fiber';
 import { Line, Points } from '@react-three/drei';
 import { AdditiveBlending, Group, Points as PointsType, Vector3 } from 'three';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
@@ -117,7 +117,7 @@ function NeuralNetwork() {
     return { particles, lines, paths };
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_: RootState, delta: number) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.05;
       groupRef.current.rotation.x += delta * 0.02;

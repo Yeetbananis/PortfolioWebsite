@@ -50,17 +50,12 @@ export default async function ProjectPage({ params }: PageProps) {
   return (
     <div className="container mx-auto max-w-3xl px-4 py-16">
       <div className="mb-12 text-center">
-        <AnimatedWords
-          el="h1"
-          className="text-5xl font-bold"
-          text={project.title}
-        />
-        <AnimatedWords
-          el="p"
-          className="mt-2 text-xl text-text-secondary"
-          text={project.description}
-          delay={0.1}
-        />
+        <h1 className="text-5xl font-bold">
+          <AnimatedWords text={project.title} />
+        </h1>
+        <p className="mt-2 text-xl text-text-secondary">
+          <AnimatedWords text={project.description} delay={0.1} />
+        </p>
       </div>
       
       <AnimatedBlock delay={0.2}>
