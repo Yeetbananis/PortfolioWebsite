@@ -25,7 +25,9 @@ export default function AboutPageContent() {
     >
       {/* About Me Section */}
       <section className="py-24 text-center">
-        <AnimatedWords el="h1" className="text-4xl font-bold md:text-5xl" text="About Me" />
+        <h1 className="text-4xl font-bold md:text-5xl">
+          <AnimatedWords text="About Me" />
+        </h1>
         <div className="mt-8 mx-auto max-w-3xl text-lg leading-relaxed text-text-secondary">
           <p className="mb-4">
             Driven and analytical second-year Mathematics student at UBC with an Economics minor and a focus on quantitative finance.
@@ -36,9 +38,11 @@ export default function AboutPageContent() {
         </div>
       </section>
 
-      {/* --- NEW: Education Section --- */}
+      {/* Education Section */}
       <section className="mb-24">
-        <AnimatedWords el="h2" className="mb-8 text-center text-3xl font-bold" text="Education" />
+        <h2 className="mb-8 text-center text-3xl font-bold">
+          <AnimatedWords text="Education" />
+        </h2>
         <div className="mx-auto max-w-2xl rounded-md border border-white/10 bg-white/5 p-6">
           <h3 className="text-xl font-bold text-text">The University of British Columbia (UBC)</h3>
           <p className="text-text-secondary">Bachelor of Science, Expected April 2028</p>
@@ -50,7 +54,9 @@ export default function AboutPageContent() {
 
       {/* Skills Section (Now Categorized) */}
       <section className="mb-24">
-        <AnimatedWords el="h2" className="mb-8 text-center text-3xl font-bold" text="Technologies & Skills" />
+        <h2 className="mb-8 text-center text-3xl font-bold">
+          <AnimatedWords text="Technologies & Skills" />
+        </h2>
         <div className="space-y-8">
           {Object.entries(skills).map(([category, skillList]) => (
             <div key={category}>
@@ -69,7 +75,9 @@ export default function AboutPageContent() {
 
       {/* Certifications Section */}
       <section className="mb-24">
-        <AnimatedWords el="h2" className="mb-8 text-center text-3xl font-bold" text="Certifications & Coursework" />
+        <h2 className="mb-8 text-center text-3xl font-bold">
+          <AnimatedWords text="Certifications & Coursework" />
+        </h2>
         <div className="mx-auto max-w-2xl space-y-4">
           {courses.map((course) => (
             <div key={course.title} className="rounded-md border border-white/10 bg-white/5 p-4">
@@ -82,8 +90,12 @@ export default function AboutPageContent() {
 
       {/* Call to Action Section */}
       <section className="py-24 text-center">
-        <AnimatedWords el="h2" className="text-3xl font-bold" text="Get In Touch" />
-        <AnimatedWords el="p" className="mx-auto mt-4 max-w-xl text-text-secondary" text="I'm always open to discussing new opportunities and interesting ideas. Feel free to connect with me." delay={0.1}/>
+        <h2 className="text-3xl font-bold">
+          <AnimatedWords text="Get In Touch" />
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-text-secondary">
+          <AnimatedWords text="I'm always open to discussing new opportunities and interesting ideas. Feel free to connect with me." delay={0.1}/>
+        </p>
         <div className="mt-8 flex justify-center space-x-6">
           <a href={siteConfig.socials.github} target="_blank" rel="noopener noreferrer" className="text-text-secondary transition-colors hover:text-primary"><FaGithub size={32} /></a>
           <a href={siteConfig.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-text-secondary transition-colors hover:text-primary"><FaLinkedin size={32} /></a>

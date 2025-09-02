@@ -2,15 +2,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import React, { ElementType, ComponentPropsWithoutRef } from 'react';
 
-type AnimatedWordsProps<T extends ElementType = 'p'> = {
+type AnimatedWordsProps = {
   text: string;
-  el?: T;
   className?: string;
   delay?: number;
-} & Omit<ComponentPropsWithoutRef<T>, 'text' | 'el' | 'className' | 'delay'>;
-const AnimatedWords = <T extends ElementType = 'p'>({ text, el: Wrapper = 'p' as T, className, delay = 0, ...rest }: AnimatedWordsProps<T>) => {
+};
+
+const AnimatedWords = ({ text, className, delay = 0 }: AnimatedWordsProps) => {
   const words = text.split(' ');
 
   const containerVariants = {
@@ -31,10 +30,7 @@ const AnimatedWords = <T extends ElementType = 'p'>({ text, el: Wrapper = 'p' as
   };
 
   const wordVariants = {
-    hidden: {
-      opacity: 0,
-      y: -20,
-    },
+    hidden: { opacity: 0, y: -20 },
     visible: {
       opacity: 1,
       y: 0,
@@ -55,24 +51,23 @@ const AnimatedWords = <T extends ElementType = 'p'>({ text, el: Wrapper = 'p' as
   };
 
   return (
-    <Wrapper className={className} {...rest}>
-      <motion.span
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-      >
-        {words.map((word, index) => (
-          <motion.span
-            key={index}
-            variants={wordVariants}
-            style={{ display: 'inline-block', marginRight: '0.25em' }}
-          >
-            {word}
-          </motion.span>
-        ))}
-      </motion.span>
-    </Wrapper>
+    <motion.span
+      className={className}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      {words.map((word, index) => (
+        <motion.span
+          key={index}
+          variants={wordVariants}
+          style={{ display: 'inline-block', marginRight: '0.25em' }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </motion.span>
   );
 };
 
