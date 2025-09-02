@@ -9,13 +9,18 @@ import fs from 'fs/promises';
 import AnimatedWords from '@/app/components/AnimatedWords';
 import AnimatedBlock from '@/app/components/AnimatedBlock';
 
+// Define a type for the page's props
+type PageProps = {
+  params: { slug: string };
+};
+
 export async function generateStaticParams() {
   return projects.map((project) => ({
     slug: project.link.split('/').pop(),
   }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: PageProps) {
   const project = projects.find((p) => p.link.endsWith(params.slug));
   if (!project) {
     return generatePageMetadata({ title: 'Project Not Found' });
@@ -26,7 +31,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   });
 }
 
-export default async function ProjectPage({ params }: { params: { slug: string } }) {
+// Use the PageProps type here
+export default async function ProjectPage({ params }: PageProps) {
   const project = projects.find((p) => p.link.endsWith(params.slug));
   if (!project) notFound();
 
@@ -34,7 +40,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
   let mdxSource;
   try {
     mdxSource = await fs.readFile(filePath, 'utf8');
-  } catch { // The error variable is not needed, so it can be removed
+  } catch {
     notFound();
   }
 
