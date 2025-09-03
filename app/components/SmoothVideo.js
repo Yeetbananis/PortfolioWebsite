@@ -18,7 +18,7 @@ export default function SmoothVideo({ src, poster }) {
         }}
       />
       <p style={{ marginTop: "8px", fontSize: "0.9rem", color: "#666" }}>
-        Demo showing the live paper trading assistant running with real-time market monitoring.
+        Demo video showcasing the project environment and key features.
       </p>
     </div>
   );

@@ -100,11 +100,30 @@ The Scout is a sophisticated pattern recognition model designed for deep market 
     * **Price-Action Clustering:** DBSCAN clustering on 2 years of daily data to identify major inflection zones.
     * **Volume Profiling:** Multi-timeframe Point of Control (POC) calculations to detect areas of high liquidity.  
   The system also calculates **recent short- and long-term support/resistance levels** using historical highs/lows and volume-based POCs to guide feature construction for higher predictive quality.
+  ### Testing Support/Resistance Script
+
+<SmoothVideo
+  src="/videos/support_resistance.mp4"
+  poster="/images/support_resistance_poster.png"
+/>
+
 * **Explainable AI (XAI):** SHAP (SHapley Additive exPlanations) provides a "Top 5" list of features influencing each prediction, ensuring transparency.  
 * **Reducing Randomness & Ensuring Robustness:** To minimize stochastic variation and improve reliability, the training pipeline incorporates multiple strategies:
     * **Repeated Optimization Runs:** The `optimize_training.py` script executes multiple independent training sessions, selecting the model with the lowest validation loss as the “champion.”
+### Optimizing Training Script
+
+<SmoothVideo
+  src="/videos/optimize_training.mp4"
+  poster="/images/optimize_training_poster.png"
+/>
     * **K-Fold Cross-Validation:** Five-fold CV evaluates model performance across diverse train/test splits, mitigating test-set bias and ensuring generalization.
     * **Hyperparameter Tuning:** Grid search over learning rate, batch size, and hidden layer size identifies the optimal configuration for stable, high-quality predictions.  
+### K-Fold Cross Validation for Hyperparameters
+
+<SmoothVideo
+  src="/videos/kfold_validation.mp4"
+  poster="/images/kfold_validation_poster.png"
+/>
 
 This combined approach ensures that the Scout not only identifies high-probability trade setups but does so consistently, with minimal randomness, producing outputs that can be reliably used by the Manager.
 
