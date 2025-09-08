@@ -10,6 +10,7 @@ import AnimatedWords from '@/app/components/AnimatedWords';
 import AnimatedBlock from '@/app/components/AnimatedBlock';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import ImageWithFullscreen from '@/app/components/ImageWithFullscreen';
 
 type PageProps = {
   params: { slug: string };
@@ -54,7 +55,9 @@ export default async function ProjectPage({ params }: PageProps) {
       },
     },
     // We will add custom components here in a future step
-    components: {},
+    components: {
+      ImageWithFullscreen, // This makes the component available in your MDX files
+    },
   });
 
   return (
