@@ -9,6 +9,7 @@ import AnimatedWords from '@/app/components/AnimatedWords';
 import Link from 'next/link';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import ImageWithFullscreen from '@/app/components/ImageWithFullscreen';
 
 type PageProps = {
   params: { slug: string };
@@ -36,8 +37,11 @@ export default async function ArticlePage({ params }: PageProps) {
   let mdxSource;
   try { mdxSource = await fs.readFile(filePath, 'utf8'); } catch { notFound(); }
 
-  const { content } = await compileMDX({
+ const { content } = await compileMDX({
     source: mdxSource,
+    components: {
+      ImageWithFullscreen, // This makes the component available in your MDX files
+    },
     options: {
       parseFrontmatter: false,
       mdxOptions: {
