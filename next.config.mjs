@@ -1,9 +1,10 @@
 // next.config.mjs
 import createMDX from '@next/mdx'
+import remarkMath from 'remark-math'   
+import rehypeKatex from 'rehype-katex'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Tells Next.js to look for page files with these extensions
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
   images: {
     remotePatterns: [
@@ -16,7 +17,11 @@ const nextConfig = {
 };
 
 const withMDX = createMDX({
-  // Add MDX options here, if needed
+  extension: /\.mdx?$/,
+  options: {
+    remarkPlugins: [remarkMath],
+    rehypePlugins: [rehypeKatex],
+  },
 })
 
 export default withMDX(nextConfig);

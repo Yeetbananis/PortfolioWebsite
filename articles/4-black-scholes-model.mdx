@@ -1,0 +1,269 @@
+## The Black-Scholes Model: A Complete Breakdown
+
+The **Black-Scholes model** is a mathematical formula that gives a theoretical price for options contracts. It's one of the most important concepts in modern finance because it was the first widely used model to fairly price an option, taking into account all the key variables like stock price, time, and volatility. Here is the formula:
+
+$$
+\begin{align*}
+\text{Call Option Price:} \quad & C = S_0 \cdot N(d_1) - K \cdot e^{-rT} \cdot N(d_2) \\
+\text{Put Option Price:} \quad & P = K \cdot e^{-rT} \cdot N(-d_2) - S_0 \cdot N(-d_1) \\
+\\
+\text{where:} \quad & d_1 = \frac{\ln(S_0 / K) + \left( r + \frac{\sigma^2}{2} \right) T}{\sigma \sqrt{T}}, \quad
+d_2 = d_1 - \sigma \sqrt{T} \\
+\\
+\text{Definitions:} \\
+S_0 &= \text{Current price of the underlying asset} \\
+K &= \text{Strike price of the option} \\
+r &= \text{Risk-free interest rate (annualized)} \\
+T &= \text{Time to expiration (in years)} \\
+\sigma &= \text{Volatility of the asset's returns} \\
+N(\cdot) &= \text{Cumulative distribution function of the standard normal distribution} \\
+C &= \text{Call option price} \\
+P &= \text{Put option price}
+\end{align*}
+$$
+
+Let’s first break down how a call option should be priced. A call option is a bet that a stock will go up. Every option has a strike price, an expiry date, and a cost to buy it (the premium). So, how should that premium be chosen?
+
+The strike price is the price the option has to hit to be worth something at expiration. If you bet a 100-dollar stock will go to 120 dollars and you buy a call option with a strike of 110 dollars and an expiration of one year, what happens? If one year passes and the stock is at 120 dollars, then the profit (ignoring the premium) is the stock price minus the strike: 120 - 110 = 10 dollars of intrinsic value. Since there's no time left, this is its final value.
+
+The people selling you the option never want to guarantee a loss. So, if the stock was **guaranteed** to be at 120 dollars in a year, the price of the option's premium at expiration should be the exact difference between the stock price (S₀) and the strike price (K):
+
+$$
+S_0 - K
+$$
+
+That’s the basic outline of the left and right sides of the call option formula. Now, what’s not accurate with that assumption? We have no clue where the stock will be a year from now. It can go from 100 dollars to 50 dollars, or 500 dollars, or anything in between. But all those prices have a probability attached to them. A 100-dollar stock definitely has a higher chance of being at 120 dollars in a year than being at 500 dollars (a 20% gain vs. a 400% gain).
+
+This means we need a model to determine the chance of your prediction happening. This is where the other terms come in. Our formula now looks like this: stock price × (chance of hitting strike) - strike price × (chance of hitting strike).
+
+$$
+S_0 \cdot N(d_1) - K \cdot N(d_2) \\
+$$
+
+The last part of the formula is simple: **the time value of money**. Money today is worth more than money in the future. Since the strike price K is executed in the future (you are buying the stock at the agreed-upon price K on a future date), it has to be discounted to today’s value. Otherwise, you aren't accounting for the change in money's value. This gives us the full formula:
+
+$$
+C = S_0 \cdot N(d_1) - K \cdot e^{-rT} \cdot N(d_2)
+$$
+
+In plain English, you can think of it as:
+
+> **Call Price = (Current Stock Price × Probability Factor 1) − (Strike Price Discounted to Today’s Value × Probability Factor 2)**
+
+Now there are a few things to clear up: How is the probability of a stock hitting its strike price calculated? What is the function N(x)? What are d₁ and d₂, and what's the difference between them? Why is the variable e raised to the power of the negative risk-free rate times time? And what even is the risk-free rate?
+
+---
+
+## Key Components Explained
+
+### The Risk-Free Rate (r) and Time Value of Money (e⁻ʳᵀ)
+
+Let's start with the risk-free rate. The **risk-free rate (r)** is the return you can currently get from the safest possible investment, like government bonds. If government bonds pay 5% a year, the risk-free rate is 5%.
+
+Why is it in the Black-Scholes formula? Because it tells you how much future money is worth today. If you get 100 dollars a year from now, it's worth less than 100 dollars now because you could have invested that 100 dollars in a government bond and had 105 dollars in a year. (Although government bonds aren't 100% risk-free, they're the closest thing we have, so this is one assumption of the model).
+
+Since you execute the trade in the future, the strike price has to be discounted to today's value, and this is done with the term e⁻ʳᵀ. The variable **e** is used because the function eˣ captures the effect of **continuous compounding** of interest. In Black-Scholes, this term discounts the future strike price back to its present value.
+
+### The N(x) Function
+
+The function N(x) is the **cumulative distribution function (CDF)** for the standard normal distribution. The actual function is:
+
+$$
+N(x) = \frac{1}{\sqrt{2\pi}} \int_{-\infty}^x e^{-\frac{t^2}{2}} \, dt \\
+$$
+
+-   $\frac{1}{\sqrt{2\pi}}$ normalizes the distribution so the total area under the curve is 1 (or 100%).
+-   $\int_{-\infty}^x$ accumulates the probability from negative infinity up to point x, capturing the total area under the curve up to that point.
+-   $e^{-\frac{t^2}{2}}$ represents the shape of the standard normal distribution, a bell curve centered at 0 with a standard deviation of 1.
+![Alt text for the image](/images/PDF1.png)
+
+This relates to stock prices because they tend to move in a random but slightly upward path over time. While we don't know the future price of a stock, we can say that certain prices have a higher chance of being reached than others, and all these probabilities can be modeled with a bell curve.
+
+
+![Alt text for the image](/images/bellcurve.png)
+
+
+As the image shows, stock prices can be distributed in a bell curve. If the current price is 100 dollars, intuitively, the stock is more likely to go to 120 dollars (a 20% gain) than to 140 dollars (a 40% gain).
+
+This might lead you to ask:
+-   "How does it make sense that prices have a symmetrical probability of being reached whether they go up or down?"
+-   "But what if there’s a big event coming up that will bring the price up a lot?"
+-   "What if the company is dying? Wouldn’t there be a higher chance of it going lower?"
+
+This is where the **efficient market hypothesis** comes in. This is the idea that the market, at all times, is priced perfectly, factoring in every possible piece of information.
+-   Apple is releasing a car 5 years from now? Priced in.
+-   Rockstar is releasing GTA 6 in a week, and the sales will send the stock flying, so I'm putting all my money on calls? Priced in. The stock instead drops because everyone overestimated the hype.
+-   You are in a private insider chat and get info that the CEO is quitting to pursue a career in waking up late and eating lots of food? You go to short the stock, and it's already down 60%.
+
+Since the stock market is open to everyone, it's basically made up of millions of votes for the fair price of every stock at every second. This means you can assume the price you’re looking at is a “correct” centering point, the market is arbitrage-free (everything is priced in), and the prices you predict are nothing but probabilities (lower probabilities for prices further out, higher probabilities for prices closer to the current price).
+
+Back to the formula: since stock prices can be modeled with a bell curve, we use the CDF to find the probability of a certain price being reached. The CDF works by adding up all the tiny chances of every possible path the stock price could have taken. This captures the chance of the stock being above a certain price, considering its journey so far.
+
+Imagine predicting the chance of a runner finishing a race on time. You don’t just care about their exact position now; you care about how far they’ve already run, their pace, and how much time they have left. For a stock, this means looking at how far it’s already gone up (current price), the push it gets from interest rates (risk-free rate), the randomness of its movements (volatility), and how much time it has left to reach the strike.
+
+---
+
+## Breaking Down d₁
+
+### The d₁ Formula
+
+This is where d₁ comes in:
+
+$$
+d_1 = \frac{\ln\left(\frac{S_0}{K}\right) + \left(r + \frac{\sigma^2}{2}\right) T}{\sigma \sqrt{T}} \\
+$$
+
+-   ln(S₀/K) = The distance the stock has already "climbed" relative to the strike.
+-   (r + σ²/2)T = The head start the stock gets from the risk-free interest rate, plus a buffer for volatility.
+-   σ√T = The total uncertainty in the stock's path, accounting for time and volatility.
+
+Overall, d₁ measures how far the stock has progressed toward the strike, looking at its current level and the boost from interest rates, while also accounting for future uncertainty from volatility and time.
+
+A high d₁ means a high chance of your option finishing in the money (hitting the strike or above), and a low d₁ means a low chance. You can visualize the N(x) function as a CDF. Since the formula for N(x) takes the integral from negative infinity to d₁, a higher d₁ results in a larger area under the curve and thus a higher probability.
+
+![Alt text for the image](/images/CDFImage.png)
+
+*Note: A d₁ of -0.5 includes all area from negative infinity to -0.5. A d₁ of 1.5 includes all area from negative infinity to 1.5 because it's cumulative.*
+
+### Strike-to-Stock Price Ratio: ln(S/K)
+
+The term ln(S/K) compares the current stock price (S) to the strike price (K). The natural log is used to properly scale this relationship.
+
+-   **Out-of-the-Money (OTM) strikes (K > S)** have a negative effect on your chance of finishing ITM. It’s harder for a stock to go from 100 dollars to 150 dollars than to just stay above 100 dollars. In this case, S/K < 1, and ln(S/K) is **negative**.
+-   **In-the-Money (ITM) strikes (K < S)** increase your chance of ending up ITM. If the stock is at 100 dollars and your strike is at 80 dollars, you have 20 dollars of wiggle room. Here, S/K > 1, and ln(S/K) is **positive**.
+-   **At-the-Money (ATM) strikes (K = S)** have no effect based on price level alone. Here, S/K = 1, and ln(S/K) = ln(1) = 0.
+![Alt text for the image](/images/LnStrike.png)
+
+### Upward Drift: (r + σ²/2)T
+
+This term represents the expected "drift" or upward push on the stock price over time.
+
+The first part, rT, simply represents the risk-free return you'd expect. A higher risk-free rate adds to d₁, giving the stock a natural upward push over time. You might wonder why it's not eʳᵀ for continuous compounding. This is because the Black-Scholes model uses logarithms for prices. The e is cancelled out by the natural log:
+$$
+\ln\left(\frac{S_0 e^{rT}}{K}\right) = \ln\left(\frac{S_0}{K}\right) + \ln\left(e^{rT}\right) = \ln\left(\frac{S_0}{K}\right) + rT
+$$
+
+The volatility term, σ²/2, is a bit more complicated.
+
+#### Volatility (σ)
+**Volatility** is a measure (in percent) of how much a stock's returns are expected to fluctuate over a year. If a stock has 50% **implied volatility**, the market expects its returns to fall within ±50% of its average return about 68% of the time (one standard deviation).
+![Alt text for the image](/images/VolDist1.png)
+Volatility introduces two competing effects: upward skew and volatility drag.
+
+1.  **Upward Volatility Skew:** A stock can only go down by 100% (to 0), but it can go up by more than 100%. Imagine a coin flip: heads = +50%, tails = -50%. Starting with 100 dollars:
+    -   Heads, then tails: 100 dollars → 150 dollars → 75 dollars (a loss of 25 dollars)
+    -   Tails, then heads: 100 dollars → 50 dollars → 75 dollars (a loss of 25 dollars)
+    
+    However, the potential for huge gains on the upside (e.g., multiple heads in a row) outweighs the limited downside. A very lucky outcome (100 dollars → 300 dollars) adds more to the average than a very unlucky outcome (100 dollars → 0 dollars). This creates an upward skew in the average expected price.
+
+![Alt text for the image](/images/VolDist3.png)
+
+2.  **Volatility Drag:** Despite the upward skew in the *average*, the *median* outcome is actually lower. As seen in the coin flip example, symmetrical percentage gains and losses result in a net loss (1.5 × 0.5 = 0.75). This is because losses compound on a larger principal and gains on a smaller one. Over many "flips," this drag pulls the most likely outcome down.
+
+![Alt text for the image](/images/CoinFlips.png)
+---
+
+## d₁ vs. d₂: The Full Picture
+
+Black-Scholes accounts for both effects.
+-   d₁ includes the optimistic **upward volatility skew** by **adding** the volatility term: (r + **σ²/2**)T.
+-   d₂ accounts for the more realistic outcome by removing the full effect of that skew, which relates to **volatility drag**.
+
+The formula for d₂ is simply d₁ - σ√T. Substituting the formula for d₁ gives:
+$$
+d_2 = \frac{\ln\left(\frac{S}{K}\right) + \left(r + \frac{\sigma^2}{2}\right)T}{\sigma \sqrt{T}} - \sigma \sqrt{T}
+$$
+$$
+d_2 = \frac{\ln\left(\frac{S}{K}\right) + \left(r - \frac{\sigma^2}{2}\right)T}{\sigma \sqrt{T}}
+$$
+## The Role of N(d₁) and N(d₂)
+
+It's best to think of the Black-Scholes formula as a balance between an expected gain and an expected cost. 
+
+* **$N(d_2)$** is the direct **probability that your option will finish in-the-money**. This is why it's multiplied by the strike price ($K$), as it represents the chance you'll actually have to pay the strike to exercise the option.
+
+* **$N(d_1)$** is more complex. It's the option's **Delta**, which tells you how much the option's price should move for every dollar change in the stock price. The entire first term, **$S_0 N(d_1)$**, represents the expected value of receiving the stock if the option finishes in the money.
+
+So the formula **$C = S_0 N(d_1) - K e^{-rT} N(d_2)$** is essentially:
+**Call Price = (Expected Benefit of Owning Stock) - (Present Value of Expected Cost to Buy It)**
+
+### The Denominator: Volatility and Time (σ√T)
+
+Finally, the entire numerator is divided by σ√T. This term normalizes the "head start" by the total uncertainty. A head start is less meaningful if the stock is highly volatile or if there’s a long time to expiration, as both factors increase the range of possible outcomes.
+
+-   **For an ITM option**, higher volatility and more time are **bad**. They increase the chance that the stock will move against you and fall out-of-the-money. Therefore, dividing by a larger σ√T lowers d₁.
+-   **For an OTM option**, higher volatility and more time are **good**. They increase the chance that a large move will happen in your favor, pushing the stock into-the-money.
+
+Let's see some examples.
+
+**Case 1: Deep ITM, low vol, low DTE**
+(S=120, K=100, r=5%, σ=20%, T=1 day)
+$$
+d_1 = \frac{\ln\left(\frac{120}{100}\right) + \left(0.05 + \frac{0.20^2}{2}\right) \times \frac{1}{365}}{0.20 \sqrt{\frac{1}{365}}} \approx 17.55
+$$
+As you can see, d₁ is very high, meaning you are almost guaranteed to end up ITM.
+
+**Case 2: Same ITM option, but 1 year to expiration**
+(S=120, K=100, r=5%, σ=20%, T=1 year)
+$$
+d_1 = \frac{\ln\left(\frac{120}{100}\right) + \left(0.05 + \frac{0.20^2}{2}\right) \times 1}{0.20 \times \sqrt{1}} \approx 1.26
+$$
+As expected, the value of d₁ (and the certainty of ending ITM) is significantly less.
+
+**Case 3: OTM, low vol, low DTE**
+(S=100, K=120, r=5%, σ=10%, T=1 day)
+$$
+d_1 = \frac{\ln\left(\frac{100}{120}\right) + \left(0.05 + \frac{0.10^2}{2}\right) \cdot \frac{1}{365}}{0.10 \cdot \sqrt{\frac{1}{365}}} \approx -35.04
+$$
+The chance of finishing ITM is extremely low, which makes sense.
+
+**Case 4: Same OTM option, but 2 years to expiration**
+(S=100, K=120, r=5%, σ=10%, T=2 years)
+$$
+d_1 = \frac{\ln\left(\frac{100}{120}\right) + \left(0.05 + \frac{0.10^2}{2}\right) \cdot 2}{0.10 \cdot \sqrt{2}} \approx \frac{-0.1823 + 0.11}{0.1414} \approx -0.51
+$$
+With more time, the chances of ending ITM have increased significantly (d₁ is much closer to zero).
+
+---
+
+## Put Option Formula Breakdown
+
+Now that we understand the call formula, the put formula is easy.
+$$
+P = K e^{-rT} N(-d_2) - S_0 N(-d_1)
+$$
+When you buy calls, you hope the stock price ends up higher than the strike price, so the formula is conceptually `Stock - Strike`.
+
+When you buy puts, you hope the stock price ends up **lower** than the strike price, so the formula is conceptually `Strike - Stock`:
+$$
+K - S
+$$
+As before, the future strike price K must be discounted to its present value:
+$$
+Ke^{-rT}-S
+$$
+And again, each term is multiplied by a probability factor:
+$$
+P = K e^{-rT} N(-d_2) - S_0 N(-d_1)
+$$
+The only difference is that d₁ and d₂ are negative. This is because the probabilities are reversed. For calls, being ITM means `Stock > Strike`. For puts, being ITM means `Strike > Stock`.
+
+Using -d₁ and -d₂ calculates the probability of the stock price falling *below* a certain level, rather than rising *above* it. A high probability for a call to finish ITM implies a low probability for an equivalent put to finish ITM. If a 100-dollar strike call on a 100-dollar stock has a certain probability N(d₁) of finishing ITM, a 100-dollar strike put on the same stock has a probability of N(-d₁) of finishing ITM, where N(d₁) + N(-d₁) = 1.
+
+![Alt text for the image](/images/CallvsPutCDF.png)
+
+In the graph, you can see that a high d₁ value for calls (far right) corresponds to a high probability for the call but a very low probability for the put. Conversely, a low d₁ value (far left) means a low probability for the call but a high probability for the put. This reflects the inverse relationship between the two options.
+
+---
+
+## Key Assumptions and Limitations
+
+Like any model, Black-Scholes isn't perfect. It's built on a foundation of "ideal world" assumptions that you need to be aware of, as they explain why the model price can sometimes differ from the real-world market price.
+
+-   **European Options Only:** The formula assumes the option can only be exercised on its expiration date (European style), not at any time before (American style).
+-   **No Dividends:** The basic formula assumes the underlying stock doesn't pay any dividends. If it does, the stock price is expected to drop by the dividend amount, which would affect the option price. (More advanced versions of the model can account for this).
+-   **Constant Volatility and Interest Rates:** It assumes that volatility and the risk-free rate never change over the option's entire life. In reality, they are constantly fluctuating.
+-   **Frictionless Market:** The model assumes there are no transaction costs or taxes, and that you can borrow and lend money at the risk-free rate.
+-   **Normal Distribution of Returns:** It assumes that stock returns follow a random "bell curve" distribution. This doesn't fully account for the possibility of extreme, unexpected market crashes or spikes (so-called "fat tails").
+
+Even with these limitations, the Black-Scholes model is an incredibly powerful tool that revolutionized finance by providing a logical framework for pricing options.

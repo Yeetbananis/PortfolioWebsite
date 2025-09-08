@@ -22,14 +22,14 @@ The reason these are liquidity zones is because traders often set stop loss orde
 
 ---
 
-## Buy vs Sell side liquidity
+## Buy vs Sell side liquidity:
 
-When trying to utilize liquidity on the chart as a trader you can think of two types:
+If you were a larger market participant (someone buying or selling a very large amount of an asset), your significant order sizes may sometimes not be filled as there are either not enough buyers for what you're selling, or not enough sellers for what you're buying. This is where two distinct categories of liquidity come in:
 
-- **Buy side liquidity**: Liquidity created from buyers in the market, usually located at **highs of different times frames** (1HR, Daily, Weekly etc). If you are a buyer in the market, your take profit (sell order), is usually one of these highs, therefore when price sweeps a zone like this your order triggered and contributes to pushing price down. If you are a seller in the market, your stop loss (buy order) is usually one of these highs, therefore when price sweeps these zones you are forced to sell and your order pushes the price up.
-- **Sell side liquidity**: Liquidity created from sellers in the market, usually located at **lows of different time frames**. If you are a seller in the market, your take profit is usually the low of a certain time frame, therefore when price sweeps this low your buy order activates and you push price up. If you are a buyer in the market your stop loss is usually the low of a certain time frame, therefore when price sweeps this zone your sell order activates and you push price down.
+- Sell-Side Liquidity (SSL): Zones below recent or major lows where pending sell orders (long stop-losses, short take-profits) accumulate. These levels form pools of liquidity that larger market participants often use to execute trades. Price may react upward after absorbing these orders (large market participants can fill their buy orders with the available sell orders) but a reversal or trend shift is not automatic and requires confirmation.
+- Buy-Side Liquidity (BSL): Zones above recent or major highs where pending buy orders (short stop-losses, long take-profits) accumulate. Price may react downward after absorbing these orders (large market participants can fill their sell orders with the available buy orders) but again, a reversal is not guaranteed without confirmation.
 
-Of course a single buy or sell order doesn't significantly impact the price, however when a significant amount of traders use a similar mindset to place their orders, these zones become genuine points of interest in the chart as large quantities of orders are executed, acting as a sort of “boost” for price. Here is how various zones look like on an hourly timeframe as an example:  
+Of course a single buy or sell order doesn't significantly impact the price, however when a significant amount of traders use a similar mindset to place their orders, these zones become genuine points of interest in the chart as large quantities of orders are executed, acting as a sort of “boost” for price. Here is how various zones look like on an hourly timeframe as an example:
 
 <ImageWithFullscreen src="/images/ZonesLabels.png" alt="Hourly Liquidity Zones Labels" />
 
@@ -104,7 +104,6 @@ The Scout is a sophisticated pattern recognition model designed for deep market 
 
 <SmoothVideo
   src="/videos/support_resistance.mp4"
-  poster="/images/support_resistance_poster.png"
 />
 
 * **Explainable AI (XAI):** SHAP (SHapley Additive exPlanations) provides a "Top 5" list of features influencing each prediction, ensuring transparency.  
@@ -114,7 +113,6 @@ The Scout is a sophisticated pattern recognition model designed for deep market 
 
 <SmoothVideo
   src="/videos/optimize_training.mp4"
-  poster="/images/optimize_training_poster.png"
 />
     * **K-Fold Cross-Validation:** Five-fold CV evaluates model performance across diverse train/test splits, mitigating test-set bias and ensuring generalization.
     * **Hyperparameter Tuning:** Grid search over learning rate, batch size, and hidden layer size identifies the optimal configuration for stable, high-quality predictions.  
@@ -122,7 +120,6 @@ The Scout is a sophisticated pattern recognition model designed for deep market 
 
 <SmoothVideo
   src="/videos/kfold_validation.mp4"
-  poster="/images/kfold_validation_poster.png"
 />
 
 This combined approach ensures that the Scout not only identifies high-probability trade setups but does so consistently, with minimal randomness, producing outputs that can be reliably used by the Manager.
@@ -159,7 +156,6 @@ import SmoothVideo from '../components/SmoothVideo';
 
 <SmoothVideo
   src="/videos/demo_gbpjpy.mp4"
-  poster="/images/video_poster.png"
 />
 
 

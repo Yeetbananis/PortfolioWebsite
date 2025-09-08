@@ -1,14 +1,15 @@
+// app/projects/[slug]/page.tsx
 import { projects } from '@/data/content';
 import { generatePageMetadata } from '@/app/lib/metadata';
 import { notFound } from 'next/navigation';
-import ImageWithFullscreen from '@/app/components/ImageWithFullscreen';
-import SmoothVideo from '@/app/components/SmoothVideo'; // <-- add this
 import Image from 'next/image';
 import { compileMDX } from 'next-mdx-remote/rsc';
 import path from 'path';
 import fs from 'fs/promises';
 import AnimatedWords from '@/app/components/AnimatedWords';
 import AnimatedBlock from '@/app/components/AnimatedBlock';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 type PageProps = {
   params: { slug: string };
@@ -45,11 +46,15 @@ export default async function ProjectPage({ params }: PageProps) {
 
   const { content } = await compileMDX({
     source: mdxSource,
-    options: { parseFrontmatter: false },
-    components: {
-      ImageWithFullscreen,
-      SmoothVideo, // <-- now MDX knows about it
+    options: {
+      parseFrontmatter: false,
+      mdxOptions: {
+        remarkPlugins: [remarkMath],
+        rehypePlugins: [rehypeKatex],
+      },
     },
+    // We will add custom components here in a future step
+    components: {},
   });
 
   return (

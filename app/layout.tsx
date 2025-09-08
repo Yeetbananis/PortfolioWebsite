@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import "katex/dist/katex.min.css";
 import ParticleBackground from "./components/ParticleBackground";
 import PageTransition from "./components/PageTransition";
 import siteConfig from '@/site.config.js';
