@@ -13,3 +13,14 @@ body {
   background-color: var(--color-background);
   color: var(--color-text);
 }
+
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}

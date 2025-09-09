@@ -19,6 +19,7 @@
     "gsap": "^3.12.5",
     "katex": "^0.16.22",
     "lucide-react": "^0.542.0",
+    "matter-js": "^0.20.0",
     "next": "^14.2.32",
     "next-mdx-remote": "^5.0.0",
     "react": "^18",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
+    "@types/matter-js": "^0.20.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

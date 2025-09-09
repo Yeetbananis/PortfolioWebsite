@@ -3,10 +3,19 @@
 
 import ProjectCard from "./ProjectCard";
 import AnimatedWords from "./AnimatedWords";
+import TypingAnimator from "./TypingAnimator";
+import BouncingDotName from "./BouncingDotName"; // 1. Import the new component
 import { motion } from "framer-motion";
-import { projects } from "@/data/content";
 
 export default function ProjectsPageContent({ projects }: { projects: any[] }) {
+
+  const occupations = [
+    "Quantitative Trader",
+    "Software Developer",
+    "Coding Enthusiast",
+    "Problem Solver",
+  ];
+
   return (
     <motion.div
       className="container mx-auto max-w-5xl px-4"
@@ -15,11 +24,17 @@ export default function ProjectsPageContent({ projects }: { projects: any[] }) {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <section className="py-32 text-center">
-        <h1 className="text-5xl font-bold md:text-7xl">
-          <AnimatedWords text="Tim Generalov" />
-        </h1>
+        {/* 2. Replace the old h1 with a div to center the new component */}
+        <div className="flex justify-center items-center h-[150px]">
+          <BouncingDotName />
+        </div>
+        
         <p className="mt-4 text-xl text-text-secondary">
-          <AnimatedWords text="Quantitative Trader" delay={0.1} />
+          <TypingAnimator
+            words={occupations}
+            pauseDuration={5000}
+            className="font-medium"
+          />
         </p>
       </section>
 
