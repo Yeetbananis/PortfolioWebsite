@@ -64,10 +64,10 @@ For example, you have a stock trading at **\$100**, and an option call contract 
 If the stock makes a **\$20 move up** and every other variable stays the same, you can expect a gain of:
 
 $$
-0.75 \times 20 = 15
+0.75 \times 20 = \$15
 $$
 
-in your options contract. New option value = \( 15 + 13 = 28 \).  
+in your options contract. New option value = \( \$15 + \$13 = \$28 \).  
 
 - For **calls**, delta is **positive** as their price changes positively with the stock (range: 0 → 1), since an option can never gain more value than a stock simply from a dollar move.  
 - For **puts**, delta is **negative** because for every \$1 move up a put contract should lose value (you’re predicting a downward move), and for every \$1 move down a put should gain value (range: -1 → 0).  
@@ -97,15 +97,14 @@ You may notice a few interesting things here:
 
 2. **Why subtract 1 for puts?**  
    - A call gaining value by a certain amount corresponds to a put losing that same amount in a proportional way.  
-   - Example: A call with delta 84 means an equal put has \( 84 - 100 = -16 \) delta, losing 16 cents of value per the same dollar move up.  
+   - Example: A call with delta 84 means a put with all the same parameters (strike, time to expiry etc) has \( 84 - 100 = -16 \) delta, losing 16 cents of value per the same dollar move up.  
 
 3. **Delta representation.**  
-   - Delta is often quoted in whole numbers: e.g., “84 delta” instead of 0.84.  
-   - Because each option contract covers 100 shares, \( 0.84 \times 100 = 84 \) delta.  
+   - Delta is often quoted in whole numbers: e.g., “84 delta” instead of 0.84, because each option contract covers 100 shares, \( 0.84 * 100 = 84 \) delta.  
 
 4. **Stock delta.**  
    - A single share of stock has a delta of 1, since it moves 1:1 with itself.  
-   - This fact is crucial in hedging, where traders balance option deltas against stock positions to achieve delta-neutral portfolios.  
+   - This fact is crucial in hedging, where traders balance option deltas against stock positions to achieve delta-neutral portfolios (covered in "advanced risks" page). 
 
 ---
 
@@ -261,6 +260,21 @@ $$
 
 <ImageWithFullscreen src="/images/VolSenseMoneynessGraph.png" alt="Volatility sensitivity across moneyness" />
 
+### Interpretation of Shaded Regions
+
+- **Blue (centered around 0, ATM)**  
+  At-the-money options \(d1 approx 0\) sit at the **peak** of \(N'(d1)\).  
+  This is where **Vega is highest**, because small changes in volatility have the largest impact on an option’s price.  
+
+- **Red (far left, deep OTM puts or deep ITM calls)**  
+  For very negative \(d1\), the PDF is small → **Vega is low**.  
+  These options are already basically certain to expire ITM or worthless, so volatility doesn’t change their value much.  
+
+- **Green (far right, deep ITM puts or deep OTM calls)**  
+  Similarly, for very positive \(d1\), the PDF is small → **Vega is low**.  
+  Again, volatility doesn’t matter much because payoff is already almost fully locked in.
+
+
 ---
 
 
@@ -299,7 +313,7 @@ We can see this in the graph below:
   - For puts: the discount effect of receiving money in the future shrinks over time, so the negative effect decreases
 
 - Examples:
-  - Call: \$100 at 5% becomes \$105 in a year. Each passing day reduces time left to earn this extra \$5 → faster decay
+  - Call: \$100 at 5% risk free rate becomes \$105 in a year. Each passing day reduces time left to earn this extra \$5 → faster decay
   - Put: \$100 expected in a year is worth \$95.24 today. As time passes, discount shrinks → slower decay
 
 ### Theta Formulas
