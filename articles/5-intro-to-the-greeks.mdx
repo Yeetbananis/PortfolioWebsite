@@ -1,1 +1,400 @@
-Coming soon
+# Greeks
+
+Options brokers usually display, or you can personally calculate, “Greeks.” These are a variety of Greek symbols with numbers that may seem confusing at first, but they are your dashboard for risk. Every Greek is basically a derivative, a movement in your option price with respect to a variable, usually one that’s useful to know, and answers the question: “how fast does my option value change with respect to ___?” (how fast does your option value change over time? how fast does it change compared to a dollar move in the stock?). These are really useful to know because a huge part of options is calculating the exact type of risk you take when you buy an option as well as the exact amount of risk you take, and not assessing this risk can result in devastating losses out of the blue. Let’s see an example:
+
+Bob just found out about options. He knows the simple ideas but didn’t read about Greeks because “who cares about all that boring stuff.” Nvidia is releasing earnings tomorrow, currently trading at \$1000 USD. Bob thinks Nvidia is going to beat earnings again and jump to \$1075 USD. He buys a 5 percent OTM call option (\$1050 strike) expiring in 2 months. Let’s do some mathematics:
+
+$$
+d_1 = \frac{\ln\left(\frac{1000}{1050}\right) + \left(0.05 + \frac{0.8^2}{2}\right) \times 0.1667}{0.8 \sqrt{0.1667}}= \frac{-0.0488 + \left(0.05 + 0.32\right) \times 0.1667}{0.8 \times 0.4082}= \frac{-0.0488 + 0.0618}{0.3266} = 0.0398
+$$
+
+$$
+d_2 = d_1 - \sigma \sqrt{T} = 0.0398 - 0.8 \times 0.4082 = 0.0398 - 0.3266 = -0.2868
+$$
+
+$$
+C = 1000 \cdot N(0.0398) - 1050 \cdot e^{-0.05 \times 0.1667} \cdot N(-0.2868) \approx 1000 \cdot 0.5159 - 1050 \cdot 0.9917 \cdot 0.3861 = 515.9 - 402.1 = 113.8 
+$$
+
+113.8 USD. Bob is confident in his prediction, and since options come in lots of 100 shares per contract, he buys one contract worth: 1 contract × 100 shares × 113.8 premium per share = 11,380 USD. Nvidia only goes up these days, so this is probably just free money right? Bob sleeps overnight, he sleeps well. He wakes up and gets a notification, Nvidia did indeed beat earnings. In fact, the price exceeded his expectations and it’s currently trading at \$1100 USD. Bob is feeling like Warren Buffett. He opens his trading app and the Lamborghini website in two side-by-side tabs but sees he’s down 4233 USD. What happened? Not only did the stock move in his direction, it moved past his expectations. He checks the 24-hour change graph and sees everything is up except a 60 percent drop in implied volatility. Looks like we found our culprit. Let’s see how this played out by first looking at what Bob expected and what would’ve happened if everything went how he wanted (1100 price instead of 1000 price before):
+
+$$
+d_1 = \frac{\ln\left(\frac{\color{orange}{\mathbf{1100}}}{1050}\right) + \left(0.05 + \frac{0.8^2}{2}\right) \times 0.1611}{0.8 \sqrt{0.1611}}= \frac{0.0465 + \left(0.05 + 0.32\right) \times 0.1611}{0.8 \times 0.4013}= \frac{0.0465 + 0.0618}{0.3210} = 0.3388
+$$
+
+$$
+d_2 = d_1 - \sigma \sqrt{T} = 0.3388 - 0.8 \times 0.4013 = 0.3388 - 0.3210 = 0.0178
+$$
+
+$$
+C = \color{orange}{\mathbf{1100}} \cdot N(0.3388) \color{white}- 1050 \cdot e^{-0.05 \times 0.1611} \cdot \color{orange}N(0.0178) 
+\approx \color{orange}{\mathbf{1100}} \cdot 0.6331 \color{white}- 1050 \cdot 0.9920 \cdot \color{orange} 0.5071 
+= 696.41 - 528.45 = 167.96
+$$
+
+If everything went as expected, Bob would’ve made 100 × 167.96 = 16,796 - 11,380 = 5416 USD.
+
+However, volatility did not stay the same. It dropped from 80 percent to 20 percent:
+
+$$
+d_1 = \frac{\ln\left(\frac{\color{orange}{\mathbf{1100}}}{1050}\right) + \left(0.05 + \frac{\color{purple}{\mathbf{0.2^2}}}{2}\right) \times 0.1611}{\color{purple}{\mathbf{0.2}} \sqrt{0.1611}}= \frac{0.0465 + \left(0.05 + \color{purple}{\mathbf{0.02}}\right) \times 0.1611}{\color{purple}{\mathbf{0.2}} \times 0.4013}= \frac{0.0465 + 0.0113}{0.0803} = 0.7162
+$$
+
+$$
+d_2 = d_1 - \color{purple}{\mathbf{0.2}} \sqrt{0.1611} = 0.7162 - \color{purple}{\mathbf{0.2}} \times 0.4013 = 0.7162 - 0.0803 = 0.6352
+$$
+
+$$
+C = \color{orange}{\mathbf{1100}} \cdot \color{purple}{\mathbf{N(0.7162)}} - 1050 \cdot e^{-0.05 \times 0.1611} \cdot \color{purple}{\mathbf{N(0.6352)}} 
+\approx \color{orange}{\mathbf{1100}} \cdot \color{purple}{\mathbf{0.7631}} - 1050 \cdot 0.9920 \cdot \color{purple}{\mathbf{0.7373}} 
+= 839.41 - 767.94 = 71.47
+$$
+
+Now we can see that although the price moved in his favor, the option value changed from \$113.8 to \$71.47, meaning he lost (113.8 - 71.47) × 100 = \$4233. This is a common phenomenon and is referred to as the **IV crush,** which happens because the market usually overprices options leading up to earnings as everyone expects major moves in the stock. After earnings release, and when the actual movements of the stock aren’t as large as predicted, implied volatility drops greatly and options lose a ton of value. If a stock’s movement in price doesn’t outdo the stock’s drop in implied volatility (the price moves up but not as much as the market expected), the IV drop brings down the option’s value. This risk is modeled with the Greek Vega, corresponding to how much an option value changes per a percent move in IV. An easy way to prevent this is to first check how sensitive your option is to IV using Vega. However, if you don’t have an understanding of what’s sensitive or not, you can simply compare it to another Greek called Delta, which measures the change in option price with every dollar move in the stock. If Vega > Delta, your option value is more sensitive to volatility than stock price movement and you are exposed to an IV crush risk, and if Vega < Delta you should be more safe but still need more judgment.
+
+Given that example, we can now look at every type of Greek to get an understanding of what types of risks to look out for, starting with first order Greeks (first derivatives):
+
+---
+
+## Delta (If the stock goes up a dollar, by how much does my option value increase?)
+
+The delta (**Δ**) of an option is the change in option value in dollars per \$1 change in the underlying (stock). An option with a delta of 0.5 goes up 50 cents in value for every dollar move in a stock.  
+
+For example, you have a stock trading at **\$100**, and an option call contract priced at **\$13** with a delta of **0.75**.  
+If the stock makes a **\$20 move up** and every other variable stays the same, you can expect a gain of:
+
+$$
+0.75 \times 20 = 15
+$$
+
+in your options contract. New option value = \( 15 + 13 = 28 \).  
+
+- For **calls**, delta is **positive** as their price changes positively with the stock (range: 0 → 1), since an option can never gain more value than a stock simply from a dollar move.  
+- For **puts**, delta is **negative** because for every \$1 move up a put contract should lose value (you’re predicting a downward move), and for every \$1 move down a put should gain value (range: -1 → 0).  
+
+---
+
+### Calls and Puts Formula
+
+$$
+\Delta_c = N(d_1)
+$$
+
+$$
+\Delta_p = N(d_1) - 1
+$$
+
+---
+
+### Interpretation
+
+You may notice a few interesting things here:  
+
+1. **Delta equals \( N(d_1) \) from Black–Scholes.**  
+   - This makes sense because \( N(d_1) \) is a measure of how likely your option is to end up in the money.  
+   - The more a call tracks the movements of a stock (higher delta), the more likely it is to end up ITM.  
+   - You can loosely think of delta as “the probability of expiring ITM,” though time to expiration and volatility make this not fully accurate.  
+
+2. **Why subtract 1 for puts?**  
+   - A call gaining value by a certain amount corresponds to a put losing that same amount in a proportional way.  
+   - Example: A call with delta 84 means an equal put has \( 84 - 100 = -16 \) delta, losing 16 cents of value per the same dollar move up.  
+
+3. **Delta representation.**  
+   - Delta is often quoted in whole numbers: e.g., “84 delta” instead of 0.84.  
+   - Because each option contract covers 100 shares, \( 0.84 \times 100 = 84 \) delta.  
+
+4. **Stock delta.**  
+   - A single share of stock has a delta of 1, since it moves 1:1 with itself.  
+   - This fact is crucial in hedging, where traders balance option deltas against stock positions to achieve delta-neutral portfolios.  
+
+---
+
+### Delta Behavior by Option Type
+
+<ImageWithFullscreen src="/images/DeltaCallPutGraph.png" alt="Delta across moneyness for calls and puts" />
+
+**Call Options**  
+- **Deep in the money:** Delta is highest (close to 1). The option most closely represents the stock and may move nearly dollar-for-dollar.  
+- **Deep out of the money:** Delta is lowest (close to 0). The option has little intrinsic value and hardly reacts to stock movement.  
+- **At the money:** Delta ≈ 0.5. Probability of ending ITM is ~50%. This region has the **steepest delta curve**, meaning stock moves here cause the largest swings in delta.  
+
+**Put Options**  
+- **Deep in the money:** Delta is lowest (most negative). The option moves nearly dollar-for-dollar opposite to the stock.  
+- **Deep out of the money:** Delta is highest (near 0). The option barely reacts to stock price movement.  
+- **At the money:** Delta ≈ -0.5. Same reasoning as calls.  
+
+---
+
+### Note on Formulas
+
+You do **not** need to memorize these formulas directly. They are derived from Black–Scholes, and you can find the same numbers by comparing how Black–Scholes option prices change when you adjust variables.  
+
+---
+
+### Worked Example with Black–Scholes
+
+**Inputs:**
+- Stock price: 100  
+- Strike: 100  
+- Time to expiration: 1 year  
+- Interest rate: 5%  
+- Volatility: 20%  
+
+**Price at stock = $100:**
+
+$$
+d_1 = \frac{\ln(100 / 100) + \left(0.05 + \tfrac{1}{2} \cdot 0.2^2\right) \cdot 1}{0.2 \cdot \sqrt{1}} = \frac{0 + 0.07}{0.2} = 0.35
+$$
+
+$$
+d_2 = d_1 - 0.2 = 0.15
+$$
+
+$$
+C = 100 \cdot N(0.35) - 100 \cdot e^{-0.05} \cdot N(0.15)
+$$
+
+$$
+N(0.35) \approx \color{red}{0.6368}, \quad N(0.15) \approx 0.5596, \quad e^{-0.05} \approx 0.9512
+$$
+
+$$
+C = 100 \cdot 0.6368 - 100 \cdot 0.9512 \cdot 0.5596 = 63.68 - 53.21 = \color{green}{10.47}
+$$
+
+---
+
+**Price when stock = $101:**
+
+$$
+d_1 = \frac{\ln(101 / 100) + \left(0.05 + \tfrac{1}{2} \cdot 0.2^2\right)}{0.2} = \frac{0.00995 + 0.07}{0.2} = 0.39975
+$$
+
+$$
+d_2 = d_1 - 0.2 = 0.19975
+$$
+
+$$
+C = 101 \cdot N(0.39975) - 100 \cdot e^{-0.05} \cdot N(0.19975)
+$$
+
+$$
+N(0.39975) \approx \color{yellow}{0.6555}, \quad N(0.19975) \approx 0.5791
+$$
+
+$$
+C = 101 \cdot 0.6555 - 100 \cdot 0.9512 \cdot 0.5791 = 66.21 - 55.10 = \color{green}{11.11}
+$$
+
+---
+
+**Delta from Difference:**
+
+$$
+\Delta \approx \frac{11.11 - 10.47}{1} = 0.64
+$$
+
+**Delta from Formula:**
+
+$$
+\Delta = N(d_1) = N(0.35) = \color{red}{0.6368}
+$$
+
+---
+
+### Final Note
+
+The two methods are nearly identical.  
+- Numerical (difference in price) gives an approximation.  
+- Analytical (formula) is exact, since it takes the **limit as stock change → 0**:  
+
+$$
+\Delta = \lim_{\Delta S \to 0} \frac{V(S + \Delta S) - V(S)}{\Delta S}
+$$
+
+This applies to **all Greeks**, since they are simply changes in option value as you vary input parameters. You can get accurate estimates from Black–Scholes itself.
+
+## Vega (If Implied volatility goes up 1 percent, by how much does my option value increase?)
+
+The Vega of an option is the option’s price sensitivity with respect to **implied volatility**. A Vega of 0.5 means for each 1 percent move up in implied volatility, the option gains 50 cents of value, and for each 1 percent move down in implied volatility the option loses 50 cents in value. 
+
+For example, considering all other factors stay the same, if a call option trading at $105 with a Vega of 0.5 and implied volatility of 200 percent experienced a drop of implied volatility of 100 percent (new implied vol is 100 percent), the option would lose:
+
+$$
+0.5 \times 100 = 50
+$$  
+
+in value → new option value = \( 105 - 50 = 55 \).  
+
+As mentioned before, volatility can have a huge effect on options pricing (overestimated IV = overpriced options, underestimated IV = underpriced options), and with high Vega you are vulnerable to an IV crush.  
+
+---
+
+### Vega Formula
+
+
+$$
+\text{Vega} = S_0 \sqrt{\mathrm{T}} \, N'(d_1)
+$$
+
+$$
+N'(d_1) = \frac{1}{\sqrt{2\pi}} e^{-\frac{d_1^2}{2}}
+$$
+
+
+---
+
+### Breaking It Down
+
+- **Stock price term (\(S_0\))**  
+  This is there because higher stock prices mean a higher dollar impact from a volatility change.  
+  - Example: if implied volatility was 100 percent for a \$20 stock (±\$20), and it dropped to 50 percent, the range would drop to ±\$10 (a \$10 drop).  
+  - If the stock price was \$100 and implied volatility went from 100 percent to 50 percent, the range would drop \$50.  
+  - This difference in dollar move size directly affects option prices, and Vega adjusts for it.  
+
+- **Square root of time ($\sqrt{\mathrm{T}}$)**
+  Vega increases with time because an option further from expiry is more affected by volatility than one close to expiry. Since implied volatility is annualized, an IV of 70 percent is more likely to result in a 70 percent move over a year than in a single day (stocks don’t usually move 70 percent in a day).  
+
+- **\(N’(d_1)\)**  
+  This is just like \(N(d_1)\) except the prime cancels out the integral (derivatives cancel integrals). That means it isn’t a cumulative distribution function (CDF), it’s just a probability density function (PDF).  
+  Instead of adding every value up to a point, it just pulls the specific values, which are modeled by a bell curve:  
+
+<ImageWithFullscreen src="/images/VolSenseMoneynessGraph.png" alt="Volatility sensitivity across moneyness" />
+
+---
+
+
+## Theta (Every day that passes, how much value does my option lose)
+
+The Theta (**θ**) of an option, also referred to as **time decay**, is the sensitivity of the option price with respect to time. For buying options, theta is always negative, and this makes sense because as time passes your option has less chance of being in the money:
+
+- Less time for volatility to push the option ITM
+- Less time for the stock to move
+
+A Theta of -0.1 means for every day that passes your option loses 10 cents of value.
+- Example: if you had an option contract worth $10 with a Theta of 0.1, and all else remained the same, with 10 days passing your option would be worth:
+  $$
+  10 - 0.1 \times 10 = 9
+  $$
+
+Theta does not move linearly. Its speed or erosion increases as you approach expiration because:
+
+- The majority of an option’s extrinsic value is made up of **time value**
+- As you approach expiration, the probability that factors will push the option ITM decreases
+- This increases time decay and reduces extrinsic value faster
+
+We can see this in the graph below:
+
+
+<ImageWithFullscreen src="/images/ThetaDecayTimeGraph.png" alt="Theta Decay across time" />
+
+### Call vs Put Theta and Interest Rates
+
+- Call theta is slightly larger in magnitude than put theta and erodes faster because of interest rates:
+  - A call benefits from higher interest rates because holding cash until buying the stock earns interest
+  - A put gives you the right to sell a stock in the future; money received in the future is worth less today
+
+- How this relates to theta:
+  - For calls: each passing day **reduces** the potential interest you can earn, making theta more negative
+  - For puts: the discount effect of receiving money in the future shrinks over time, so the negative effect decreases
+
+- Examples:
+  - Call: \$100 at 5% becomes \$105 in a year. Each passing day reduces time left to earn this extra \$5 → faster decay
+  - Put: \$100 expected in a year is worth \$95.24 today. As time passes, discount shrinks → slower decay
+
+### Theta Formulas
+
+This idea is captured in the full formulas for calls and puts:
+
+$$
+\Theta_c = -\frac{S_{0} N'(d_1) \sigma}{2 \sqrt{\mathrm{T}}} - \mathrm{r} \, \mathrm{K} \, e^{ - \mathrm{r} \, \mathrm{T} } N(d_2)
+$$
+
+$$
+\Theta_p = -\frac{S_{0} N'(d_1) \sigma}{2 \sqrt{\mathrm{T}}} + \mathrm{r} \, \mathrm{K} \, e^{ - \mathrm{r} \, \mathrm{T} } N(-d_2)
+$$
+
+### Breaking Down the Formula
+
+- **$-\frac{S_{0} N'(d_1) \sigma}{2 \sqrt{\mathrm{T}}}$**
+  - Higher stock prices → larger dollar change → higher sensitivity to time decay
+  - Higher volatility → more time value → higher magnitude of decay
+  - $1 / (2\sqrt{\mathrm{T}})$ → options closer to expiration decay faster
+
+- **Interest term ($\pm \mathrm{r} \, \mathrm{K} \, e^{ - \mathrm{r} \, \mathrm{T} } N(\pm d_2)$)**
+  - Shows effect of earning interest (calls) or shrinking discount (puts) over time
+
+### Example: Effect of Time to Expiration
+
+- 1 day to expiration:
+  $$
+  \frac{1}{2 \sqrt{\frac{1}{365}}} \approx 9.13
+  $$
+  → Large negative theta, fast decay per day
+
+- 6 months to expiration:
+  $$
+  \frac{1}{2 \sqrt{0.5}} \approx 0.71
+  $$
+  → Smaller theta, slower decay
+
+Theta captures how the option loses value with each passing day, incorporating both volatility and interest effects.
+
+---
+
+## Rho (If Interest rates increase by 1 percent, how much value does my option gain?)
+
+The Rho of an option is the sensitivity of the option’s price to interest rate changes (changes in the risk-free rate).  
+
+- A Rho of 0.2 means that if the risk-free rate increases from 5% to 6%, the option price will go up 20 cents.  
+- It is important to understand Rho to fully model all types of risk.  
+
+### Formulas
+
+$$
+\rho_c = \mathrm{K} \, \mathrm{T} \, e^{ - \mathrm{r} \, \mathrm{T} } N(d_2)
+$$
+
+$$
+\rho_p = - \mathrm{K} \, \mathrm{T} \, e^{ - \mathrm{r} \, \mathrm{T} } N(-d_2)
+$$
+
+### Breaking Down the Formula
+
+- **K (Strike Price):**  
+  - Larger strike → larger Rho  
+  - Example: \$150 strike vs \$100 strike at 5% interest:  
+    - \$150 × 1.05 = 157.5  
+    - \$100 × 1.05 = 105  
+    - \$7.5 interest vs \$5 interest → more sensitive to interest rate changes  
+
+- **T (Time to Expiration):**  
+  - Longer time → more time for interest to compound  
+  - Option price more sensitive to rate changes  
+  - Example: \$100 over 1 year makes more interest than \$100 over a day  
+
+- **$e^{ - \mathrm{r} \, \mathrm{T} }$ term:**
+  - Discounts future cash to today’s value 
+  - Ensures present value of future strike is considered  
+
+- **N(d2) for calls / N(-d2) for puts:**  
+  - Calls: positive because holding cash benefits from higher interest  
+  - Puts: negative because receiving cash in the future loses value as rates increase  
+  - Reflects probability of expiring ITM → higher likelihood of realizing interest effect  
+
+### How Rho Varies by Option Moneyness
+
+- Deep ITM calls: high positive Rho → likely to expire ITM, realize profits from rate changes  
+- Deep OTM calls: near zero Rho → low chance to expire ITM, minimal impact from rates  
+- Deep ITM puts: high negative Rho → likely to expire ITM, harmed by higher rates  
+- Deep OTM puts: near zero Rho → low chance to expire ITM, minimal impact  
+- ATM puts and calls: roughly ±50, because probability of expiring ITM is uncertain  
+
+
+<ImageWithFullscreen src="/images/RhoMoneynessGraph.png" alt="Rho across moneyness" />
+
+Rho shows how sensitive your option is to changes in interest rates, which can have subtle but important effects on pricing, especially for long-dated options.
+
+---
+
+That's it for first-order Greeks. The next step is looking at higher-order Greeks to see **how risky your risk really is.**

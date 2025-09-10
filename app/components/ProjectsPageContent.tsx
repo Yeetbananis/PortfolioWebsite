@@ -11,9 +11,9 @@ export default function ProjectsPageContent({ projects }: { projects: any[] }) {
 
   const occupations = [
     "Quantitative Trader",
-    "Software Developer",
     "Coding Enthusiast",
     "Problem Solver",
+    "Mountain Explorer",
   ];
 
   return (
