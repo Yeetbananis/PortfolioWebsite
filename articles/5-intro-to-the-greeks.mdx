@@ -1,4 +1,15 @@
-# Greeks
+### Article Contents
+
+**Introduction & The IV Crush**
+- [Why Greeks Matter](#greeks) - *A real-world example of risk.*
+
+**The First-Order Greeks**
+- [Delta](#delta) - *Sensitivity to Stock Price*
+- [Vega](#vega) - *Sensitivity to Volatility*
+- [Theta](#theta) - *Sensitivity to Time Decay*
+- [Rho](#rho) - *Sensitivity to Interest Rates*
+
+<h1 id="greeks">Greeks</h1>
 
 Options brokers usually display, or you can personally calculate, “Greeks.” These are a variety of Greek symbols with numbers that may seem confusing at first, but they are your dashboard for risk. Every Greek is basically a derivative, a movement in your option price with respect to a variable, usually one that’s useful to know, and answers the question: “how fast does my option value change with respect to ___?” (how fast does your option value change over time? how fast does it change compared to a dollar move in the stock?). These are really useful to know because a huge part of options is calculating the exact type of risk you take when you buy an option as well as the exact amount of risk you take, and not assessing this risk can result in devastating losses out of the blue. Let’s see an example:
 
@@ -56,7 +67,7 @@ Given that example, we can now look at every type of Greek to get an understandi
 
 ---
 
-## Delta (If the stock goes up a dollar, by how much does my option value increase?)
+<h2 id="delta">Delta (If the stock goes up a dollar, by how much does my option value increase?)</h2>
 
 The delta (**Δ**) of an option is the change in option value in dollars per \$1 change in the underlying (stock). An option with a delta of 0.5 goes up 50 cents in value for every dollar move in a stock.  
 
@@ -213,7 +224,7 @@ $$
 
 This applies to **all Greeks**, since they are simply changes in option value as you vary input parameters. You can get accurate estimates from Black–Scholes itself.
 
-## Vega (If Implied volatility goes up 1 percent, by how much does my option value increase?)
+<h2 id="vega">Vega (If Implied volatility goes up 1 percent, by how much does my option value increase?)</h2>
 
 The Vega of an option is the option’s price sensitivity with respect to **implied volatility**. A Vega of 0.5 means for each 1 percent move up in implied volatility, the option gains 50 cents of value, and for each 1 percent move down in implied volatility the option loses 50 cents in value. 
 
@@ -278,7 +289,7 @@ $$
 ---
 
 
-## Theta (Every day that passes, how much value does my option lose)
+<h2 id="theta">Theta (Every day that passes, how much value does my option lose)</h2>
 
 The Theta (**θ**) of an option, also referred to as **time decay**, is the sensitivity of the option price with respect to time. For buying options, theta is always negative, and this makes sense because as time passes your option has less chance of being in the money:
 
@@ -356,7 +367,7 @@ Theta captures how the option loses value with each passing day, incorporating b
 
 ---
 
-## Rho (If Interest rates increase by 1 percent, how much value does my option gain?)
+<h2 id="rho">Rho (If Interest rates increase by 1 percent, how much value does my option gain?)</h2>
 
 The Rho of an option is the sensitivity of the option’s price to interest rate changes (changes in the risk-free rate).  
 

@@ -1,3 +1,17 @@
+### Article Contents
+
+**The Core Formula**
+- [Key Components Explained](#key-components) - *Understanding r, e⁻ʳᵀ, and N(x)*
+- [Put Option Formula Breakdown](#put-option-formula)
+
+**Breaking Down the 'd' Variables**
+- [The d₁ Formula](#breaking-down-d1) - *What d₁ represents*
+- [d₁ vs. d₂: The Full Picture](#d1-vs-d2) - *Comparing the two variables*
+- [The Role of N(d₁) and N(d₂)](#role-of-n) - *Delta vs. Probability*
+
+**Model Considerations**
+- [Key Assumptions and Limitations](#assumptions-and-limitations)
+
 ## The Black-Scholes Model: A Complete Breakdown
 
 The **Black-Scholes model** is a mathematical formula that gives a theoretical price for options contracts. It's one of the most important concepts in modern finance because it was the first widely used model to fairly price an option, taking into account all the key variables like stock price, time, and volatility. Here is the formula:
@@ -54,7 +68,7 @@ Now there are a few things to clear up: How is the probability of a stock hittin
 
 ---
 
-## Key Components Explained
+<h2 id="key-components">Key Components Explained</h2>
 
 ### The Risk-Free Rate (r) and Time Value of Money (e⁻ʳᵀ)
 
@@ -103,7 +117,7 @@ Imagine predicting the chance of a runner finishing a race on time. You don’t 
 
 ---
 
-## Breaking Down d₁
+<h2 id="breaking-down-d1">Breaking Down d₁</h2>
 
 ### The d₁ Formula
 
@@ -146,7 +160,12 @@ $$
 The volatility term, σ²/2, is a bit more complicated.
 
 #### Volatility (σ)
-**Volatility** is a measure (in percent) of how much a stock's returns are expected to fluctuate over a year. If a stock has 50% **implied volatility**, the market expects its returns to fall within ±50% of its average return about 68% of the time (one standard deviation).
+There are two types of volatility in options:
+
+**Realized volatility,** which is the historic volatility (from the past) that a stock has already gone through, so what has happened not what will happen, measured in standard deviations as well.
+
+**Implied volatility,** which is the market’s expectation of how much a stock’s price returns will fluctuate over a certain period, usually a year. It doesn’t tell you the direction (up or down), just the size of the expected moves. For example, if a stock has 50% implied volatility, the market expects the stock’s returns to fall within ±50% of the average return over the next year about 68% of the time (one standard deviation in a normal distribution). This also means that about 32% of the time the stock’s returns are expected to end up outside this ±50% range.
+
 ![Alt text for the image](/images/VolDist1.png)
 Volatility introduces two competing effects: upward skew and volatility drag.
 
@@ -163,7 +182,7 @@ Volatility introduces two competing effects: upward skew and volatility drag.
 ![Alt text for the image](/images/CoinFlips.png)
 ---
 
-## d₁ vs. d₂: The Full Picture
+<h2 id="d1-vs-d2">d₁ vs. d₂: The Full Picture</h2>
 
 Black-Scholes accounts for both effects.
 -   d₁ includes the optimistic **upward volatility skew** by **adding** the volatility term: (r + **σ²/2**)T.
@@ -176,7 +195,7 @@ $$
 $$
 d_2 = \frac{\ln\left(\frac{S}{K}\right) + \left(r - \frac{\sigma^2}{2}\right)T}{\sigma \sqrt{T}}
 $$
-## The Role of N(d₁) and N(d₂)
+<h2 id="role-of-n">The Role of N(d₁) and N(d₂)</h2>
 
 It's best to think of the Black-Scholes formula as a balance between an expected gain and an expected cost. 
 
@@ -226,7 +245,7 @@ With more time, the chances of ending ITM have increased significantly (d₁ is 
 
 ---
 
-## Put Option Formula Breakdown
+<h2 id="put-option-formula">Put Option Formula Breakdown</h2>
 
 Now that we understand the call formula, the put formula is easy.
 $$
@@ -256,7 +275,7 @@ In the graph, you can see that a high d₁ value for calls (far right) correspon
 
 ---
 
-## Key Assumptions and Limitations
+<h2 id="put-option-formula">Put Option Formula Breakdown</h2>
 
 Like any model, Black-Scholes isn't perfect. It's built on a foundation of "ideal world" assumptions that you need to be aware of, as they explain why the model price can sometimes differ from the real-world market price.
 

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Price Distributions</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 20px;
+      background-color: #1a202c; /* Dark background */
+      color: #e2e8f0; /* Light text */
+    }
+    .chart-container {
+      width: 90%;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #2d3748; /* Slightly lighter container */
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    }
+    canvas {
+      max-width: 100%;
+    }
+    h2 {
+      text-align: center;
+      color: #cbd5e0; /* Lighter heading text */
+    }
+    .controls {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .controls label {
+      font-size: 1.1em;
+      margin-right: 15px;
+    }
+    .controls input[type="range"] {
+      width: 50%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chart-container">
+    <h2>Price Distribution at 5% Volatility (Narrow)</h2>
+    <canvas id="chart1"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>Price Distribution at 20% Volatility (Wider)</h2>
+    <canvas id="chart2"></canvas>
+  }
+  </div>
+
+  <div class="chart-container">
+    <h2>Interactive Volatility Explorer</h2>
+    <canvas id="chart3"></canvas>
+    <div class="controls">
+      <label for="volatilitySlider">Volatility: <span id="volatilityValue">25</span>%</label>
+      <input type="range" id="volatilitySlider" min="1" max="100" value="25" class="slider">
+    </div>
+  </div>
+
+  <script>
+    // --- Common Settings for Dark Mode Charts ---
+    const commonChartOptions = {
+      scales: {
+        x: {
+          title: { display: true, text: 'Stock Price at Expiration ($)', color: '#a0aec0' },
+          ticks: { color: '#a0aec0' },
+          grid: { color: 'rgba(160, 174, 192, 0.2)' }
+        },
+        y: {
+          title: { display: true, text: 'Probability Density', color: '#a0aec0' },
+          ticks: { color: '#a0aec0' },
+          grid: { color: 'rgba(160, 174, 192, 0.2)' },
+          beginAtZero: true
+        }
+      },
+      plugins: {
+        legend: {
+          labels: { color: '#e2e8f0' }
+        }
+      }
+    };
+
+    // --- Static Charts ---
+    const stockPrices = Array.from({ length: 201 }, (_, i) => i); // Prices from 0 to 200
+
+    // Chart 1: 5% Volatility
+    new Chart(document.getElementById('chart1'), {
+      type: 'line',
+      data: {
+        labels: stockPrices,
+        datasets: [{
+          label: '5% Volatility',
+          data: calculateDistribution(5, 100, 1, stockPrices),
+          borderColor: '#48bb78',
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4
+        }]
+      },
+      options: commonChartOptions
+    });
+
+    // Chart 2: 20% Volatility
+    new Chart(document.getElementById('chart2'), {
+      type: 'line',
+      data: {
+        labels: stockPrices,
+        datasets: [{
+          label: '20% Volatility',
+          data: calculateDistribution(20, 100, 1, stockPrices),
+          borderColor: '#f6ad55',
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: false,
+          tension: 0.4
+        }]
+      },
+      options: commonChartOptions
+    });
+
+    // --- Interactive Chart ---
+    const slider = document.getElementById('volatilitySlider');
+    const valueLabel = document.getElementById('volatilityValue');
+
+    const interactiveChart = new Chart(document.getElementById('chart3'), {
+      type: 'line',
+      data: {
+        labels: stockPrices,
+        datasets: [{
+          label: 'Adjustable Volatility',
+          data: calculateDistribution(parseInt(slider.value), 100, 1, stockPrices),
+          borderColor: '#4299e1',
+          pointRadius: 0,
+          borderWidth: 2.5,
+          fill: false,
+          tension: 0.4
+        }]
+      },
+      options: commonChartOptions
+    });
+
+    slider.addEventListener('input', (event) => {
+      const newVolatility = parseInt(event.target.value);
+      valueLabel.textContent = newVolatility;
+      
+      // Update chart data
+      interactiveChart.data.datasets[0].data = calculateDistribution(newVolatility, 100, 1, stockPrices);
+      interactiveChart.update('none'); // 'none' for no animation, for smoother sliding
+    });
+
+
+    // --- Calculation Helper Functions ---
+    /**
+     * Calculates the probability density for a range of prices based on a log-normal distribution.
+     * @param {number} volatility - Volatility in percent (e.g., 20 for 20%).
+     * @param {number} s0 - Initial stock price.
+     * @param {number} T - Time to expiration in years.
+     * @param {number[]} prices - Array of stock prices for the x-axis.
+     * @returns {number[]} - Array of probability densities.
+     */
+    function calculateDistribution(volatility, s0, T, prices) {
+        const sigma = volatility / 100;
+        const mu = Math.log(s0) - 0.5 * sigma * sigma * T;
+        const stdDev = sigma * Math.sqrt(T);
+
+        return prices.map(price => {
+            if (price <= 0) return 0;
+            return normalPDF(Math.log(price), mu, stdDev);
+        });
+    }
+
+    /**
+     * Calculates the Probability Density Function (PDF) for a normal distribution.
+     */
+    function normalPDF(x, mean, stdDev) {
+        const variance = stdDev * stdDev;
+        const exponent = -((x - mean) * (x - mean)) / (2 * variance);
+        return (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(exponent);
+    }
+  </script>
+
+</body>
+</html>

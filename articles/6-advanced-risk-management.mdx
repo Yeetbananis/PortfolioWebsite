@@ -1,1 +1,1018 @@
-Coming soon
+### Article Contents
+
+**Price Derivatives**
+- [Gamma](#gamma) - *How Delta changes with price*
+- [Delta and Gamma Hedging](#delta-and-gamma-hedging)
+- [Speed](#speed) - *How Gamma changes with price*
+
+**Volatility Derivatives**
+- [Vomma](#vomma) - *How Vega changes with volatility*
+- [Ultima](#ultima) - *How Vomma changes with volatility*
+
+**Mixed Derivatives (Sensitivity to Time & Volatility)**
+- [Color](#color) - *How Gamma changes with time*
+- [Charm](#charm) - *How Delta changes with time*
+- [Vanna](#vanna) - *How Delta changes with volatility*
+- [Zomma](#zomma) - *How Gamma changes with volatility*
+
+**Other Greeks**
+- [Veta](#veta) - *How Vega changes with time*
+- [Epsilon](#epsilon) - *How Vega changes with interest rates*
+- [Greeks Summary](#greeks-summary)
+
+# 2nd, 3rd (4th?) Order Greeks
+
+The Greeks shown in the previous article are first order or first derivatives in respect to option price. People like to model risks in great details and usually for good reason (always good to know everything that's at play), and that's where 2nd and 3rd derivatives come in. These Greeks measure the change in the first order Greeks themselves with respect to change in things like time, change in underlying price, and more. 
+
+- Why would you want to know these?  
+  Imagine you have to predict how far a car would travel during an 8 hour non stop road trip, you are given the car’s starting velocity of 80km/hr. You predict the car travels 8*80=640km, however you later find out the car actually travelled 720km. This happened because the car had an average acceleration of 10km/hr throughout the trip, the velocity changed as time passed, and if you knew this you would have estimated more accurately.  
+
+- Acceleration is the derivative of velocity, or the 2nd derivative of speed, knowing how much an option price changes with respect to a variable is useful, however knowing how much that variable itself changes with respect to other variables (time, stock price change, etc) is really useful as you can model risks really precisely.  
+
+- If you know that a stock has a delta of 0.5, meaning the option price goes up 50 cents for every dollar move in the stock, can you forsure say with all other variables being the same that a 10 dollar move would result in a 0.5*10 = \$5 gain in option price? Well given the example above you might ask “how fast does Delta itself change for every dollar move in the stock”, that's where Gamma comes in.
+
+---
+
+<h2 id="gamma">Gamma (For every dollar move up, how does Delta change?)</h2>
+
+The Gamma of an option is how much delta changes for every 1 dollar move in the stock price. A Gamma of 0.05 and a Delta of 0.5, means that for every 1 dollar move in the stock price, the call option value increases by 0.5 at first, then 0.5 + 0.05 (gamma), then 0.5 + 0.05 + 0.05, etc:
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock Price ($)</th>
+      <th>Gamma</th>
+      <th>Delta</th>
+      <th>Next Delta</th>
+      <th>Option Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>100</td>
+      <td>0.05</td>
+      <td>0.50</td>
+      <td>0.55</td>
+      <td>$5.00</td>
+    </tr>
+    <tr>
+      <td>101</td>
+      <td>0.05</td>
+      <td>0.55</td>
+      <td>0.60</td>
+      <td>$5.50 (+0.50)</td>
+    </tr>
+    <tr>
+      <td>102</td>
+      <td>0.05</td>
+      <td>0.60</td>
+      <td>0.65</td>
+      <td>$6.05 (+0.55)</td>
+    </tr>
+    <tr>
+      <td>103</td>
+      <td>0.05</td>
+      <td>0.65</td>
+      <td>0.70</td>
+      <td>$6.65 (+0.60)</td>
+    </tr>
+    <tr>
+      <td>104</td>
+      <td>0.05</td>
+      <td>0.70</td>
+      <td>0.75</td>
+      <td>$7.30 (+0.65)</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock Price ($)</th>
+      <th>Gamma (0.05)</th>
+      <th>Delta</th>
+      <th>Next Delta</th>
+      <th>Option Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>100</td>
+      <td>0.05</td>
+      <td>0.50</td>
+      <td>0.45</td>
+      <td>$5.00</td>
+    </tr>
+    <tr>
+      <td>99</td>
+      <td>0.05</td>
+      <td>0.45</td>
+      <td>0.40</td>
+      <td>$4.50 (-0.50)</td>
+    </tr>
+    <tr>
+      <td>98</td>
+      <td>0.05</td>
+      <td>0.40</td>
+      <td>0.35</td>
+      <td>$4.05 (-0.45)</td>
+    </tr>
+    <tr>
+      <td>97</td>
+      <td>0.05</td>
+      <td>0.35</td>
+      <td>0.30</td>
+      <td>$3.65 (-0.40)</td>
+    </tr>
+    <tr>
+      <td>96</td>
+      <td>0.05</td>
+      <td>0.30</td>
+      <td>0.25</td>
+      <td>$3.30 (-0.35)</td>
+    </tr>
+  </tbody>
+</table>
+
+
+---
+
+A good way to imagine Gamma is thinking of Delta as your chance of ending up in the money, so Gamma is just the speed at which this chance decreases or increases based on different variables like time or changes in underlying price. 
+
+The chart above also makes sense since we saw earlier that delta is highest when an option is deep in the money and lowest when a stock is deep out of the money, so if a call option’s underlying stock price is moving up it means its either approaching the strike price or going past it, which is more in the money (delta/chance ending ITM increases). If a call option’s underlying is moving down it means it’s getting further from the strike or more out of the money (delta/chance ending ITM decreases). 
+
+---
+
+### Formula for Gamma
+
+$$
+\Gamma = \frac{N'(d_1)}{S_0 \sigma \sqrt{T}}
+$$
+
+For the probability density term N’(x), it captures the instant chance of the price being near its current level, the lower the chance the lower the Gamma, the higher the chance the higher the Gamma because Gamma is highest for at the money options since this is where the smallest price changes have the largest impact on Delta/chance of ending in the money (from Delta graph you can see it has the highest slope or derivative near ATM areas). 
+
+---
+
+### Relationships
+
+- Gamma has an inverse relationship with stock price, volatility and time:  
+  - **Volatility & Stock Price**  
+    - Small values of each mean a higher Gamma because of the fact that Gamma is the change in Delta per change in a **dollar stock price**.  
+    - If the stock price is very small, a dollar is a larger percent change (larger impact on ending ITM or OTM).  
+    - If volatility is low that means a stock isn’t expected to move a lot so a dollar move has a larger impact on ending up ITM therefore Delta changes faster and Gamma is higher.  
+    - Example:  
+      - Stock at \$200 → \$1 move to \$201 is small, doesn’t change ITM chance much → low Gamma.  
+      - Stock at \$5 → \$1 move to \$6 is 20% → big change in ITM chance → high Gamma.  
+
+  - **Time**  
+    - If an option has a day to expiration left, dollar price moves greatly change your chance of ending up ITM → Gamma is high.  
+    - If you have a year left, dollar price moves don’t affect ITM chance much (too much uncertainty) → Gamma is low.  
+
+---
+
+### Gamma across moneyness
+
+<ImageWithFullscreen src="/images/GammaMoneyness.png" alt="Gamma across moneyness" /> 
+
+Dollar moves Deep ITM or Deep OTM don’t greatly increase chances of ending ITM.
+
+---
+
+Now that you know how Delta and Gamma work, it’s a good point to explain the idea of Gamma and Delta Hedging.
+
+<h2 id="delta-and-gamma-hedging">Delta and Gamma Hedging</h2>
+
+### What is it?
+
+Let’s define what hedging is: If you own 50 shares of a \$100 stock you are vulnerable to the risk of the stock moving down 10 percent and being at a loss of 0.1 * 100 * 50 = \$500. To remove this risk, you can **hedge** the position using put options, but how? Since every stock share has a delta of 1 (moves 1:1 with itself), that means your total position has a delta of 50*1 = 50Δ. At the money put contracts have a delta of -0.5, meaning for every \$1 move down in the stock the put option gains 50 cents in value, so if you bought one put contract (1 contract = 100 shares), your put option has a total delta of -0.5 * 100 = -50Δ. You may notice that the deltas of the stock you own and your put options cancel out: 50Δ - 50Δ = 0Δ. What does this mean? This means that if the stock started at \$100, and lost 10 percent in value (\$10), your stock holding would lose: 50 shares * -\$10 move = -\$500, however your put options would gain: 100 shares * -\$0.5 per dollar move down in stock * -\$10 move = \$500. The loss in stock price is exactly made up for with your gain in put option value, this is called **Delta Hedging** and covering all your stock Delta with an equal option Delta is called being **Delta neutral.** If you instead own 2 at the money call option contracts with a Delta of 0.5 each: 0.5 * 2 contracts * 100 shares per contract = 100Δ, you can also be Delta neutral by shorting 100 shares of stock: 100 * -1 (short Delta negative) = -100Δ.
+
+### Why?
+
+Before continuing it’s good to clarify why you hedge. The first question that came into my mind was “If the deltas are cancelling out, don’t I just make \$0 no matter what and there’s no point in entering?” The reason you hedge is to remove the factor of having to predict where price will go when you want to focus on other factors. For example, you believe there’s a mispricing in an option due to volatility (implied volatility is higher than you believe it should be), you don’t want to also bet on the stock going up or down because that’s an extra risk; you want to isolate the implied volatility factor and exclusively focus on it. 
+
+Here’s a direct example: Implied volatility is at 100% and you believe it should be 75%. This mispricing inflates the option price, and you believe that soon that option will lose value as the volatility drops to 75%. How do you profit from this? You can sell that option contract at this high price (e.g., \$15), and later if implied vol drops to 75% and the option loses value (e.g., now \$12), you can buy it back for \$12, meaning you now hold a \$12 option that you sold for \$15 and you profit the \$3 difference. If it expires out of the money you simply lose the \$12 premium from buying and receive the \$15 premium from selling which also results in +\$3. 
+
+The issue above is that it assumes everything stays constant including the stock price and only implied volatility drops. This is where hedging comes in: if you are Delta neutral then stock price moves don’t affect your profit (Delta is specifically change of option price in respect to **underlying price change**), so you can safely go through with your theory without worrying about predicting whether the stock will go up or down. In the same way you can profit from predictions on volatility, you can also use hedging to profit off predictions from any variable change like time decay, dividends, interest rates, and other mispricing without having to worry about stock price direction.
+
+For options this is the main reason you would hedge; however, if you own large amounts of stock, it can also be a smart decision to hedge from major market retracement. For example, if the stock market has been going up uncontrollably and you are unsure how much further it could go before retracing, you can hedge by buying puts. You own 200 shares of SPY stock worth \$100,000 (with SPY at \$500 currently), you believe a retrace is coming but don’t want to miss out on more gains, so you enter a delta neutral position by covering all your 200 Deltas of stock with -200 Deltas of at the money puts: -200Δ / (-0.5Δ * 100 shares per contract) = 4 put contracts expiring in a year with a premium of 18.57 each for a total cost of: 18.57 * 4 * 100 = 7428. Let’s see what would happen:
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock Price move (currently \$500)</th>
+      <th>Stock portfolio value</th>
+      <th>Put Value</th>
+      <th>Total Profit/Loss</th>
+      <th>Perk or downside</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stock moves up to \$550</td>
+      <td>200 shares * \$50 gain per share = \$10,000</td>
+      <td>-7428 (premium loss)</td>
+      <td>10,000 - 7428 = \$2672 profit</td>
+      <td>Lost money on premium that could’ve been avoided if you just held, but you protected from downside risk</td>
+    </tr>
+    <tr>
+      <td>Stock retraces sharply to \$450 in 6 months</td>
+      <td>200 shares * -\$50 loss per share = -\$10,000</td>
+      <td>New put premium (ITM): \$44.08 - 18.57 = 25.51 * 4 * 100 = \$10,204 profit</td>
+      <td>10,204 - 10,000 = \$204 (gamma effect)</td>
+      <td>Profited \$204, plus the -\$10,000 is <strong>not realized</strong>, meaning you still own the stock and can hold it while allowing for reinvestment at a cheaper price using put profit</td>
+    </tr>
+    <tr>
+      <td>Stock stays around \$500 (worst case) </td>
+      <td>200 shares * same price = no profit</td>
+      <td>-\$7428 as puts expire OTM</td>
+      <td>-\$7428</td>
+      <td>Fully lose the premium, or some opportunity cost versus just holding stock</td>
+    </tr>
+  </tbody>
+</table>
+
+### Doesn't Delta move too?
+
+Delta isn’t constant; it changes due to Gamma as the price moves, so you need to continuously adjust your position by buying or selling options. Suppose you are currently Delta neutral because you own 50 shares of a stock (+50Δ) and an at the money put contract (-0.5 * 100 = -50Δ):
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock Price (\$)</th>
+      <th>Delta of put option Δ</th>
+      <th>Gamma</th>
+      <th>Total Positive Delta (long)</th>
+      <th>Total Negative Delta (short)</th>
+      <th>Total Delta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>\$100</td>
+      <td>-0.50</td>
+      <td>0.05</td>
+      <td>+50 Δ</td>
+      <td>-50 Δ</td>
+      <td>0 (delta neutral)</td>
+    </tr>
+    <tr>
+      <td>\$99</td>
+      <td>-0.45</td>
+      <td>0.05</td>
+      <td>+50 Δ</td>
+      <td>-45 Δ</td>
+      <td>+5 Δ</td>
+    </tr>
+    <tr>
+      <td>\$98</td>
+      <td>-0.40</td>
+      <td>0.05</td>
+      <td>+50 Δ</td>
+      <td>-40 Δ</td>
+      <td>+10 Δ</td>
+    </tr>
+    <tr>
+      <td>\$97</td>
+      <td>-0.35</td>
+      <td>0.05</td>
+      <td>+50 Δ</td>
+      <td>-35 Δ</td>
+      <td>+15 Δ</td>
+    </tr>
+  </tbody>
+</table>
+
+As the position drifts from Delta neutral, you need more puts to rebalance. This is where **Gamma Hedging** comes in: Gamma hedging accounts for the risk of Delta changing as the underlying price moves, helping maintain a Delta neutral position. Stocks themselves don’t have Gamma (Deltas are constant), so this applies only to options. For example, if you buy an ATM call with 0.5 Delta and 0.05 Gamma (100 shares per contract), and a put with -0.5 Delta and 0.05 Gamma, the changes in Delta exactly cancel, keeping your position Delta neutral:
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock Price (\$)</th>
+      <th>Delta of put Δ</th>
+      <th>Gamma of put</th>
+      <th>Delta of call Δ</th>
+      <th>Gamma of call</th>
+      <th>Total Negative Delta (short)</th>
+      <th>Total Positive Delta (long)</th>
+      <th>Total Delta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>\$100</td>
+      <td>-0.50</td>
+      <td>0.05</td>
+      <td>+0.50</td>
+      <td>0.05</td>
+      <td>-50 Δ</td>
+      <td>+50 Δ</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>\$99</td>
+      <td>-0.55</td>
+      <td>0.05</td>
+      <td>+0.55</td>
+      <td>0.05</td>
+      <td>-55 Δ</td>
+      <td>+55 Δ</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>\$98</td>
+      <td>-0.60</td>
+      <td>0.05</td>
+      <td>+0.60</td>
+      <td>0.05</td>
+      <td>-60 Δ</td>
+      <td>+60 Δ</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td>\$97</td>
+      <td>-0.65</td>
+      <td>0.05</td>
+      <td>+0.65</td>
+      <td>0.05</td>
+      <td>-65 Δ</td>
+      <td>+65 Δ</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+Even though Gamma changes with time, these hedges largely protect against unexpected Delta movements and allow controlled exposure to risk factors.
+
+Looking at the pattern of risks above you may ask another question, which is “Doesn’t Gamma also change with time, so you are never really fully hedged?” and that is true. Due to the amount of factors in a position you can never fully hedge all risks, however you can largely protect against them and avoid being suddenly surprised by unexpected position value changes by doing the 2 types of hedging above since Gamma moves a lot slower than Delta. As mentioned Gamma does move though, and the Greek that tracks how much Gamma moves with respect to a dollar move in stock price (or the third derivative of option price movement to stock price) is called Speed.
+
+<h2 id="speed">Speed (For every dollar move up, how does Gamma change?)</h2>
+
+Speed is a third order Greek, and is the amount Gamma moves for each dollar move in underlying price. It’s a bit overkill to monitor speed but it still provides an even more precise risk overview for how underlying moves effect options prices. A Speed of 0.01 and Gamma of 0.05 means that if the stock moves up 1 dollar then your new Gamma is 0.06, meaning that Delta changes by 0.06 now, meaning that the option value is extremely sensitive to stock price movement. Like Gamma, Speed is highest at the money and decreases when the option is far OTM or ITM. The formula is shown below:
+
+$$
+\text{Speed} = -\frac{N'(d_1)}{S^2 \sigma^2 T} \left( d_1 (d_1 + d_2) + 1 \right)
+$$
+
+Basically change in Gamma over change in stock price. Here is a table showing the Speed affect on options pricing, and how only Delta is the least accurate, Gamma is a lot more accurate, and Speed is laser precise:
+
+<table>
+  <thead>
+    <tr>
+      <th>Step</th>
+      <th>Stock Price ($)</th>
+      <th>Speed</th>
+      <th>Gamma</th>
+      <th>Delta</th>
+      <th>Option Price</th>
+      <th>Price (Gamma known)</th>
+      <th>Price (Delta-only)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>1000</td><td>0.01</td><td>0.05</td><td>0.50</td><td>5.00</td><td>5.00</td><td>5.00</td>
+    </tr>
+    <tr>
+      <td>2</td><td>1001</td><td>0.01</td><td>0.06</td><td>0.56</td><td>5.56</td><td>5.56</td><td>5.50</td>
+    </tr>
+    <tr>
+      <td>3</td><td>1002</td><td>0.01</td><td>0.07</td><td>0.63</td><td>6.19</td><td>6.13</td><td>6.00</td>
+    </tr>
+    <tr>
+      <td>4</td><td>1003</td><td>0.01</td><td>0.08</td><td>0.71</td><td>6.90</td><td>6.84</td><td>6.50</td>
+    </tr>
+    <tr>
+      <td>5</td><td>1004</td><td>0.01</td><td>0.09</td><td>0.80</td><td>7.70</td><td>7.64</td><td>7.00</td>
+    </tr>
+    <tr>
+      <td>6</td><td>1005</td><td>0.01</td><td>0.10</td><td>0.90</td><td>8.60</td><td>8.54</td><td>7.50</td>
+    </tr>
+  </tbody>
+</table>
+
+
+Far in the money Gamma doesn’t move much since you’re already deep in the money your chance of ending ITM (delta) doesn’t change a lot per dollar move, as it gets closer to at the money it accelerates the most and then dies down again as you reach at the money because that’s the region of the most uncertainty. Then when you start going out of the money it accelerates in a negative way since your chance of ending up in the money (delta) greatly decreases and far out of the money moves in the stock price barely effect Gamma because Delta or your chance of ending up in the money is already close to zero, so speed far OTM and ITM is near zero:
+
+<ImageWithFullscreen src="/images/SpeedMoneyness.png" alt="Speed across moneyness" /> 
+
+Here’s a summary of what different values of Speed mean:
+
+<table>
+  <thead>
+    <tr>
+      <th>Position Type</th>
+      <th>Delta Direction</th>
+      <th>Speed Sign</th>
+      <th>When Price Moves in Your Favor…</th>
+      <th>Good or Bad?</th>
+      <th>What to Do</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bullish</td><td>Positive</td><td>Positive</td>
+      <td>Delta increases faster → behaves more like the stock</td>
+      <td>Good</td><td>Nothing, this is good for a bullish position</td>
+    </tr>
+    <tr>
+      <td>Bullish</td><td>Positive</td><td>Negative</td>
+      <td>Delta grows slowly → underperforms as stock goes up</td>
+      <td>Bad</td><td>Consider adding long delta (buy calls or stock) to keep pace</td>
+    </tr>
+    <tr>
+      <td>Bearish</td><td>Negative</td><td>Negative</td>
+      <td>Delta becomes more negative faster → becomes a more bearish bet</td>
+      <td>Good</td><td>Nothing, this is good for positions that are supposed to be bearish</td>
+    </tr>
+    <tr>
+      <td>Bearish</td><td>Negative</td><td>Positive</td>
+      <td>Delta weakens → bearish gains slow down</td>
+      <td>Bad</td><td>Consider reinforcing short exposure (buy puts or short more stock)</td>
+    </tr>
+    <tr>
+      <td>Hedged (delta-neutral)</td><td>0</td><td>Positive</td>
+      <td>Delta becomes positive quickly as price rises → you are now biased to upside moves and exposed to downside risk</td>
+      <td>Bad for hedge</td><td>Re-hedge by decreasing Delta (reduce long stock or calls, or buy puts)</td>
+    </tr>
+    <tr>
+      <td>Hedged (delta-neutral)</td><td>0</td><td>Negative</td>
+      <td>Delta becomes negative quickly as price falls → you are now biased to downward moves and exposed to upward stock risk</td>
+      <td>Bad for hedge</td><td>Re-hedge by increasing Delta (increase long stock or calls, or sell puts)</td>
+    </tr>
+  </tbody>
+</table>
+
+As you can see Speed could be useful for very high quality hedging when managing a huge amount of money, because now you know how fast Gamma moves and can determine or automate a process to hedge Gamma every time a stock moves to be as tightly hedged as possible. This is mainly for high frequency trading, highly volatile stocks, or managing a very large amount of money where all small risks need to be accounted for as best as possible. We see how fast Gamma changes for every dollar move in stock price, what about as time passes?
+
+<h2 id="color">Color (For every day that passes, how fast does Gamma change?)</h2>
+
+Color or Gamma decay, is how fast Gamma changes as time passes, more specifically as an option approaches expiration. It’s a third order derivative (not fully a third derivative because its mixed) of option price with respect to time and underlying price (Gamma measures change in Delta which measures change in option price compared to change in underlying price, now we’re measuring change in Gamma compared to change in time). To put it simply, before we were asking “How fast does Gamma change if Apple stock goes up a dollar and everything else stays the same”, now we’re asking “How fast does Gamma change if a day passes and everything else stays the same”. Color of -0.01 and Gamma of 0.05 means that if a day passes your new Gamma is 0.05 - 0.01 = 0.04, meaning a dollar move in stock price changes your Delta less, making the option value less sensitive to stock price movement. The formula for color is:
+
+$$
+\text{Color} = -\frac{N'(d_1) \cdot \left(2rT - d_2 \sigma \sqrt{T} \right)}{2 S T \sigma \sqrt{T}}
+$$
+
+Color is negative because as time passes Gamma decreases (the amount your chances of ending ITM move becomes a lot less as there’s less time to expiration since with fewer days left you’re more certain if you’ll end ITM or OTM). Higher Interest rates (2rT) increase color because they increase the time decay effect (as we saw before a call option with high interest rates has a higher Vega or time decay and in result has more to lose as time passes than one with low interest rates because higher interest rate over longer time = more money). Like Gamma, Color also has an inverse relationship with time, volatility, and stock price because in all these cases a dollar has more say in the chance of ending ITM or OTM. Like Vega, it decays the most as expiration approaches because with little time left the question of “will my option end ITM?” becomes more clear, making the sensitivity to that question (sensitivity of Delta, aka Gamma) very small:
+
+<ImageWithFullscreen src="/images/ColorTime.png" alt="Color across time" /> 
+
+Here’s a table breaking down what Color means in various situations:
+
+<table>
+  <thead>
+    <tr>
+      <th>Position Type</th>
+      <th>Delta Direction</th>
+      <th>Color Sign</th>
+      <th>When Price Moves in Your Favor…</th>
+      <th>Good or Bad?</th>
+      <th>What to Do</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bullish</td>
+      <td>Positive</td>
+      <td>Negative</td>
+      <td>Gamma decreases quickly → delta becomes less responsive as time passes</td>
+      <td>Bad</td>
+      <td>Consider adding delta to position (buy calls or stock) as time passes</td>
+    </tr>
+    <tr>
+      <td>Bullish</td>
+      <td>Positive</td>
+      <td>Near zero</td>
+      <td>Gamma decays slowly → delta remains steady as time passes</td>
+      <td>Good</td>
+      <td>No action needed</td>
+    </tr>
+    <tr>
+      <td>Bearish</td>
+      <td>Negative</td>
+      <td>Negative</td>
+      <td>Gamma decays faster → delta becomes less negative over time</td>
+      <td>Bad</td>
+      <td>Consider decreasing Delta (buy puts or short stock)</td>
+    </tr>
+    <tr>
+      <td>Bearish</td>
+      <td>Negative</td>
+      <td>Near zero</td>
+      <td>Gamma remains stable → delta stays strong on price drop</td>
+      <td>Good</td>
+      <td>No action needed</td>
+    </tr>
+    <tr>
+      <td>Hedged (delta-neutral)</td>
+      <td>0</td>
+      <td>Negative</td>
+      <td>Gamma collapses quickly → delta can drift even without price movement (because of time)</td>
+      <td>Bad for hedge</td>
+      <td>Re-hedge more frequently to stay Gamma or Delta neutral</td>
+    </tr>
+    <tr>
+      <td>Hedged (delta-neutral)</td>
+      <td>0</td>
+      <td>Near zero or slightly positive</td>
+      <td>Gamma decays slowly → delta remains balanced longer</td>
+      <td>Good for hedge</td>
+      <td>No action because hedge is more stable over time</td>
+    </tr>
+  </tbody>
+</table>
+
+As you can see Color can also be used for re-hedging Gamma, since now you know how much Gamma loses value from not only underlying stock moves but time as well (if you are Gamma hedged today, tomorrow you might not be and Color shows by how much). How about going back to Delta hedging, how can you answer the question "if I am Delta hedged today, will I also be Delta hedged tomorrow considering everything else is the same?" Charm answers this.
+
+<h2 id="charm">Charm (For every day that passes, how fast does Delta (my chance of ending ITM) change?)</h2>
+
+Charm, also called Delta decay, shows how much your option’s Delta changes as each day passes.  
+You’ve seen Color above, and Charm is a derivative below Color: instead of measuring how Gamma (2nd order Greek) changes as time passes, it measures how Delta (1st order Greek) changes as time passes.
+
+---
+
+**Example:**  
+A Charm of -0.01 and Delta of 0 (Delta neutral) means that although you are Delta hedged today,  
+even if everything remained the same tomorrow you would not be Delta neutral, since your Delta will decrease by 0.01 as each day passes.
+
+---
+
+**Formula for Charm:**
+
+$$
+\text{Charm} = -\frac{N'(d_1) \cdot \left(2rT - d_2 \sigma \sqrt{T} \right)}{2 \sigma T \sqrt{T}} - rN(d_1)
+$$
+
+---
+
+Charm is usually negative for near-the-money calls, since your chance of ending up in the money (Delta) decreases as time passes. This decrease accelerates rapidly near expiration, when there is less time for the underlying to move in your favor.
+
+<ImageWithFullscreen src="/images/CharmTime.png" alt="Charm across time" /> 
+
+---
+
+The table for Charm is the same as the one for Color, except the effects are felt directly on Delta instead of Gamma.  
+Therefore, you can refer to the Color table, but replace *“Gamma decay”* or *“Gamma collapse”* with *“Delta decay”* or *“Delta collapse.”*
+
+---
+
+So far, we’ve accounted for how time (Charm) and a dollar move in stock price (Gamma) change your chances of ending ITM (Delta).  
+But what about how moves in volatility change those chances?
+
+<h2 id="vanna">Vanna (For every 1 percent move in volatility, how much does Delta change?)</h2>
+
+Vanna measures how your chance of ending in-the-money (Delta) changes as volatility goes up by one percent. A Vanna of 0.05 and a Delta of 0.4 means that if volatility went up one percent, your new Delta would be 0.45. This means you have a higher chance of finishing in-the-money. This makes sense, since higher volatility for out-of-the-money (OTM) options (which have a low Delta) gives you a higher chance of finishing ITM.
+
+---
+
+### Formula for Vanna
+
+$$
+\text{Vanna} = -\frac{N'(d_1)}{\sigma} \cdot \left( \frac{d_2}{S} \right)
+$$
+
+---
+
+If you have a stock priced at \$100 with a strike of \$100, low volatility (almost zero) means that the market expects no moves from the stock, and your chances of ending ITM (Delta) are the most uncertain (closest to 0.5). The Delta curve for at-the-money options is also very steep, meaning any price moves increase or decrease your chances of ending ITM by the largest amount.
+
+<ImageWithFullscreen src="/images/DeltaCPSteepness.png" alt="Steepness of delta across moneyness" /> 
+
+---
+
+At very low volatility, stock price movements have the **most impact** on the outcome because large moves are **not expected**, so even small price changes have a large effect on whether the option finishes ITM. Delta changes very steeply in this near-zero range of volatility (**Vanna is the most negative**).
+
+As volatility increases to around 10%, you expect a **wider range of outcomes.** Price swings become more normal, so a \$1 move in the stock isn’t as meaningful. Going from 10% to 11% volatility doesn’t change expectations as much as going from 1% to 2%. Delta, therefore, changes less at higher volatility levels.
+
+So, as volatility increases from very low levels, **Delta flattens out**. This means **Vanna is most negative near 0 volatility** and becomes less negative as volatility rises.
+
+<ImageWithFullscreen src="/images/VannaVol.png" alt="Vanna across volatility" /> 
+
+
+---
+
+Eventually, Vanna becomes positive (at roughly 30%+ volatility). Why?
+
+* At low volatility, the Black-Scholes model assumes almost **black-and-white outcomes**: slightly ITM means definitely ITM, and slightly OTM means definitely OTM.
+* This causes Delta to jump too sharply between 0 and 1.
+* At higher volatility, the model sees a **wider range of future prices**, which smooths the transition of Delta across probabilities.
+* This upward skew from volatility makes Vanna turn positive at higher volatility levels.
+
+---
+
+### Vanna Table (Position Impact)
+
+<table>
+  <thead>
+    <tr>
+      <th>Position Type</th>
+      <th>Delta Direction</th>
+      <th>Vanna Sign</th>
+      <th>IV ↑ - Effect on Delta</th>
+      <th>IV ↓ - Effect on Delta</th>
+      <th>Good or Bad?</th>
+      <th>What to Do</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Bullish</strong></td>
+      <td>Positive</td>
+      <td>Positive</td>
+      <td>Delta increases further</td>
+      <td>Delta decreases slightly</td>
+      <td>IV↑ Good / IV↓ Bad</td>
+      <td>On IV↓, consider adding delta (buy calls or stock).</td>
+    </tr>
+    <tr>
+      <td><strong>Bullish</strong></td>
+      <td>Positive</td>
+      <td>Negative</td>
+      <td>Delta decreases</td>
+      <td>Delta increases more</td>
+      <td>IV↑ Bad / IV↓ Good</td>
+      <td>On IV↑, consider adding delta to remain bullish.</td>
+    </tr>
+    <tr>
+      <td><strong>Bearish</strong></td>
+      <td>Negative</td>
+      <td>Positive</td>
+      <td>Delta becomes less negative (weaker short)</td>
+      <td>Delta becomes more negative (stronger short)</td>
+      <td>IV↑ Bad / IV↓ Good</td>
+      <td>On IV↑, reinforce short bias (buy puts or short stock).</td>
+    </tr>
+    <tr>
+      <td><strong>Bearish</strong></td>
+      <td>Negative</td>
+      <td>Negative</td>
+      <td>Delta becomes more negative (better short)</td>
+      <td>Delta becomes less negative (weaker short)</td>
+      <td>IV↑ Good / IV↓ Bad</td>
+      <td>On IV↓, consider rebalancing if bearish exposure weakens.</td>
+    </tr>
+    <tr>
+      <td><strong>Hedged (delta-neutral)</strong></td>
+      <td>0</td>
+      <td>Positive</td>
+      <td>Delta drifts positive (bullish bias)</td>
+      <td>Delta drifts negative (bearish bias)</td>
+      <td>Both create directional bias</td>
+      <td>Re-hedge: reduce long delta on IV↑, increase long delta on IV↓.</td>
+    </tr>
+    <tr>
+      <td><strong>Hedged (delta-neutral)</strong></td>
+      <td>0</td>
+      <td>Negative</td>
+      <td>Delta drifts negative (bearish bias)</td>
+      <td>Delta drifts positive (bullish bias)</td>
+      <td>Both create directional bias</td>
+      <td>Re-hedge: increase long delta on IV↑, reduce long delta on IV↓.</td>
+    </tr>
+  </tbody>
+</table>
+
+We’ve looked at how volatility affects Delta, which is useful for knowing when to re-hedge Delta-neutral positions. But since Delta itself can move rapidly, it is also useful to see how volatility affects Gamma. This brings us to Zomma.
+
+<h2 id="zomma">Zomma (If volatility moves up 1 percent, how does Gamma change?)</h2>
+
+Similar to Vanna, Zomma tells you how a 1 percent move in implied volatility affects Gamma. It basically tells you how the sensitivity of your option's Delta changes as volatility changes. A Zomma of 0.01 and a Gamma of 0.05 means that if implied volatility went up 1 percent, your option is now more sensitive to price moves (Gamma is 0.06 vs. 0.05). This can be good for long calls, since for each dollar move up, your Delta increases more quickly.
+
+As with previous Greeks, the core idea is similar to Vanna. Zomma is to Vanna what Speed is to Gamma, or what Color is to Charm; they are simply more sensitive, higher-order derivatives of each other.
+
+---
+
+### Formula for Zomma
+
+$$
+\text{Zomma} = \frac{ \partial \Gamma }{ \partial \sigma } = \frac{ N(d_1) \left( d_1 d_2 - 1 \right) }{ S \sigma^2 \sqrt{T} }
+$$
+
+Simplified, the formula represents the change in Gamma over the change in volatility.
+
+---
+
+### Zomma's Behavior
+
+The Zomma graph has the same characteristics discussed in Vanna. It is very negative at low volatility (as Gamma initially falls when IV rises), increases for medium volatility, and becomes slightly positive at a certain point because of the upward skew of volatility.
+
+<ImageWithFullscreen src="/images/ZommaVol.png" alt="Zomma across volatility" /> 
+
+---
+
+You can use Zomma to re-hedge gamma-hedged positions as volatility moves, similar to using Vanna for Delta hedging.
+
+These Greeks have mainly explored the effects of volatility, time, and price movement on your chance of ending ITM (Delta) and how fast this chance changes with price moves (Gamma). We’ve covered price movement risk in great detail and how it changes as other variables change. However, the other major factor in options pricing is volatility. This leads to the question, "How does volatility risk change as volatility itself changes?" If Gamma monitors Delta changes, what shows Vega changes? That’s where **Vomma** comes in.
+
+<h2 id="vomma">Vomma (If volatility goes up 1%, how does my exposure to volatility risk (Vega) change?)</h2>
+
+Like Gamma measures the “acceleration” of your position with respect to price, Vomma measures the “acceleration” of your position with respect to volatility. This is very useful because volatility is the second most influential term in the Black-Scholes formula, meaning monitoring its risk in great detail is very important.
+
+A Vomma of 0.05 and a Vega of 0.3 means that if implied volatility moved up 1%, your new Vega is 0.35 (0.3 + 0.05), meaning you are more exposed to volatility risk.
+
+---
+
+### Vomma in Practice: An Example
+
+To see where this can be useful, imagine a stock is trading at \$1,000 and you buy an at-the-money (ATM) call with a \$1,000 strike expiring in 5 days for a \$50 premium (\$5,000 per contract). You believe earnings will be beat and the stock will rally. The current IV is 80%, Vega is 0.45, and Delta is 0.5.
+
+You expect a 30% drop in implied volatility but a \$40 gain in the stock price. Believing your Delta gain will outweigh your Vega loss, you calculate a potential profit:
+* **Expected Vega Loss:** 0.45 * -30 * 100 shares = -\$1,350
+* **Expected Delta Gain:** 0.5 * \$40 * 100 shares = +\$2,000
+* **Estimated Net Gain:** +\$650 (ignoring other Greeks)
+
+You wake up the next day and everything went exactly to plan: IV fell by 30% and the stock rose \$40. Except, you lost -\$2,950. You check Vega and notice that it’s now 2.85. What happened?
+
+The position had a Vomma of -0.08. For every 1% move down in volatility, Vega went *up* by 0.08. The new Vega is calculated as: 0.45 + (-0.08 * -30) = 2.85.
+
+Your actual Vega loss was much larger because Vega increased as volatility fell. Using the average Vega for the move provides a closer estimate:
+* **Actual Vega Loss:** ((0.45 + 2.85) / 2) * -30 * 100 shares = **-\$4,950**
+
+Your actual Delta gain of \$2,000 did not surpass your actual Vega loss of -\$4,950 because you didn’t account for Vomma.
+
+> **NOTE:** This specific scenario of negative Vomma for a near-term ATM option is extremely uncommon. It is used here to demonstrate how this risk could be present in other option contract scenarios. As we can see, accounting for Vomma would have helped in recognizing this risk.
+
+---
+
+### Formula and Behavior
+
+The formula for Vomma is:
+$$
+\text{Vomma} = \frac{\partial \text{Vega}}{\partial \sigma} = \frac{S \cdot N(d_1) \cdot \sqrt{T} \cdot d_1 \cdot d_2}{\sigma}
+$$
+This can be interpreted as the change in Vega over the change in volatility.
+
+<ImageWithFullscreen src="/images/VommaVol.png" alt="Vomma across volatility" /> 
+
+Vomma is usually lowest at low volatilities (e.g., 5%) because option prices behave more predictably. As you ramp up volatility (e.g., 15-25%), there’s a wider range of possible ending prices, and volatility risk behaves more unpredictably. At very high volatilities (50%+), since the range of outcomes is already wide, adding more volatility doesn’t have as large of an effect.
+
+You can see an interactive visualization of these distributions by clicking the link below:
+
+([Click here for the chart](/Interactive/InteractiveVolCharts.html))
+
+---
+
+### Vomma Effects Table
+
+<table>
+  <thead>
+    <tr>
+      <th>Position Type</th>
+      <th>Vomma Sign</th>
+      <th>What Happens When IV Changes</th>
+      <th>Good or Bad?</th>
+      <th>What to Do</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Long Vega</strong> (Vega=+0.45, Vomma=–0.08)</td>
+      <td>Negative</td>
+      <td>Vega increases as IV drops. An IV crush hurts more than expected.</td>
+      <td>Bad (hidden risk)</td>
+      <td>Reduce Vega size or use spreads. Be aware of the risk.</td>
+    </tr>
+    <tr>
+      <td><strong>Long Vega</strong> (Vega=+0.45, Vomma=+0.08)</td>
+      <td>Positive</td>
+      <td>Vega shrinks as IV drops. An IV crush hurts less than expected.</td>
+      <td>Better (natural dampening)</td>
+      <td>Nothing, good to know.</td>
+    </tr>
+    <tr>
+      <td><strong>Short Vega</strong> (Vega=–0.40, Vomma=–0.07)</td>
+      <td>Negative</td>
+      <td>Vega becomes more negative as IV rises. An IV spike hurts more.</td>
+      <td>Bad (risk accelerates)</td>
+      <td>Consider reducing Vega, hedge, or be aware.</td>
+    </tr>
+    <tr>
+      <td><strong>Short Vega</strong> (Vega=–0.40, Vomma=+0.06)</td>
+      <td>Positive</td>
+      <td>Vega becomes less negative as IV rises. An IV spike hurts less.</td>
+      <td>Good (risk decays)</td>
+      <td>Nothing.</td>
+    </tr>
+    <tr>
+      <td><strong>Vega Hedged</strong> (Vega≈0, Vomma=–0.05)</td>
+      <td>Negative</td>
+      <td>Becomes short Vega if IV rises, long Vega if IV falls.</td>
+      <td>Unstable (hedge breaks)</td>
+      <td>Rebalance as Vega changes.</td>
+    </tr>
+    <tr>
+      <td><strong>Vega Hedged</strong> (Vega≈0, Vomma=+0.05)</td>
+      <td>Positive</td>
+      <td>Becomes long Vega if IV rises, short Vega if IV falls.</td>
+      <td>Unstable (hedge breaks)</td>
+      <td>Rebalance as Vega changes.</td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+We've seen how Vomma provides deeper insight into volatility risk. For price moves, you have Delta (1st derivative), Gamma (2nd), and Speed (3rd). For volatility, we now have Vega (1st) and Vomma (2nd). For an even more precise, third-order measure of volatility risk, we look to **Ultima**.
+
+<h2 id="ultima">Ultima (If volatility goes up 1%, how does Vomma change?)</h2>
+
+**Ultima** measures the change in **Vomma** for each 1% move in volatility. It is a third-order Greek that provides extreme precision in modeling an option's sensitivity to changes in implied volatility.
+
+Consider an option with an Ultima of 0.01, a Vomma of 0.05, and a Vega of 0.5. If volatility goes up by 1%:
+* The option's value immediately increases by \$0.50 due to **Vega**.
+* The new Vega becomes 0.55 (0.5 + 0.05), as updated by **Vomma**. This means the option will gain more value from the next 1% move in volatility.
+* The new Vomma becomes 0.06 (0.05 + 0.01), as updated by **Ultima**. This means the option's Vega will accelerate even faster on subsequent volatility moves.
+
+<p>The table below breaks down how these effects compound as volatility rises, showing the true option price compared to estimates that only account for Vega or Vomma.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Step</th>
+      <th>IV (%)</th>
+      <th>Ultima</th>
+      <th>Vomma</th>
+      <th>Vega</th>
+      <th>True Price (USD)</th>
+      <th>Vomma Price (USD)</th>
+      <th>Vega-Only (USD)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>80</td>
+      <td>0.01</td>
+      <td>0.050</td>
+      <td>0.50</td>
+      <td>5.00</td>
+      <td>5.00</td>
+      <td>5.00</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>81</td>
+      <td>0.01</td>
+      <td>0.060</td>
+      <td>0.56</td>
+      <td>5.56</td>
+      <td>5.56</td>
+      <td>5.50</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>82</td>
+      <td>0.01</td>
+      <td>0.070</td>
+      <td>0.63</td>
+      <td>6.19</td>
+      <td>6.13</td>
+      <td>6.00</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>83</td>
+      <td>0.01</td>
+      <td>0.080</td>
+      <td>0.71</td>
+      <td>6.90</td>
+      <td>6.84</td>
+      <td>6.50</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>84</td>
+      <td>0.01</td>
+      <td>0.090</td>
+      <td>0.80</td>
+      <td>7.70</td>
+      <td>7.64</td>
+      <td>7.00</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>85</td>
+      <td>0.01</td>
+      <td>0.100</td>
+      <td>0.90</td>
+      <td>8.60</td>
+      <td>8.54</td>
+      <td>7.50</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Similar to the relationship between Delta, Gamma, and Speed for price risk, knowing Vomma is a large leap from only knowing Vega, and knowing Ultima gives you extreme precision for volatility risk.</p>
+
+
+
+---
+
+### Formula and Behavior
+
+The formula for Ultima is:
+$$
+\text{Ultima} = \frac{\partial \text{Vomma}}{\partial \sigma}
+$$
+In simple terms, it is the **change in Vomma** over the **change in volatility**.
+
+We can deduce the shape of the Ultima graph by looking at the rate of change (the derivative) of the Vomma graph. At low volatility, Vomma is low but increasing, so Ultima is positive and large. As Vomma's rate of change flattens near its peak (around 20% IV), Ultima approaches zero. Ultima then turns negative as Vomma begins to fall.
+
+<ImageWithFullscreen src="/images/UltimaVol.png" alt="Ultima across volatility" /> 
+
+
+---
+
+Just as there are Greeks to model the risk of volatility in great detail, there are also greeks that measure the interaction of time decay with other variables. You may ask, “How does time decay affect Vega?”. That’s where **Veta** comes in.
+
+
+<h2 id="veta">Veta (If a day passes, how does my exposure to volatility risk (Vega) change?)</h2>
+
+<div>
+Veta measures how Vega changes as time passes, or in other words, how the passage of time changes your exposure to volatility risk. 
+A Veta of -0.05 and a Vega of 0.50 means that if all else stayed constant except a day passed, 
+your new Vega is 0.50 - 0.05 = 0.45, and your option value is now less sensitive to volatility moves 
+(volatility has a smaller effect on your option value).
+</div>
+
+<div>
+Since Vega is highest when you are far from expiration and only decreases as you approach expiration, 
+Veta is always negative if you are long Vega (have a positive Vega position).
+</div>
+
+<div>
+The formula for Veta is:
+</div>
+
+$$
+\text{Veta} = -\frac{S \cdot N(d_1) \cdot \sqrt{T}}{2} \left( \frac{r d_2}{\sigma} - \frac{1 + d_1 d_2}{2T} \right)
+$$
+
+<div>
+Veta has an inverse relationship with time and volatility because of the time decay of the volatility effect mentioned above. 
+This is also seen in the Veta graph plotted against time, as it accelerates similarly to Theta 
+(approaching expiry, the effect of volatility on your option greatly decreases):
+</div>
+
+<ImageWithFullscreen src="/images/VetaTime.png" alt="Veta across time" /> 
+
+<div>
+We’ve now covered how price movement Greeks (Delta, Gamma) are affected by time and volatility, 
+and how volatility exposure (Vega) is affected by time and volatility. 
+The last factor that affects Vega exposure is interest rate changes, and this Greek is called Epsilon.
+</div>
+
+<h2 id="epsilon">Epsilon (If interest rates go up 1 percent, how does my volatility risk exposure change (Vega)?)</h2>
+
+<div>
+Epsilon measures how a 1 percent change in interest rates affects your volatility exposure. 
+This Greek is probably the least important since even Rho (how interest rates affect your option value directly) 
+is one of the least important Greeks. However, it’s nice to know about all the kinds of risks associated with your option contract.
+</div>
+
+<div>
+An Epsilon of -0.05 and a Vega of 0.5 means that if interest rates increased by 1 percent, 
+your long Vega position is now weaker with a new Vega of 0.5 - 0.05 = 0.45.
+</div>
+
+<div>
+The formula for Epsilon is:
+</div>
+
+$$
+\text{Epsilon} = \frac{\partial \text{Vega}}{\partial r} = -K T e^{-rT} N(d_2) \sqrt{T}
+$$
+
+<div>
+The intuition behind negative Epsilon is: since you're receiving potential profits from the future payoff of the option at expiration, 
+that money is worth less today when interest rates are higher. 
+For example, if the rate is 5%, \$100 a year from now is worth about \$95. 
+If the rate increases to 6%, that same \$100 is now worth about \$94. 
+That means your option, which was previously discounted \$5 to get the present value, now has to be discounted \$6, 
+so it’s worth less today.
+</div>
+
+<div>
+Since volatility has a larger dollar effect on more valuable options 
+(for example, 20 percent vol on a \$100 option can cause a \$20 swing, while 20 percent on a \$10 option only causes \$2), 
+lowering the value of the option also lowers the dollar impact of volatility. 
+This means Vega becomes weaker; in other words, increasing interest rates reduce Vega.
+</div>
+
+<div>
+As mentioned before, this Greek is one of the least important, so the effect of it is really small: 
+A normal scenario would be an option with an Epsilon of -0.005 and Vega of 0.28 experiencing a 1 percent increase in interest rates, 
+resulting in a Vega of 0.275 (barely any change).
+</div>
+
+<h2 id="greeks-summary">Greeks Summary</h2>
+
+<div>
+With all the Greeks explained in detail, here’s a diagram to picture them again. 
+Greeks that are simple higher derivatives of variables like price are highlighted the same color as their box 
+(Vega, Vomma, Ultima are all just simple higher derivatives of volatility), 
+and Greeks that are mixed but affect a certain variable are placed in their corresponding section 
+(Veta is time effect on Vega, which means it tells you how your volatility risk changes with time so it’s under the volatility section 
+but highlighted with the time color).
+</div>
+
+<ImageWithFullscreen src="/images/GreeksSummaryGraph.png" alt="Greeks summary" /> 
