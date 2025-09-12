@@ -68,7 +68,7 @@ function NeuralNetwork() {
 
   const { particles, lines, paths } = useMemo(() => {
     const numLayers = 5;
-    const pointsPerLayer = 250;
+    const pointsPerLayer = 150;
     const layerDepth = 2;
     const xySpread = 7;
     
@@ -130,7 +130,7 @@ function NeuralNetwork() {
         <pointsMaterial color={siteConfig.theme.primary} size={0.07} blending={AdditiveBlending} transparent />
       </Points>
       <Line points={lines} color="white" lineWidth={0.2} transparent opacity={0.1} />
-      <Sparks count={50} paths={paths} />
+      <Sparks count={40} paths={paths} />
     </group>
   );
 }
@@ -143,7 +143,7 @@ const ParticleBackground = () => {
           <NeuralNetwork />
         </Suspense>
         <EffectComposer>
-          <Bloom luminanceThreshold={0.1} intensity={0.8} mipmapBlur />
+          <Bloom luminanceThreshold={0.1} intensity={0.5} mipmapBlur />
         </EffectComposer>
       </Canvas>
       <div className="absolute inset-0 bg-background opacity-80" />
