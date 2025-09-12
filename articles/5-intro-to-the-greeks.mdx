@@ -61,7 +61,7 @@ C = \color{orange}{\mathbf{1100}} \cdot \color{purple}{\mathbf{N(0.7162)}} - 105
 = 839.41 - 767.94 = 71.47
 $$
 
-Now we can see that although the price moved in his favor, the option value changed from \$113.8 to \$71.47, meaning he lost (113.8 - 71.47) × 100 = \$4233. This is a common phenomenon and is referred to as the **IV crush,** which happens because the market usually overprices options leading up to earnings as everyone expects major moves in the stock. After earnings release, and when the actual movements of the stock aren’t as large as predicted, implied volatility drops greatly and options lose a ton of value. If a stock’s movement in price doesn’t outdo the stock’s drop in implied volatility (the price moves up but not as much as the market expected), the IV drop brings down the option’s value. This risk is modeled with the Greek Vega, corresponding to how much an option value changes per a percent move in IV. An easy way to prevent this is to first check how sensitive your option is to IV using Vega. However, if you don’t have an understanding of what’s sensitive or not, you can simply compare it to another Greek called Delta, which measures the change in option price with every dollar move in the stock. If Vega > Delta, your option value is more sensitive to volatility than stock price movement and you are exposed to an IV crush risk, and if Vega < Delta you should be more safe but still need more judgment.
+Now we can see that although the price moved in his favor, the option value changed from \$113.8 to \$71.47, meaning he lost (113.8 - 71.47) × 100 = \$4233. This is a common phenomenon and is referred to as the **IV crush,** which happens because the market usually overprices options leading up to earnings as everyone expects major moves in the stock. After earnings release, and when the actual movements of the stock aren’t as large as predicted, implied volatility drops greatly and options lose a ton of value. If a stock’s movement in price doesn’t outdo the stock’s drop in implied volatility (the price moves up but not as much as the market expected), the IV drop brings down the option’s value. This risk is modeled with the Greek Vega, corresponding to how much an option value changes per a percent move in IV. An easy way to prevent this is to first check how sensitive your option is to IV using Vega. However, if you don’t have an understanding of what’s sensitive or not, you can simply compare it to another Greek called Delta, which measures the change in option price with every dollar move in the stock. If Vega > Delta, your option value is more sensitive to volatility than stock price movement and you are exposed to an IV crush risk, and if Vega < Delta you should be safer but still need more judgment.
 
 Given that example, we can now look at every type of Greek to get an understanding of what types of risks to look out for, starting with first order Greeks (first derivatives):
 
@@ -101,8 +101,8 @@ $$
 
 You may notice a few interesting things here:  
 
-1. **Delta equals \( N(d_1) \) from Black–Scholes.**  
-   - This makes sense because \( N(d_1) \) is a measure of how likely your option is to end up in the money.  
+1. **Delta equals N(d_1) from Black–Scholes.**  
+   - This makes sense because N(d_1) is a measure of how likely your option is to end up in the money.  
    - The more a call tracks the movements of a stock (higher delta), the more likely it is to end up ITM.  
    - You can loosely think of delta as “the probability of expiring ITM,” though time to expiration and volatility make this not fully accurate.  
 
@@ -256,7 +256,7 @@ $$
 
 ### Breaking It Down
 
-- **Stock price term (\(S_0\))**  
+- **Stock price term \(S_0\)**  
   This is there because higher stock prices mean a higher dollar impact from a volatility change.  
   - Example: if implied volatility was 100 percent for a \$20 stock (±\$20), and it dropped to 50 percent, the range would drop to ±\$10 (a \$10 drop).  
   - If the stock price was \$100 and implied volatility went from 100 percent to 50 percent, the range would drop \$50.  
@@ -297,7 +297,7 @@ The Theta (**θ**) of an option, also referred to as **time decay**, is the sens
 - Less time for the stock to move
 
 A Theta of -0.1 means for every day that passes your option loses 10 cents of value.
-- Example: if you had an option contract worth $10 with a Theta of 0.1, and all else remained the same, with 10 days passing your option would be worth:
+- Example: if you had an option contract worth $10 with a Theta of -0.1, and all else remained the same, with 10 days passing your option would be worth:
   $$
   10 - 0.1 \times 10 = 9
   $$
@@ -413,7 +413,7 @@ $$
 - Deep OTM calls: near zero Rho → low chance to expire ITM, minimal impact from rates  
 - Deep ITM puts: high negative Rho → likely to expire ITM, harmed by higher rates  
 - Deep OTM puts: near zero Rho → low chance to expire ITM, minimal impact  
-- ATM puts and calls: roughly ±50, because probability of expiring ITM is uncertain  
+- ATM puts and calls: moderately positive or negative, because probability of expiring ITM is uncertain  
 
 
 <ImageWithFullscreen src="/images/RhoMoneynessGraph.png" alt="Rho across moneyness" />

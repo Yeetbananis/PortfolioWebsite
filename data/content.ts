@@ -68,7 +68,7 @@ export const articles = [
   },
   {
     title: "Advanced Risk Management: Higher-Order Greeks",
-    description: "An expert look at second and third-order Greeks and the concept of delta hedging.",
+    description: "A mathematical and intuitive look at second and third-order Greeks and the concept of delta and gamma hedging.",
     image: "/images/Advanced.png",
     link: "/articles/6-advanced-risk-management",
     category: "A Trader's Guide to Financial Derivatives",

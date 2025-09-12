@@ -22,14 +22,14 @@
 
 # 2nd, 3rd (4th?) Order Greeks
 
-The Greeks shown in the previous article are first order or first derivatives in respect to option price. People like to model risks in great details and usually for good reason (always good to know everything that's at play), and that's where 2nd and 3rd derivatives come in. These Greeks measure the change in the first order Greeks themselves with respect to change in things like time, change in underlying price, and more. 
+The Greeks shown in the previous article are first order or first derivatives with respect to option price. People like to model risks in great details and usually for good reason (always good to know everything that's at play), and that's where 2nd and 3rd derivatives come in. These Greeks measure the change in the first order Greeks themselves with respect to change in things like time, change in underlying price, and more. 
 
 - Why would you want to know these?  
   Imagine you have to predict how far a car would travel during an 8 hour non stop road trip, you are given the car’s starting velocity of 80km/hr. You predict the car travels 8*80=640km, however you later find out the car actually travelled 720km. This happened because the car had an average acceleration of 10km/hr throughout the trip, the velocity changed as time passed, and if you knew this you would have estimated more accurately.  
 
-- Acceleration is the derivative of velocity, or the 2nd derivative of speed, knowing how much an option price changes with respect to a variable is useful, however knowing how much that variable itself changes with respect to other variables (time, stock price change, etc) is really useful as you can model risks really precisely.  
+- Acceleration is the derivative of velocity, or the 2nd derivative of distance, knowing how much an option price changes with respect to a variable is useful, however knowing how much that variable itself changes with respect to other variables (time, stock price change, etc) is really useful as you can model risks really precisely.  
 
-- If you know that a stock has a delta of 0.5, meaning the option price goes up 50 cents for every dollar move in the stock, can you forsure say with all other variables being the same that a 10 dollar move would result in a 0.5*10 = \$5 gain in option price? Well given the example above you might ask “how fast does Delta itself change for every dollar move in the stock”, that's where Gamma comes in.
+- If you know that a stock has a delta of 0.5, meaning the option price goes up 50 cents for every dollar move in the stock, can you for sure say with all other variables being the same that a 10 dollar move would result in a 0.5*10 = \$5 gain in option price? Well given the example above you might ask “how fast does Delta itself change for every dollar move in the stock”, that's where Gamma comes in.
 
 ---
 
@@ -140,7 +140,7 @@ The Gamma of an option is how much delta changes for every 1 dollar move in the 
 
 A good way to imagine Gamma is thinking of Delta as your chance of ending up in the money, so Gamma is just the speed at which this chance decreases or increases based on different variables like time or changes in underlying price. 
 
-The chart above also makes sense since we saw earlier that delta is highest when an option is deep in the money and lowest when a stock is deep out of the money, so if a call option’s underlying stock price is moving up it means its either approaching the strike price or going past it, which is more in the money (delta/chance ending ITM increases). If a call option’s underlying is moving down it means it’s getting further from the strike or more out of the money (delta/chance ending ITM decreases). 
+The chart above also makes sense since we saw earlier that delta is highest when an option is deep in the money and lowest when a stock is deep out of the money, so if a call option’s underlying stock price is moving up it means it's either approaching the strike price or going past it, which is more in the money (delta/chance ending ITM increases). If a call option’s underlying is moving down it means it’s getting further from the strike or more out of the money (delta/chance ending ITM decreases). 
 
 ---
 
@@ -348,13 +348,13 @@ Looking at the pattern of risks above you may ask another question, which is “
 
 <h2 id="speed">Speed (For every dollar move up, how does Gamma change?)</h2>
 
-Speed is a third order Greek, and is the amount Gamma moves for each dollar move in underlying price. It’s a bit overkill to monitor speed but it still provides an even more precise risk overview for how underlying moves effect options prices. A Speed of 0.01 and Gamma of 0.05 means that if the stock moves up 1 dollar then your new Gamma is 0.06, meaning that Delta changes by 0.06 now, meaning that the option value is extremely sensitive to stock price movement. Like Gamma, Speed is highest at the money and decreases when the option is far OTM or ITM. The formula is shown below:
+Speed is a third order Greek, and is the amount Gamma moves for each dollar move in underlying price. It’s a bit overkill to monitor speed but it still provides an even more precise risk overview for how underlying moves affect options prices. A Speed of 0.01 and Gamma of 0.05 means that if the stock moves up 1 dollar then your new Gamma is 0.06, meaning that Delta changes by 0.06 now, meaning that the option value is extremely sensitive to stock price movement. Like Gamma, Speed is highest at the money and decreases when the option is far OTM or ITM. The formula is shown below:
 
 $$
 \text{Speed} = -\frac{N'(d_1)}{S^2 \sigma^2 T} \left( d_1 (d_1 + d_2) + 1 \right)
 $$
 
-Basically change in Gamma over change in stock price. Here is a table showing the Speed affect on options pricing, and how only Delta is the least accurate, Gamma is a lot more accurate, and Speed is laser precise:
+Basically change in Gamma over change in stock price. Here is a table showing the Speed effect on options pricing, and how only Delta is the least accurate, Gamma is a lot more accurate, and Speed is laser precise:
 
 <table>
   <thead>
@@ -447,13 +447,13 @@ As you can see Speed could be useful for very high quality hedging when managing
 
 <h2 id="color">Color (For every day that passes, how fast does Gamma change?)</h2>
 
-Color or Gamma decay, is how fast Gamma changes as time passes, more specifically as an option approaches expiration. It’s a third order derivative (not fully a third derivative because its mixed) of option price with respect to time and underlying price (Gamma measures change in Delta which measures change in option price compared to change in underlying price, now we’re measuring change in Gamma compared to change in time). To put it simply, before we were asking “How fast does Gamma change if Apple stock goes up a dollar and everything else stays the same”, now we’re asking “How fast does Gamma change if a day passes and everything else stays the same”. Color of -0.01 and Gamma of 0.05 means that if a day passes your new Gamma is 0.05 - 0.01 = 0.04, meaning a dollar move in stock price changes your Delta less, making the option value less sensitive to stock price movement. The formula for color is:
+Color or Gamma decay, is how fast Gamma changes as time passes, more specifically as an option approaches expiration. It’s a third order derivative (not fully a third derivative because it's mixed) of option price with respect to time and underlying price (Gamma measures change in Delta which measures change in option price compared to change in underlying price, now we’re measuring change in Gamma compared to change in time). To put it simply, before we were asking “How fast does Gamma change if Apple stock goes up a dollar and everything else stays the same”, now we’re asking “How fast does Gamma change if a day passes and everything else stays the same”. Color of -0.01 and Gamma of 0.05 means that if a day passes your new Gamma is 0.05 - 0.01 = 0.04, meaning a dollar move in stock price changes your Delta less, making the option value less sensitive to stock price movement. The formula for color is:
 
 $$
 \text{Color} = -\frac{N'(d_1) \cdot \left(2rT - d_2 \sigma \sqrt{T} \right)}{2 S T \sigma \sqrt{T}}
 $$
 
-Color is negative because as time passes Gamma decreases (the amount your chances of ending ITM move becomes a lot less as there’s less time to expiration since with fewer days left you’re more certain if you’ll end ITM or OTM). Higher Interest rates (2rT) increase color because they increase the time decay effect (as we saw before a call option with high interest rates has a higher Vega or time decay and in result has more to lose as time passes than one with low interest rates because higher interest rate over longer time = more money). Like Gamma, Color also has an inverse relationship with time, volatility, and stock price because in all these cases a dollar has more say in the chance of ending ITM or OTM. Like Vega, it decays the most as expiration approaches because with little time left the question of “will my option end ITM?” becomes more clear, making the sensitivity to that question (sensitivity of Delta, aka Gamma) very small:
+Color is negative because as time passes Gamma decreases (the amount your chances of ending ITM move becomes a lot less as there’s less time to expiration since with fewer days left you’re more certain if you’ll end ITM or OTM). Higher Interest rates (2rT) increase color because they increase the time decay effect (as we saw before a call option with high interest rates has a higher Theta or time decay and in result has more to lose as time passes than one with low interest rates because a higher interest rate over longer time = more money). Like Gamma, Color also has an inverse relationship with time, volatility, and stock price because in all these cases a dollar has more say in the chance of ending ITM or OTM. Like Vega, it decays the most as expiration approaches because with little time left the question of “will my option end ITM?” becomes more clear, making the sensitivity to that question (sensitivity of Delta, aka Gamma) very small:
 
 <ImageWithFullscreen src="/images/ColorTime.png" alt="Color across time" /> 
 
@@ -720,7 +720,7 @@ You expect a 30% drop in implied volatility but a \$40 gain in the stock price. 
 * **Expected Delta Gain:** 0.5 * \$40 * 100 shares = +\$2,000
 * **Estimated Net Gain:** +\$650 (ignoring other Greeks)
 
-You wake up the next day and everything went exactly to plan: IV fell by 30% and the stock rose \$40. Except, you lost -\$2,950. You check Vega and notice that it’s now 2.85. What happened?
+You wake up the next day and everything went exactly to plan: IV fell by 30% and the stock rose \$40. Except, you lost \$2,950. You check Vega and notice that it’s now 2.85. What happened?
 
 The position had a Vomma of -0.08. For every 1% move down in volatility, Vega went *up* by 0.08. The new Vega is calculated as: 0.45 + (-0.08 * -30) = 2.85.
 
