@@ -58,7 +58,7 @@ const COURSES: Course[] = [
 
     // Year 2
     { id: "math200", code: "MATH 200", title: "Multivariable Calculus", status: "current", line: "math", year: "Y2", desc: "Extends calculus to functions of several variables which helps when modeling systems with many financial factors.", topics: ["Partial Derivatives", "Multiple Integrals", "Vector Fields"] },
-    { id: "math220", code: "MATH 221", title: "Linear Algebra", status: "current", line: "math", year: "Y2", desc: "Covers vectors, matrices, and eigenvalues which are essential in risk models, optimization, and factor analysis.", topics: ["Vector Spaces", "Matrix Operations", "Eigenvalues"] },
+    { id: "math221", code: "MATH 221", title: "Linear Algebra", status: "current", line: "math", year: "Y2", desc: "Covers vectors, matrices, and eigenvalues which are essential in risk models, optimization, and factor analysis.", topics: ["Vector Spaces", "Matrix Operations", "Eigenvalues"] },
     { id: "math220", code: "MATH 220", title: "Mathematical Proof", status: "current", line: "math", year: "Y2", desc: "Introduces proof techniques, rigorous mathematics, and logical thinking essential for clear reasoning and validating models in quantitative finance.", topics: ["Sets and functions", "Logic (direct, contrapositive, contradiction)", "Quantifiers", "Induction", "Sequences and series", "Limits", "Cardinality and infinite sets"] },
     { id: "stat200", code: "STAT 200", title: "Probability", status: "current", line: "stats", year: "Y2", desc: "Introduces probability theory which underpins all modeling of uncertainty and risk in finance.", topics: ["Probability Spaces", "Random Variables", "Common Distributions"] },
     { id: "stat302", code: "STAT 302", title: "Statistical Inference", status: "current", line: "stats", year: "Y2", desc: "Covers estimation and hypothesis testing which are necessary for validating models and making data driven decisions.", topics: ["Estimation", "Hypothesis Testing", "Confidence Intervals"] },
@@ -165,11 +165,24 @@ function CourseMapD3({ data = [] }: { data?: Course[] }) {
     const nodes: SimulationNode[] = courseData.map(d => ({ ...d, r: NODE_RADIUS }));
     const links: SimulationLink[] = buildLinks(nodes).map(l => ({ ...l }));
 
+    // This is the new code block to add
+    const uniqueLines = Array.from(new Set(nodes.map(n => n.line)));
+    const angleStep = (2 * Math.PI) / uniqueLines.length;
+    const lineAngles = new Map(uniqueLines.map((line, i) => [line, i * angleStep]));
+
+    nodes.forEach(node => {
+        const angle = lineAngles.get(node.line) || 0;
+        const radius = YEAR_RADII[node.year];
+        // Set initial positions based on angle and radius
+        node.x = width / 2 + radius * Math.cos(angle);
+        node.y = height / 2 + radius * Math.sin(angle);
+    });
+
     const simulation = d3.forceSimulation<SimulationNode>(nodes)
       .force("link", d3.forceLink<SimulationNode, SimulationLink>(links).id(d => d.id).strength(0.8))
       .force("charge", d3.forceManyBody().strength(-60))
       .force("radial", d3.forceRadial<SimulationNode>(d => YEAR_RADII[d.year], width / 2, height / 2).strength(1))
-      .force("collide", d3.forceCollide<SimulationNode>(d => d.r + 5));
+      .force("collide", d3.forceCollide<SimulationNode>(d => d.r + 30));
 
     const link = container.append("g").attr("class", "links")
       .selectAll("line").data(links).enter()
