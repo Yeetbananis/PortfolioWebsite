@@ -4,7 +4,7 @@
 import ProjectCard from "./ProjectCard";
 import AnimatedWords from "./AnimatedWords";
 import TypingAnimator from "./TypingAnimator";
-import BouncingDotName from "./BouncingDotName"; // 1. Import the new component
+import BouncingDotName from "./BouncingDotName";
 import { motion } from "framer-motion";
 
 export default function ProjectsPageContent({ projects }: { projects: any[] }) {
@@ -24,7 +24,6 @@ export default function ProjectsPageContent({ projects }: { projects: any[] }) {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       <section className="py-32 text-center">
-        {/* 2. Replace the old h1 with a div to center the new component */}
         <div className="flex justify-center items-center h-[150px]">
           <BouncingDotName />
         </div>
@@ -50,6 +49,7 @@ export default function ProjectsPageContent({ projects }: { projects: any[] }) {
               description={project.description}
               image={project.image}
               link={project.link}
+              tags={project.tags} // 1. Pass the tags from your project data
             />
           ))}
         </div>
@@ -57,3 +57,4 @@ export default function ProjectsPageContent({ projects }: { projects: any[] }) {
     </motion.div>
   );
 }
+
