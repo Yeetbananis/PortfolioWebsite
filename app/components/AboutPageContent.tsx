@@ -60,7 +60,6 @@ const COURSES: Course[] = [
     { id: "math200", code: "MATH 200", title: "Multivariable Calculus", status: "current", line: "math", year: "Y2", desc: "Extends calculus to functions of several variables which helps when modeling systems with many financial factors.", topics: ["Partial Derivatives", "Multiple Integrals", "Vector Fields"] },
     { id: "math221", code: "MATH 221", title: "Linear Algebra", status: "current", line: "math", year: "Y2", desc: "Covers vectors, matrices, and eigenvalues which are essential in risk models, optimization, and factor analysis.", topics: ["Vector Spaces", "Matrix Operations", "Eigenvalues"] },
     { id: "math220", code: "MATH 220", title: "Mathematical Proof", status: "current", line: "math", year: "Y2", desc: "Introduces proof techniques, rigorous mathematics, and logical thinking essential for clear reasoning and validating models in quantitative finance.", topics: ["Sets and functions", "Logic (direct, contrapositive, contradiction)", "Quantifiers", "Induction", "Sequences and series", "Limits", "Cardinality and infinite sets"] },
-    { id: "stat200", code: "STAT 200", title: "Probability", status: "current", line: "stats", year: "Y2", desc: "Introduces probability theory which underpins all modeling of uncertainty and risk in finance.", topics: ["Probability Spaces", "Random Variables", "Common Distributions"] },
     { id: "stat302", code: "STAT 302", title: "Statistical Inference", status: "current", line: "stats", year: "Y2", desc: "Covers estimation and hypothesis testing which are necessary for validating models and making data driven decisions.", topics: ["Estimation", "Hypothesis Testing", "Confidence Intervals"] },
     { id: "phil336", code: "PHIL 336", title: "Philosophy Elective", status: "current", line: "other", year: "Y2", desc: "Builds advanced reasoning and ethical thinking skills which help in evaluating assumptions and choices in modeling.", topics: ["Advanced Logic", "Epistemology", "Ethics"] },
     { id: "phys100", code: "PHYS 100", title: "Mechanics, Heat, and Waves", status: "current", line: "other", year: "Y2", desc: "Introduces physics principles and problem solving which sharpen quantitative reasoning and modeling skills.", topics: ["Newtonian Mechanics", "Thermodynamics", "Oscillations"] },
@@ -69,10 +68,10 @@ const COURSES: Course[] = [
     { id: "econ102", code: "ECON 102", title: "Principles of Macroeconomics", status: "current", line: "econ", year: "Y2", desc: "Covers aggregate economic behavior and policy which helps in understanding market cycles and systemic risks.", topics: ["GDP", "Inflation", "Monetary Policy"] },
 
     // Year 3
-    { id: "math215", code: "MATH 215", title: "Elementary Differential Equations I", status: "planned", line: "math", year: "Y3", desc: "Introduces solving differential equations which are used in modeling rates, option pricing, and financial dynamics.", topics: ["First-Order DEs", "Second-Order DEs", "Laplace Transforms"] },
+    { id: "math215", code: "MATH 215", title: "Elementary Differential Equations I", status: "current", line: "math", year: "Y2", desc: "Introduces solving differential equations which are used in modeling rates, option pricing, and financial dynamics.", topics: ["First-Order DEs", "Second-Order DEs", "Laplace Transforms"] },
     { id: "stat305", code: "STAT 305", title: "Introduction to Statistical Inference", status: "planned", line: "stats", year: "Y3", desc: "Explores deeper inference methods which help in testing models and making confident conclusions from data.", topics: ["Bayesian Inference", "Likelihood Methods", "ANOVA"] },
     { id: "econ301", code: "ECON 301", title: "Intermediate Microeconomic Analysis I", status: "planned", line: "econ", year: "Y3", desc: "Studies consumer and firm behavior in detail which supports understanding of pricing, competition, and market design.", topics: ["Utility Maximization", "Profit Maximization", "Game Theory"] },
-    { id: "econ325", code: "ECON 325", title: "Introduction to Econometrics I", status: "planned", line: "econ", year: "Y3", desc: "Teaches regression and empirical methods which are fundamental for analyzing financial data.", topics: ["Linear Regression", "Hypothesis Testing", "OLS"] },
+    { id: "econ325", code: "ECON 325", title: "Introduction to Econometrics I", status: "planned", line: "econ", year: "Y3", desc: "Introduces probability, statistics, and regression methods for empirical economic analysis.", topics: ["Probability & Statistics", "Estimation", "Hypothesis Testing", "Linear Regression", "Applied Econometrics"] },
     { id: "phys101", code: "PHYS 101", title: "Energy and Waves", status: "planned", line: "other", year: "Y3", desc: "Explores energy and wave phenomena which build intuition for mathematical modeling and handling periodic patterns.", topics: ["Wave Mechanics", "Electromagnetism", "Optics"] },
     { id: "math303", code: "MATH 303", title: "Introduction to Stochastic Processes", status: "planned", line: "math", year: "Y3", desc: "Focuses on random processes which directly apply to stock price models, risk dynamics, and interest rate models.", topics: ["Markov Chains", "Brownian Motion", "Poisson Processes"] },
     { id: "math307", code: "MATH 307", title: "Applied Linear Algebra", status: "planned", line: "math", year: "Y3", desc: "Covers computational methods in linear algebra which are important in portfolio optimization and large scale data analysis.", topics: ["SVD", "PCA", "Numerical Methods"] },
@@ -89,7 +88,7 @@ const COURSES: Course[] = [
     { id: "math441", code: "MATH 441", title: "Mathematical Modelling: Discrete Optimization Problems", status: "planned", line: "math", year: "Y4", desc: "Covers discrete optimization methods which are used in scheduling, resource allocation, and combinatorial finance problems.", topics: ["Integer Programming", "Network Flows", "Combinatorics"] },
     { id: "math442", code: "MATH 442", title: "Graphs and Networks", status: "planned", line: "math", year: "Y4", desc: "Teaches graph theory and network analysis which apply to financial networks, contagion, and systemic risk.", topics: ["Graph Theory", "Network Analysis", "Systemic Risk"] },
     { id: "stat443", code: "STAT 443", title: "Time Series and Forecasting", status: "planned", line: "stats", year: "Y4", desc: "Covers ARIMA, GARCH, and forecasting methods which are directly used for modeling asset prices and volatility.", topics: ["ARIMA Models", "GARCH/Volatility", "Forecasting"] },
-    { id: "stat306", code: "STAT 306", title: "Finding Relationships in Data", status: "planned", line: "stats", year: "Y4", desc: "Focuses on data exploration and regression which are essential for uncovering predictive relationships in finance.", topics: ["Regression Models", "Data Mining", "Feature Engineering"] },
+    { id: "stat405", code: "STAT 405", title: "Bayesian Statistics", status: "planned", line: "stats", year: "Y4", desc: "Bayesian approaches to statistical inference including probabilistic modeling, Bayesian workflows, posterior approximation, and analysis of Bayesian procedures.", topics: ["Bayesian Inference", "Probabilistic Modelling", "Posterior Approximation"] },
     { id: "cpsc330", code: "CPSC 330", title: "Applied Machine Learning", status: "planned", line: "cs", year: "Y4", desc: "Applies machine learning techniques which are increasingly used for predictive models and trading strategies in finance.", topics: ["Supervised Learning", "Unsupervised Learning", "Neural Networks"] },
 ];
 
@@ -150,17 +149,97 @@ function CourseMapD3({ data = [] }: { data?: Course[] }) {
         .attr("offset", d => d.offset).attr("stop-color", d => d.color);
     });
 
-    // --- Background Orbits ---
-  container.append("g").selectAll("circle")
-    .data(Object.values(YEAR_RADII)).enter()
+ // --- Animated Background Orbits ---
+  const orbitGroup = container.append("g").attr("class", "orbits");
+  const orbits = orbitGroup.selectAll("circle")
+    .data(Object.values(YEAR_RADII))
+    .enter()
     .append("circle")
-    .attr("cx", width / 2).attr("cy", height / 2)
+    .attr("cx", width / 2)
+    .attr("cy", height / 2)
     .attr("r", d => d)
     .attr("fill", "none")
     .attr("stroke", "#ffffff")
-    .attr("stroke-opacity", 0.3) // Increased opacity
-    .attr("stroke-width", 1.5)   // Thicker line
-    .attr("stroke-dasharray", "2 4"); // Denser dot pattern
+    .attr("stroke-opacity", 0.3)
+    .attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "2 4");
+
+  // Slow rotation animation
+  orbits.each(function(d, i) {
+    const orbit = d3.select(this);
+    (function repeat() {
+      orbit.transition()
+        .duration(60000 + i * 2000) // 60s+ small offset per orbit
+        .attrTween("transform", () => d3.interpolateString("rotate(0," + width/2 + "," + height/2 + ")", "rotate(360," + width/2 + "," + height/2 + ")"))
+        .on("end", repeat);
+    })();
+  });
+
+// --- CLEAN TOP-RIGHT LEGEND ---
+const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${width - 200}, 40)`); // top-right corner
+
+// Title
+legend.append("text")
+    .attr("class", "legend-title")
+    .attr("y", 0)
+    .attr("fill", "#fff")
+    .attr("font-size", 18)
+    .attr("font-weight", "bold")
+    .text("Map Guide");
+
+// Rings explanation (split into separate lines for proper display)
+legend.append("text")
+    .attr("y", 28)
+    .attr("fill", "#ccc")
+    .attr("font-size", 14)
+    .text("Rings correspond to");
+
+legend.append("text")
+    .attr("y", 46)
+    .attr("fill", "#ccc")
+    .attr("font-size", 14)
+    .text("Academic Years: ");
+
+legend.append("text")
+    .attr("y", 70)
+    .attr("fill", "#ccc")
+    .attr("font-size", 14)
+    .text("Inner → Year 1, Outer → Year 4");
+
+// Subject names (manual full names)
+const subjectNames = [
+    "Mathematics",
+    "Statistics",
+    "Economics",
+    "Computer Science",
+    "Other Subjects"
+    // add more as needed
+];
+
+// Fetch colors from PALETTE but keep names manual
+subjectNames.forEach((name, i) => {
+    const lineKey = Object.keys(PALETTE)[i] as LineKey; // get the corresponding key from PALETTE
+    const color = PALETTE[lineKey].color;   // fetch color
+
+    const y = 95 + i * 22;
+    // Color circle
+    legend.append("circle")
+        .attr("cx", 0)
+        .attr("cy", y - 6)
+        .attr("r", 7)
+        .attr("fill", color);
+    // Label
+    legend.append("text")
+        .attr("x", 16)
+        .attr("y", y)
+        .attr("fill", "#ccc")
+        .attr("font-size", 14)
+        .attr("alignment-baseline", "middle")
+        .text(name);
+});
+
 
     const nodes: SimulationNode[] = courseData.map(d => ({ ...d, r: NODE_RADIUS }));
     const links: SimulationLink[] = buildLinks(nodes).map(l => ({ ...l }));
@@ -198,7 +277,26 @@ function CourseMapD3({ data = [] }: { data?: Course[] }) {
       .on("mouseleave", () => setHoveredCourse(null))
       .on("click", (_, d) => setSelectedCourse(d));
 
-    nodeGroup.append("circle").attr("r", d => d.r).attr("fill", d => `url(#grad-${d.line})`).style("filter", "url(#glow)");
+    // Main node circle with pulsating glow for planned/current
+  nodeGroup.append("circle")
+    .attr("r", d => d.r)
+    .attr("fill", d => `url(#grad-${d.line})`)
+    .style("filter", "url(#glow)")
+    .each(function(d) {
+      if (d.status === "planned" || d.status === "current") {
+        const node = d3.select(this);
+        (function pulse() {
+          node.transition()
+            .duration(2000)
+            .attr("r", d.r * 1.3)
+            .transition()
+            .duration(2000)
+            .attr("r", d.r)
+            .on("end", pulse);
+        })();
+      }
+    });
+
     nodeGroup.append("circle").attr("r", d => d.r * 0.5).attr("fill", d => PALETTE[d.line].gradient[0]);
     nodeGroup.append("circle").attr("r", d => d.r + 2)
       .attr("fill", "none").attr("stroke", "#ffffff").attr("stroke-width", 1.5)
@@ -409,7 +507,6 @@ export default function PortfolioAboutSection() {
                             <a href="https://github.com/Yeetbananis" className="hover:text-white transition"><FiGithub size={24} /></a>
                             <a href="https://www.linkedin.com/in/tim-generalov/" className="hover:text-white transition"><FiLinkedin size={24} /></a>
                         </div>
-                         <p className="mt-8 text-sm">&copy; {new Date().getFullYear()} Tim Generalov</p>
                     </footer>
                 </main>
             </div>
