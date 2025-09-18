@@ -89,12 +89,12 @@ $$
 -   $\frac{1}{\sqrt{2\pi}}$ normalizes the distribution so the total area under the curve is 1 (or 100%).
 -   $\int_{-\infty}^x$ accumulates the probability from negative infinity up to point x, capturing the total area under the curve up to that point.
 -   $e^{-\frac{t^2}{2}}$ represents the shape of the standard normal distribution, a bell curve centered at 0 with a standard deviation of 1.
-![Alt text for the image](/images/PDF1.png)
+<ImageWithFullscreen src="/images/PDF1.png" alt="Delta across moneyness for calls and puts" />
 
 This relates to stock prices because they tend to move in a random but slightly upward path over time. While we don't know the future price of a stock, we can say that certain prices have a higher chance of being reached than others, and all these probabilities can be modeled with a bell curve.
 
 
-![Alt text for the image](/images/bellcurve.png)
+<ImageWithFullscreen src="/images/bellcurve.png" alt="Delta across moneyness for calls and puts" />
 
 
 As the image shows, stock prices can be distributed in a bell curve. If the current price is 100 dollars, intuitively, the stock is more likely to go to 120 dollars (a 20% gain) than to 140 dollars (a 40% gain).
@@ -135,7 +135,7 @@ Overall, d₁ measures how far the stock has progressed toward the strike, looki
 
 A high d₁ means a high chance of your option finishing in the money (hitting the strike or above), and a low d₁ means a low chance. You can visualize the N(x) function as a CDF. Since the formula for N(x) takes the integral from negative infinity to d₁, a higher d₁ results in a larger area under the curve and thus a higher probability.
 
-![Alt text for the image](/images/CDFImage.png)
+<ImageWithFullscreen src="/images/CDFImage.png" alt="Delta across moneyness for calls and puts" />
 
 *Note: A d₁ of -0.5 includes all area from negative infinity to -0.5. A d₁ of 1.5 includes all area from negative infinity to 1.5 because it's cumulative.*
 
@@ -146,7 +146,7 @@ The term ln(S/K) compares the current stock price (S) to the strike price (K). T
 -   **Out-of-the-Money (OTM) strikes (K > S)** have a negative effect on your chance of finishing ITM. It’s harder for a stock to go from 100 dollars to 150 dollars than to just stay above 100 dollars. In this case, S/K < 1, and ln(S/K) is **negative**.
 -   **In-the-Money (ITM) strikes (K < S)** increase your chance of ending up ITM. If the stock is at 100 dollars and your strike is at 80 dollars, you have 20 dollars of wiggle room. Here, S/K > 1, and ln(S/K) is **positive**.
 -   **At-the-Money (ATM) strikes (K = S)** have no effect based on price level alone. Here, S/K = 1, and ln(S/K) = ln(1) = 0.
-![Alt text for the image](/images/LnStrike.png)
+<ImageWithFullscreen src="/images/LnStrike.png" alt="Delta across moneyness for calls and puts" />
 
 ### Upward Drift: (r + σ²/2)T
 
@@ -166,7 +166,7 @@ There are two types of volatility in options:
 
 **Implied volatility,** which is the market’s expectation of how much a stock’s price returns will fluctuate over a certain period, usually a year. It doesn’t tell you the direction (up or down), just the size of the expected moves. For example, if a stock has 50% implied volatility, the market expects the stock’s returns to fall within ±50% of the average return over the next year about 68% of the time (one standard deviation in a normal distribution). This also means that about 32% of the time the stock’s returns are expected to end up outside this ±50% range.
 
-![Alt text for the image](/images/VolDist1.png)
+<ImageWithFullscreen src="/images/VolDist1.png" alt="Delta across moneyness for calls and puts" />
 Volatility introduces two competing effects: upward skew and volatility drag.
 
 1.  **Upward Volatility Skew:** A stock can only go down by 100% (to 0), but it can go up by more than 100%. Imagine a coin flip: heads = +50%, tails = -50%. Starting with 100 dollars:
@@ -175,11 +175,11 @@ Volatility introduces two competing effects: upward skew and volatility drag.
     
     However, the potential for huge gains on the upside (e.g., multiple heads in a row) outweighs the limited downside. A very lucky outcome (100 dollars → 300 dollars) adds more to the average than a very unlucky outcome (100 dollars → 0 dollars). This creates an upward skew in the average expected price.
 
-![Alt text for the image](/images/VolDist3.png)
+<ImageWithFullscreen src="/images/VolDist3.png" alt="Delta across moneyness for calls and puts" />
 
 2.  **Volatility Drag:** Despite the upward skew in the *average*, the *median* outcome is actually lower. As seen in the coin flip example, symmetrical percentage gains and losses result in a net loss (1.5 × 0.5 = 0.75). This is because losses compound on a larger principal and gains on a smaller one. Over many "flips," this drag pulls the most likely outcome down.
 
-![Alt text for the image](/images/CoinFlips.png)
+<ImageWithFullscreen src="/images/CoinFlips.png" alt="Delta across moneyness for calls and puts" />
 ---
 
 <h2 id="d1-vs-d2">d₁ vs. d₂: The Full Picture</h2>
@@ -269,7 +269,7 @@ The only difference is that d₁ and d₂ are negative. This is because the prob
 
 Using -d₁ and -d₂ calculates the probability of the stock price falling *below* a certain level, rather than rising *above* it. A high probability for a call to finish ITM implies a low probability for an equivalent put to finish ITM. If a 100-dollar strike call on a 100-dollar stock has a certain probability N(d₁) of finishing ITM, a 100-dollar strike put on the same stock has a probability of N(-d₁) of finishing ITM, where N(d₁) + N(-d₁) = 1.
 
-![Alt text for the image](/images/CallvsPutCDF.png)
+<ImageWithFullscreen src="/images/CallvsPutCDF.png" alt="Delta across moneyness for calls and puts" />
 
 In the graph, you can see that a high d₁ value for calls (far right) corresponds to a high probability for the call but a very low probability for the put. Conversely, a low d₁ value (far left) means a low probability for the call but a high probability for the put. This reflects the inverse relationship between the two options.
 
