@@ -16,7 +16,15 @@ The application's central command center, providing a dynamic, at-a-glance overv
 * **Backend & Logic:**
     * **Data Management:** Powered by a `HomeDataManager` that fetches and auto-refreshes all necessary data in the background every 30 seconds.
 
+## Demo video of the Home Dashboard
+
+<SmoothVideo
+  src="/videos/HomePageVideo.mp4"
+/>
+* Note: The video recorder has a maximum setting of 60 frames per second, so recording is less smooth than actual application
+
 ---
+
 
 ## 2. The Options Analysis Suite
 The scientific core of the application, designed for deep, quantitative analysis of a single options contract or thesis.
@@ -74,6 +82,12 @@ A comprehensive, standalone window for a deep dive into a single stock.
 * **Backend & Logic:**
     * **`ResearchOrchestrator`:** A powerful, multi-threaded orchestrator manages all data fetching for fast loading times.
     * **Hybrid Data Sourcing:** Primarily uses `yfinance` but has intelligent fallbacks to other sources like the Finnhub API or direct scraping (using `curl-cffi` to prevent blocks).
+
+## Demo video of the Stock Research Suite
+
+<SmoothVideo
+  src="/videos/StockResearchVideo.mp4"
+/>
 
 ---
 
