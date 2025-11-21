@@ -73,4 +73,11 @@ export const articles = [
     link: "/articles/6-advanced-risk-management",
     category: "A Trader's Guide to Financial Derivatives",
   },
+  {
+    title: "Linear Algebra in Machine Learning: Principal Component Analysis (PCA)",
+    description: "How does PCA use eigenvectors and eigenvalues to reduce data dimensions and extract key features?",
+    image: "/images/PCAImage1.png",
+    link: "/articles/7-pca-linear-algebra-ml",
+    category: "Machine Learning and Math in Trading",
+  }
 ];
