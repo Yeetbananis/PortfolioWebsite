@@ -1,0 +1,875 @@
+# The idea: Questioning Popular Belief
+
+I recently came across the efficient market hypothesis in a financial markets course, which suggests that all information related to the stock market is already priced in. This made partial sense to me since the market is made up of millions of participants, and the chance that someone has come across information before you is almost 100 percent.
+
+However, my first thought was:
+
+> If this was fully true, wouldn’t the market move in smooth lines? How come you see massive jumps in price at seemingly random times?
+
+A massive jump in price suggests an imbalance of information, more specifically there must’ve been an event that triggered a chain reaction of buyers or sellers to bring the price to an area that reflects this new information.
+
+Events that cause these jumps are often pivotal in relation to the stock or the overall market, such as earnings reports that surprise investors, new laws affecting company profits, and massive tariff threats out of the blue, with the arrival of this information usually being through news.
+
+### The Tesla Example
+
+You can imagine a stable price movement for Tesla where all investors have accounted for Tesla’s upcoming earnings being potentially disappointing due to a decrease in sales, while also accounting for the likelihood of Tesla being issued government subsidies to increase sales, and all other possible information related to Tesla’s stock price.
+
+While the market was calm, the price reflected millions of votes on how government subsidies should affect Tesla stock, with everyone placing their votes through buy and sell orders until the price settled on a number.
+
+Then, an influx of news articles come out:
+
+<div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg my-6 max-w-md shadow-xl">
+  <div className="flex items-center gap-3 mb-2">
+    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+    <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Live News Feed</span>
+  </div>
+  <h3 className="text-white font-bold text-lg leading-tight">
+    “Elon Musk released a tweet heavily criticizing Trump’s bill”
+  </h3>
+</div>
+
+A buyer who was previously comfortable with investing in Tesla and placed a vote for the price going up through a buy order now has doubts. He reads the article and makes this connection:
+
+1.  **The Context:** Elon Musk is the CEO of Tesla, and his connection to Trump is a big factor in Tesla receiving subsidies from the government.
+2.  **The Event:** He just tweeted a tweet that sours his relation to Trump.
+3.  **The Risk:** If this escalates, Trump may pull the subsidies.
+4.  **The Consequence:** This results in less sales, less profit, and disappointing earnings which will negatively impact the stock price.
+
+The buyer instantly rushes to change his vote from buy to sell and pushes the price down, with this chain reaction happening on a scale of millions until the price settles somewhere between *“This is wraps for Tesla”* and *“This is actually the best thing that could’ve happened”*.
+
+## Hypothesis and Choosing a Model
+
+My hypothesis is that most of the time all information is priced in, but the market is not truly “efficient”, with the inflow of new information, specifically through news, causing massive jumps in price as investors change their bets.
+
+Now how can this be modeled through numbers that machines understand, more specifically math? Before looking into that I had to settle for what model to use in my project. I had a very wide range of options, ranging from neural network models like LSTM to random forest models (which I won’t cover in depth for brevity purposes), but what I landed on was a **Logistic Regression model**.
+
+I want the model to tell me whether or not a stock will jump or not, but I don’t want a yes or no, I want a more specific probability of that yes or no.
+
+
+
+It’s like hiring a student and looking at grades: seeing that they passed all their classes doesn’t give you insight into how well they mastered the material.
+
+<div className="grid grid-cols-2 gap-4 my-6 max-w-lg mx-auto">
+  <div className="bg-red-900/20 border border-red-500/30 p-4 rounded-lg text-center">
+    <div className="text-3xl font-bold text-red-400 mb-1">51% Avg</div>
+    <div className="text-xs text-neutral-400 uppercase tracking-wide">"Passed"</div>
+    <p className="text-xs text-neutral-300 mt-2">Almost 50/50 chance of failure, barely scraped by.</p>
+  </div>
+  
+  <div className="bg-green-900/20 border border-green-500/30 p-4 rounded-lg text-center">
+    <div className="text-3xl font-bold text-green-400 mb-1">95% Avg</div>
+    <div className="text-xs text-neutral-400 uppercase tracking-wide">"Passed"</div>
+    <p className="text-xs text-neutral-300 mt-2">Almost guaranteed mastery.</p>
+  </div>
+</div>
+
+In a binary "Yes/No" model, both of these students are put into the same category ("Passed").
+
+I want to make the decision of what to do with the information the model gives instead of it telling me whether or not a jump will happen, which is exactly what Logistic Regression does:
+
+A Logistic Regression model is assigned to make a decision on whether or not to approve someone for a loan. It looks at inputs (features) first:
+
+* **Income:** How much money does the person make?
+* **Debt:** How much do they already owe?
+* **History:** Do they pay back on time?
+
+These can be represented as a vector. The model is trained through many examples to learn how much each feature matters, and decides on a weight for each feature:
+
+* **Income Weight ($\beta_1$):** +0.5 (Higher income helps)
+* **Debt Weight ($\beta_2$):** -0.8 (High debt hurts more than high income helps).
+* **History Weight ($\beta_3$):** +0.3 (Good history helps a bit).
+* **Bias ($\beta_0$):** -2.0 (The bank is cautious, so everyone starts with a negative score).
+
+The features and weights can be represented as vectors:
+
+$$
+\mathbf{w} = \begin{bmatrix} w_{\text{income}} \\ w_{\text{history}} \\ w_{\text{debt}} \end{bmatrix} \quad \mathbf{x} = \begin{bmatrix} x_{\text{income}} \\ x_{\text{history}} \\ x_{\text{debt}} \end{bmatrix}
+$$
+
+A person comes in and applies with high income (8/10), medium debt (5/10) and good history (7/10), the model takes the learned weights and applies them using a dot product:
+
+$$
+z = (w_{\text{income}} \cdot x_{\text{income}}) + (w_{\text{history}} \cdot x_{\text{history}}) + (w_{\text{debt}} \cdot x_{\text{debt}}) + b_{\text{bias}}
+$$
+
+$$
+z = (0.5 \times 8) + (-0.8 \times 5) + (0.3 \times 7) + (-2.0)
+$$
+
+$$
+z = 0.1
+$$
+
+The Logistic Regression model then uses a sigmoid function to convert this value into a readable probability:
+
+$$
+P = \frac{1}{1 + e^{-z}}
+$$
+
+$$
+P = \frac{1}{1 + e^{-0.1}} \approx 52.5\%
+$$
+
+This highlights 3 suiting properties that make it a favorable model for this project:
+
+1.  **Transparency/Explainability of what’s happening:** The model is a “glass box” model because it’s linear (rate of change between variables is constant), so we can always look at the coefficients (weights) of each feature to explain what it learned from data and adjust accordingly or get an answer to why something may not be working out. Other models like neural networks are considered “black box” models because they model non linear relationships, which results in it being hard to decipher why a model made a certain prediction.
+2.  **Holds well against data noise and overfitting:** Since it’s a linear model it captures more broad and consistent trends, making it less susceptible to memorizing small details in stock data that aren’t important to the bigger purpose. Neural networks and random forests are capable of seeing micro patterns, which may lead them to learn those patterns too well on training and perform poor on new data (where it matters).
+3.  **Speed:** Since it’s a linear model it’s very quick and efficient which makes training and testing a lot swifter. Neural networks and random forests are non linear models so training and testing can take a lot of computational power and time.
+
+Logistic Regression outputs a probability, but how do I judge this probability as a metric and compare different versions of models? I settled on using AUC (Area Under the Curve) as the metric: The model outputs a probability like 0.61 (61%) or 0.85 (85%) chance of a jump happening, and to actually use this you have to pick a threshold “if Prob > 0.85 predict jump”, the problem is how do you know which threshold (0.4, 0.5, 0.6 etc) the model performs best on?
+
+Imagine a ranking game where I show two days of market data to the model:
+
+* **Day one:** A day where the stock price actually jumped.
+* **Day two:** A boring day where there were no jumps.
+
+The model sees them and says:
+
+> Day one looks like a 75 percent probability of a jump
+
+> Day two looks like 40 percent probability of a jump
+
+Did the model win the game? Yes because it assigned a higher number to the real jump than the fake one. Area under the curve can be imagined like that, with:
+
+* **AUC = 1.0 (100%):** The model always ranks the real jump higher (perfect) and never makes a mistake (false positive).
+* **AUC = 0.5 (50%):** Randomly guesses and the model gets it right exactly half the time (for each one it gets right, it gets one wrong).
+* **AUC = 0.75 (75%):** The model has some predictive idea of what's happening (it gets more right than wrong).
+
+We can look at 3 different threshold types to get an idea of how this would look on a graph:
+
+1.  **A very cautious threshold:** The probability needed to enter a trade is >99%, it catches 0 percent of the jumps but has 0 false alarms (false positives), this is labeled **strict threshold** on the graph.
+2.  **A very incautious threshold:** Probability needed to enter a trade is >1%, it catches every single jump (all true positives) but also every single false alarm (false positive), this is labeled **loose threshold** on the graph.
+3.  **A balanced threshold:** Probability needed to enter is >65%, here it should catch something like 85 percent of the real jumps and makes a mistake only 15 percent of the time, this is labeled **balanced threshold** on the graph.
+
+The curve is a function that models the trade off between catching real jumps and mislabeling false jumps for real jumps, with the metric AUC simply being the area under that curve (summing up the model’s win rate (TPR) across every single possible threshold (FPR)):
+
+$$
+AUC = \int_{0}^{1} TPR(FPR) \, d(FPR)
+$$
+
+You start at a strict threshold on the left (scenario 1 above), and as you increase it to a loose one (scenario 2) a good model should initially shoot up very quick (if the model is 95 percent sure of a prediction there should be a very high ratio of true positives to false positives/steep slope), and then die down (if a model is 40 percent sure of a prediction and it’s an accurate model then it’ll get a lot more wrong than right/flat slope):
+
+<ImageWithFullscreen src="/images/AUCGood.png" alt="AUC Good" />
+
+**How does a good model look?** The dotted straight white line above showing a constant slope tells us for every true positive (correct prediction, y axis) it makes a wrong prediction (false positive, x axis) which is just random guessing. The “ROC Curve” neon green line shows the curve of a good model, where for a large amount of correct predictions (true positives, y axis), the slope is very high at first meaning the number of wrong predictions (false positives, x axis) increases by a small amount. This is exactly what we want, a model getting a lot of correct predictions while making as little mistakes as possible. A bad model with low AUC would look like this:
+
+<ImageWithFullscreen src="/images/AUCBad.png" alt="AUC Bad" />
+
+Realistically I aim to get an AUC above 0.75, since that’s the range where I can tune into a strategy to actually profit off of the predictions.
+
+Now that I’ve settled on Logistic Regression and AUC as a way to assess it, how should I approach modelling news as numbers/features the model can actually read (using math)?
+
+My first approach was a Hawkes Process:
+
+$$
+\lambda(t) = \mu + \underbrace{\sum_{t_i < t} \alpha e^{-\beta(t - t_i)}}_{\text{Self-Excitation}}
+$$
+
+Where the intensity (the size) of stock price jumps ($\lambda$) is made up of two key components:
+
+$$
+\mu
+$$
+
+Which is the base rate of jumps that seem to happen “randomly”. It’s the jumps that happen on quiet days with no news/events, and for a stock like Tesla this could be high (the market is jittery with jumps happening often):
+<ImageWithFullscreen src="/images/TeslaJagged.png" alt="T jagged" />
+ 
+while for a pharmaceutical company like Johnson & Johnson (not often in news apart from major events) the baseline rate is low.
+<ImageWithFullscreen src="/images/J&JSmooth.png" alt="JJ" />
+
+For the self excitation component:
+
+$$
+{\sum_{t_i < t} \alpha e^{-\beta(t - t_i)}}
+$$
+
+The formula models the fact that jumps often happen due to recent jumps. If a stock jumped up 20 percent today, it is most likely not going to stabilize and calm down, but jump again the next day:
+<ImageWithFullscreen src="/images/JumpFollowed.png" alt="J followed" />
+The sum loops back at every single previous jump ($t_i < t$) and checks two things:
+
+1.  **Alpha ($\alpha$):** How intense ($\lambda$) the previous jump was. If a previous jump was 10%, then it would have a higher affect on the size/intensity of a current jump than a 2% jump would have.
+2.  **Exponential decay ($e^{-\beta(t - t_i)}$):** As time passes (the difference between the current time and the last jump becomes larger) the term shrinks towards zero. A jump that happened 7 days ago doesn’t matter as much as a jump that happened 5 minutes ago. Beta ($\beta$) is how long the jump affects the intensity of future jumps, with high beta meaning a jump happens and the market “forgets” the jump 10 seconds later, and low beta meaning a jump happens and traders are panicky (jumps happen) for the rest of the day.
+
+This formula assumes jumps are fully random, and bases intensity off of previous jump values. I attempted to add a twist by incorporating a news component:
+
+$$
+\lambda(t) = \mu + \underbrace{w \cdot f(\text{sentiment})}_\text{News Trigger} + \underbrace{\sum \alpha e^{-\beta(t - t_i)}}_{\text{Market Memory}}
+$$
+
+With $w$ being the weight of news and $f(\text{sentiment})$ being a function that determines how relevant the sentiment is. To cut the long story short after optimizing and comparing this to the default formula the new feature was squished to zero signalling that news was just noise compared to the market memory and baseline:
+
+```txt
+Optimized Parameters:
+- Baseline (μ): 0.000011
+- News Weight (w): 0.000000
+- Excitation (α): 0.1000
+- Decay (β): 1.0000
+- Branching Ratio (α/β): 0.1000
+```
+I attempted several other angles paired with complex models but got further proof the news addition in this context was noise and caused the models to perform worse:
+
+```txt
+--- FINAL CROSS-VALIDATION RESULTS ---
+- Average Log-Likelihood of Base Model: -143.19
+- Average Log-Likelihood of Base + News Model: -2059.40
+```
+Lower (more negative) likelihood means worse fit, the base model edged out by avoiding news noise.
+
+## Pivot and Feature Engineering
+This is where I made my first major pivot: Instead of using one mathematical function and attempting to find optimal weights, I decided to extract and categorize as much useful context from the news articles as I could in a compact way, and pair it with custom price features so the models could pick up any useful information from the news components in an unbiased way. This process is called **Feature Engineering**. I initially brainstormed which features would be most useful, and came up with two categories:
+
+**Price/Volatility:** Since we are predicting jumps, its useful for the model to know as much as possible about the current market state in regards to price and volatility. From here I came up with 2 features that I believed would give the most context to the model, the first of which being jump echo.
+
+**Jump Echo** is a rolling count of recent jumps, it sums up all the recent jumps to give the model a good idea of how choppy the current market is. I defined a jump as a “4 standard deviation event”: The price of Tesla moved an average of 10 cents per minute over the last 60 minutes, a jump would be defined as movement of at least 40 cents in a minute, with all of these being summed up over the last 60 minutes. Implemented in code this is:
+
+```python
+# Define a Jump (4x local volatility)
+rolling_std = prices_df['log_returns'].rolling(window='60min').std()
+prices_df['jump'] = (abs(prices_df['log_returns']) > rolling_std * 4).astype(int)
+# Calculate the Echo (Memory)
+prices_df['jump_echo'] = prices_df['jump'].rolling(window='60min').sum()
+```
+
+In theory a 4 standard deviation event should happen once in every 15,873 minutes (0.0063% of the time), however in financial markets this happens significantly more often (again supporting the fact that the efficient markets hypothesis isn’t fully accurate).
+
+I then came up with another feature called **“garch_forecast”**: GARCH stands for “Generalized Autoregressive Condition Heteroskedasticity”, and simply translates to “Volatility Clustering”. As mentioned before it is based on the idea that volatility has memory/clusters, with previous large jumps influencing current jumps, and the output of the formula:
+
+$$
+\underbrace{\sigma_t^2}_\text{Current minute prediction} = \underbrace{\omega}_{\text{Floor (Quiet market prediction)}}
+
+\underbrace{\alpha \varepsilon_{t-1}^2}_{\text{ Shock Term (Price spike 1 min ago)}}
+\underbrace{\beta \sigma_{t-1}^2}_{\text{ Memory (Prediction from 1 min ago)}}
+$$
+
+is a prediction of variance (pressure building) for the next time $t$ (minute in our case). You can simply think of it in this context: Imagine price (with an average movement of 10 cents) starts jumping but not enough for echo to capture it:
+
+* **Minute 1:** A 2 sigma jump (20 cents).
+* **Minute 2:** A 2.5 sigma jump (25 cents).
+* **Minute 3:** A 3 sigma jump (30 cents).
+
+The previous feature “jump_echo” sees 0 jumps, however the “garch_forecast” feature sees an increase in the $\varepsilon_{t-1}^2$ term accumulating pressure, and raises the GARCH feature’s value indicating “there’s a jump that may come soon and the pressure is building”, which is useful for the bigger picture model to view so it can pick up on what conditions look like before jumps happen.
+
+The next two price features were not thought of right away, but discovered later on. I ended up running the model but was not fully satisfied with the results:
+
+```text
+--- GARCH-ENHANCED MODEL COMPARISON ---
+- Average AUC of GARCH-Enhanced Model (Echo + Forecast): 0.7774
+```
+
+So I conducted a “misses analysis”, where I extracted a wide range of features and had another model extract the blind spots:
+<ImageWithFullscreen src="/images/BlindMissesGARCH.png" alt="GARCH" />
+with the specific features that were consistently present when the model missed being:
+
+
+```text
+--- ANALYSIS OF FALSE NEGATIVES (MISSED JUMPS) ---
+- Average Volume Spike Ratio during a Missed Jump: 8.54x
+- Average Volume Spike Ratio during normal times:   1.09x
+💡 INSIGHT: Missed jumps consistently happen during large volume spikes.
+
+--- ANALYSIS OF FALSE POSITIVES (FALSE ALARMS) ---
+- Average RSI during a False Alarm: 51.35
+- Average RSI during normal times:  49.82
+💡 INSIGHT: False alarms often happen when RSI is neutral, indicating high volatility but no clear momentum.
+```
+
+This led to 2 new features related to price/volume, the first of which being **Volume spike ratio**. It’s simply a metric of how the current volume (total stock shares traded) compares to the past hour, with higher volume indicating a larger chance of jumps happening. Code implementation:
+
+```python
+prices_df['volume_ma_60'] = prices_df['volume'].rolling(window=60).mean() 
+prices_df['volume_spike_ratio'] = np.where(
+    prices_df['volume_ma_60'] > 0, 
+    prices_df['volume'] / prices_df['volume_ma_60'], 
+    1
+)
+```
+
+The second feature was **RSI (relative strength index)**, which measures momentum of a stock to indicate whether its relatively “overbought” or “oversold”. The model made mistakes when RSI was neutral (no direction pressure) but there was movement, so feeding it RSI gives it a chance to see that jumps don’t happen as often when RSI is neutral, and may occur more when RSI is high or low. Implemented in code:
+
+```python
+delta = prices_df['close'].diff()
+gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
+loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+rs = gain / (loss + 1e-10)
+prices_df['rsi'] = 100 - (100 / (1 + rs))
+```
+
+For a quick example of how RSI works: It’s on a scale of 0 to 100. Above **70** is considered overbought, and below **30** is considered oversold.
+
+How are these numbers determined? Imagine a stock price over 5 minutes:
+
+\$100 to \$102 to \$101 to \$104 to \$104$
+
+You calculate the change (delta) of the move each minute: `[+2, -1, +3, 0]`.
+
+Separate positive delta and negative:
+* **Positive:** `+2, 0, +3, 0` (Average = 1.25)
+* **Negative:** `0, 1, 0, 0` (Average = 0.25)
+
+Then you take the ratio (RS) of positive/negative: $1.25 / 0.25 = 5$, which means buyers were 5x stronger than sellers in this window. Finally, convert it to a 0-100 score:
+
+$$
+RSI = 100 - \frac{100}{1 + RS}
+$$
+
+$$
+100 - \frac{100}{1 + 5} \to 100 - 16.66 = 83.34
+$$
+
+The result is **83.34**, which is larger than 70, suggesting the stock is **overbought**.
+
+Those were all the price and volume features I found captured the most information that the model needed while not confusing it. These extra 2 features fixed blind spots and improved the model:
+
+```text
+--- FINAL VERDICT ---
+- Average AUC of GARCH-Enhanced Baseline: 0.7774
+- Average AUC of Insight-Driven Model:    0.8330
+
+VERDICT: The Insight-Driven model provides a real improvement of 7.10%.
+```
+
+I was determined to incorporate news into this somehow, which led into the next section of news related features containing 4 carefully thought out features, the first of which being `finbert_sentiment`.
+
+### 1. FinBERT Sentiment
+
+This feature simply determines if the news is good news or bad news for a certain asset. BERT, which stands for “Bidirectional Encoder Representations from Transformers”, is a natural language processing model trained on tons of data to understand language better, and FinBERT is just a version trained on tons of financial data such as news, analyst reports, earnings calls, etc. to understand financial language in a deep way.
+The model is pre-trained so all I did was import and call it, but it works like this:
+
+<div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg my-6 max-w-md shadow-xl">
+  <div className="flex items-center gap-3 mb-2">
+    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+    <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Live News Feed</span>
+  </div>
+  <h3 className="text-white font-bold text-lg leading-tight">
+    “Tesla shares drop as margins tighten”
+  </h3>
+</div>
+
+The model breaks the sentence down into tokens recognizing “drop” and “margins tighten” in financial context. It maps these onto a vector field of dimension 768 (to capture all the nuances of a headline), and sees “margins tighten” is mathematically close to “negative financial outlook”, and gives a probability to either positive, neutral, or in this case negative.
+
+It outputs a number like **-0.90** for 90 percent negative, and that’s the feature I use so my model can see directional bias and assume the jump will likely be downward.
+You may ask “Why does the model need direction bias if it only predicts whether jump will happen and not the direction?”, and this is because in finance stocks tend to go up slowly and crash very quickly.
+It may learn that extreme negative scores (-0.90) lead to a massive volatility spike, while extreme positive (0.90) lead to a slower or smaller rise.
+I made a simplified visualization in 3D of the BERT model converting headlines to vectors and scores below (reality is this but in 768 dimensions):
+<FinBERTViz />
+
+### 2. Topic Tags
+
+The second feature I engineered related to news was `topic_tags`. I used another pre-trained model called BART (Bidirectional and Auto-Regressive Transformer) which knows relationships between words very well. The technique it uses is called Zero-Shot Classification, where it classifies news articles into categories it has never seen before simply by using the relationship between words and ideas.
+A headline is fed like:
+
+<div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg my-6 max-w-md shadow-xl">
+  <div className="flex items-center gap-3 mb-2">
+    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+    <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Live News Feed</span>
+  </div>
+  <h3 className="text-white font-bold text-lg leading-tight">
+    “Tesla unveils new Optimus robot”
+  </h3>
+</div>
+
+I force it to sort it into one of five categories:
+
+`["Earnings", "Product", "Regulatory", "Competition", "Stock"]`
+
+It finds the answers to “Is a robot more similar to ‘Earnings’ or ‘Product’”, by assigning probabilities to each category using a similar method to the BERT model, where it maps the article onto a vector field and checks mathematical similarity:
+
+* **Match with “Earnings”:** 2% (physically far from earnings in the vectorspace)
+* **Match with “Regulatory”:** 5%
+* **Match with “Product”:** 93% (physically close to earnings in the vectorspace)
+
+It then outputs a distinct answer of the category based on the highest probability, ‘Product’ in this case, and I use this category as a feature.
+Why is this useful? It lets the model learn volatility patterns based on the type of event, for example earnings news usually happens at 4pm and volatility spikes, and product news can quickly create temporary hype volatility.
+
+### 3. PCA Embeddings
+
+The third news feature I engineered was 10 PCA embeddings of each headline to reduce redundant information while allowing the model to find its own interpretation. Normally the model would get 2 articles:
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
+    <span className="text-xs font-mono text-neutral-500 uppercase">Headline A</span>
+    <h3 className="text-white font-bold text-md mt-1">“Tesla halts lines due to fire.”</h3>
+  </div>
+  <div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg">
+    <span className="text-xs font-mono text-neutral-500 uppercase">Headline B</span>
+    <h3 className="text-white font-bold text-md mt-1">“Factory stops after blaze”</h3>
+  </div>
+</div>
+
+It sees “halts” and “stops” as two different words even though the two articles represent the same idea as far as a jump predicting model should be concerned.
+If a BERT model translated this article into a 768 dimension vector space the model would get completely lost in all of the columns, so we can use Linear Algebra to apply PCA and convert the 768 dimension space into 10 vectors that represents the 10 largest pieces of information from the headline.
+
+In this case `pca_0` may represent “Disaster Intensity” with both headlines scoring 8.5, and `pca_1` may represent “Company problems” with both headlines scoring 5.0.
+The model can learn that high `pca_0` and mildly high `pca_1` results in a jump and capture context the previously engineered features didn’t represent.
+I took a deep dive into the details of PCA and its use of Linear Algebra here - [Linear Algebra in Machine Learning: PCA](/articles/7-pca-linear-algebra-ml).
+
+### 4. News Anomaly Score
+
+The final news feature I came up with was `news_anomaly_score`. The part that the efficient markets hypothesis gets right is expected news or news people hear often related to a stock is almost always priced in.
+Stocks jump when there’s news that’s not commonly seen or surprising.
+I used an SVM model, standing for “Support Vector Machine” which is a machine learning algorithm used for classification.
+It looks at thousands of past Tesla headlines that I fed it, and creates a cluster in a mathematical vector space.
+This cluster contains commonly seen news articles for Tesla like “Price prediction raised”, “New model 3”, etc (boring for this stock), and when a new headline arrives the SVM measures the distance from the center of that blob and outputs a score from -5.0 (very boring news) to +5.0 (very unique never seen news).
+For example the headline:
+
+<div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg my-6 max-w-md shadow-xl">
+  <div className="flex items-center gap-3 mb-2">
+    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+    <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Live News Feed</span>
+  </div>
+  <h3 className="text-white font-bold text-lg leading-tight">
+    “Elon Musk tweets he is buying Twitter”
+  </h3>
+</div>
+
+is fed, the SVM has never seen the words buying and Twitter in the cluster before and the point is plotted very far from the center.
+The model then outputs a score of **+4.5** signaling “Extreme rare” headline, which the Logistic Regression model can learn to read as a potential signal for incoming volatility.
+
+These 4 carefully engineered news features nudged the Logistic Regression model to improve even further:
+
+```text
+--- GRAND FINALE RESULTS  ---
+- 3. Final News-Hybrid Model:                 Average AUC = 0.8711
+- 2. Insight-Driven Baseline (Price/Vol):     Average AUC = 0.8329
+- 1. Simple Baseline (Echo):                  Average AUC = 0.6250
+```
+
+<ImageWithFullscreen src="/images/AUCCompare.png" alt="AUC Model Comparison" />
+At this point I was satisfied with the results, and the final process of training was ready to be done on the entire dataset.
+
+
+# The Model's learning Process
+
+We have 2 years worth of stock data with columns such as RSI, Volume, Price, etc, and we want to see how each factor affects the chances of a stock price jump happening. The model starts out clueless, it needs to make a prediction and then get feedback on how much it was off and what to adjust to improve. If we can figure out how to nudge it to improve we can continue nudging it until it reaches a point of no further improvement, at which point we can lock in what it learned, and use it on live data to output an accurate probability of a jump happening as a percent.
+
+## Part I: The Training Phase (Optimization)
+
+We have a list of a ton of stock related factors such as volume and RSI, and we want to multiply them by some weights that reflect their importance and add all the results up to get a total value that represents the chance of a jump happening.
+
+Vectors are a perfect way of representing this, specifically we want to find a vector $\mathbf{w}$ (weights) that describes the weights of each component (such as RSI, volume, etc) as close as possible to real life. This will answer the question “how important is each input feature to the final volatility jump prediction”.
+
+### 1. The Setup: The Cost Surface ($J$)
+
+We first define a Cost Function $J(\mathbf{w})$. It can be thought of as a physical mountain landscape with peaks and valleys.
+
+* **The X and Y axes** represent possible values for the weights (e.g., Weight for Volume, Weight for RSI).
+* **The Z axis (Height)** represents Error in prediction.
+
+### 2. The Players
+
+* **The Model:** Imagine a blindfolded hiker is dropped somewhere on this landscape. The hiker can move forward/backward (RSI weight +/-), and also left/right (Volume weight +/-). The hiker starts at the peak of a mountain (highest error) and the goal is to find the steepest direction to get down the mountain to the lowest point in the landscape (lowest error).
+* **The Data:** What actually happened in reality (for example "Volume was 8.5x, Jump happened").
+* **The Referee (The Gradient):** The only one who can see how steep the slope of the ground beneath the hiker's feet is to nudge the hiker on the right route.
+
+<GradientLandscape />
+
+### 3. The Iterative Process (Gradient Descent)
+
+**Step A: A Blind Guess (Initialization)** The model starts with zero knowledge. It sets its weight vector $\mathbf{w}$ to zeros. It is standing on a random spot on the error surface.
+
+> **Model:** "I guess Volume doesn't matter at all ($w_{\text{vol}}=0$)."
+
+**Step B: Forward Pass (The Prediction)** The model looks at one minute of data from the training data set.
+
+> **Data:** Volume Spike = 8.5 (Huge). Jump = True (1).  
+> **Prediction:** Since $w=0$, the model hasn't learned anything and gives a random guess of exactly 50% probability of a jump occurring ($0.5$).
+
+**Step C: The Gradient Calculation** The Referee calculates the error between the prediction and reality (data) ($1.0 - 0.5 = 0.5$). Simply knowing how much the model was off isn’t enough, it also needs to know what way to be nudged to improve. This is where we calculate the Gradient Vector ($\nabla J$). The Gradient takes the partial derivative of each variable (Error, RSI, Volume etc), meaning you get the direction of the steepest uphill climb in this landscape.
+
+$$
+\nabla J(\mathbf{w}) = \begin{bmatrix} \frac{\partial \text{Error}}{\partial w_{\text{vol}}} \\[6pt] \frac{\partial \text{Error}}{\partial w_{\text{rsi}}} \end{bmatrix}
+$$
+
+**Step D: The Update (The Descent)** The model then takes a step against the gradient to walk down the mountain. This is the Update Rule:
+
+$$
+\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \eta \nabla J
+$$
+
+If the referee sees that volume spiked 8.5x when a jump happened and RSI was neutral, the math forces the weight for Volume **UP** from 0.0 to 0.01 and it leaves the weight for RSI alone. The model has "learned" that Volume is significant.
+
+When walking down a mountain the way down isn’t always elevation loss, sometimes you come across a mini valley and have to go over a ridge to continue further down. Likewise in machine learning the Cost Surface is rarely a smooth, perfect bowl. It is often **Non-Convex**, meaning it has many "fake" valleys (Local Minima). If the hiker simply follows the slope, they might get stuck in a small valley (a Local Minimum) and think they are done, missing the massive main valley (Global Minimum) nearby.
+
+To solve this, we use **Momentum**:
+
+$$
+v_{t} = \gamma v_{t-1} + \eta \nabla J(\mathbf{w})
+$$
+
+Instead of just stepping based on the current slope, the hiker builds up speed. If they hit a small bump, their built up momentum allows them to roll over it and continue down to the true bottom, and if they reach the true bottom they will simply be rolled back to it from the hill landscape around it.
+
+**Step E: Improvement until mastery** This cycle of taking steps against the gradient and building momentum repeats thousands of times and with every step the model walks further down the error mountain until it hits the very bottom where the gradient is zero/flat ground:
+
+$$
+\nabla J \approx \vec{0}
+$$
+
+A gradient of zero means the model reached a point where there is no further improvement, so the weights are locked or “learned”. The entire process is visualized below:
+
+<GradientDescentAnimator />
+
+## Part II: The Live Execution Phase (Inference)
+
+Now that the model has learned the weights that most realistically represent live observations, it can use the learned weights ($\mathbf{w}$) to judge live data ($\mathbf{x}$).
+
+### 1. The Input: The Feature Vector ($\mathbf{x}$)  
+A new minute bar arrives from my stock price data API, and the bot instantly compiles the live stats into a vector:
+
+$$
+\mathbf{x} = \begin{bmatrix} 8.5 \\ 0.02 \\ 50 \end{bmatrix}
+\quad
+\begin{matrix}
+\leftarrow \text{Live Volume Spike} \\[4pt]
+\leftarrow \text{Live GARCH Vol} \\[4pt]
+\leftarrow \text{Live RSI}
+\end{matrix}
+$$
+
+### 2. The Engine: The Dot Product ($z$)  
+The model loads its learned memory (the weight vector $\mathbf{w}$) and projects the live market data onto it. This is a Dot Product:
+
+$$
+z = \mathbf{w} \cdot \mathbf{x} + b
+$$
+
+For example:
+
+$$
+z = (0.5 \times 8.5) + (10.0 \times 0.02) + (0.0 \times 50) + (-4.0)
+$$
+
+It sums up the weighted contributions: High volume ($4.25$) and high volatility ($0.2$) add up, and the neutral RSI adds nothing. The negative bias ($-4.0$) subtracts, acting as a skepticism filter (if there was no skepticism filter, then during a quiet low volatility market the model would assume a 50 percent chance of a jump instead of a near zero).
+
+A raw score (logit) of $z = 0.45$ is outputted but we have no idea what that means.
+
+### 3. The Translation: The Sigmoid ($\sigma$)  
+To make a trading decision, we map this score onto a 0 to 1 scale to get a readable probability of a jump happening, which can be done using the Sigmoid Function:
+
+$$
+P(\text{Jump}) = \frac{1}{1 + e^{-z}}
+$$
+
+Plugging in our score:
+
+$$
+P = \frac{1}{1 + e^{-0.45}} \approx \mathbf{0.61}
+$$
+
+<SigmoidVisualizer mode="H" />
+
+### 4. The Verdict  
+The model outputs a 61% probability of a jump happening right now. I personally don’t want to watch the model consume minute by minute data until it outputs a good probability so i could place some complex multi-legged options trade to profit off volatility. Since this model predicts volatility jumps and volatility itself isn’t a “buy the stock now” signal, it would be useful to develop a strategy that utilizes this prediction with some rules to place a trade that actually profits off of this.
+
+# Putting the Model to Work (Algorithmic Trading Setup)
+
+To utilize the model’s volatility prediction, I created a rule based automated trading strategy and then backtested this strategy with realistic market factors to filter out blind optimism and mimic a real trading environment.
+
+### Finding a strategy
+I know the model is good at predicting jumps, however how does that translate into actual profitable trades? To answer that question I went through a back and forth process of testing out various volatility strategies, and had many bumps along the way to getting accurate results.
+
+I needed to settle on a strategy that worked well with the model and I attempted a variety of angles, one of which being using straddles (an options volatility strategy), however the cost of the contracts often outweighed the profits from the move. I eventually settled on a rule based adaptive long and short shares strategy, with this flow:
+
+The script receives a live one minute stock price bar with a variety of metrics such as timestamp (of bar), open (price), high (price), low, close, etc. and performs calculations using this information for values like ATR (average true range) to compare with hardcoded rules and decide whether or not to enter a trade →
+
+* **Entry logic:**
+    * Check to meet three conditions: `probability of jump > threshold`, `ATR > ATR filter value`, cooldown elapsed (since last trade).
+    * Determines direction (long/short adaptive based on regime returns).
+    * Position sizing: risk-based (capital * risk_per_trade / SL distance), capped by max volume share (10% of previous bar volume).
+* **Exit logic:**
+    * Either stoploss/take profit is hit (checked using minute bar highs/lows).
+    * Holding period timeout (uses close price).
+
+**How are the specific values determined?** At first I attempted running through various value combinations to train on the entire data set of 2 years, however I quickly noticed the portfolio would crash since during that timeline the market changed behavior multiple times and what worked for 6 months stopped working later on. That’s where I decided to come up with an adaptive regime system:
+
+The script loads 2 years worth of data and performs a grid parameter search for 6 months of training on these values:
+
+```python
+# Optimized parameter grid
+param_grid = {
+    'entry_threshold': [0.70, 0.75, 0.80, 0.85, 0.90],
+    'holding_period': [50, 60, 70, 80, 90],
+    'cooldown': [10, 20, 40, 60],
+    'atr_filter': [0.2, 0.3, 0.4],  
+    'tp_atr': [5.0, 6.0, 7.0, 8.0, 10.0],
+    'sl_atr': [1.25, 1.5, 1.75],
+    'mode': ['adaptive']  
+    }
+
+```
+Through trial and error I found that this grid of parameters captured the defining parts of the strategy:
+
+* **Entry Threshold (70-90%):** The strategy works better on higher quality jump setups (higher chance of a jump), hence the entry threshold values range from 70% to 90% predicted jump probability from the model.
+* **Holding Period (50-90 mins):** The strategy works better while holding for longer periods to capture the full profits of a trend move, hence the range of values for the holding period.
+* **Cooldown (10-60 mins):** The model sometimes exited trades after riding a trend and then very shortly re-entered on the same trend, except price was near the top of the trend and it would reverse and hit the stoploss. To combat this, I found that a range of 10-60 minutes of cooldown between each trade would give the model time to “reset” and re-enter when an unrelated new setup was present.
+
+**Risk Management & Logic**
+
+For risk to reward, if the model is wrong in the direction of the jump you want to exit swiftly since jumps in stock price can turn into large price trends with large downside, so the stoploss should be kept tight. To specifically calculate the value I found that taking ATR (current volatility) and multiplying it by a number in the **1.25–1.75** range cuts losses fast while not being exited from the trade by noise.
+
+For example: volatility is 50 cents per minute (0.5 ATR), you enter a trade with price at $100, the stoploss would be:
+
+$$
+\$1.25 \times 0.5 = 0.625 \text{ (62.5 cents below entry)}
+$$
+
+On the flip side, if you are correct about the direction of the jump, the jumps usually compound into a trend and you generate the most profit by riding the trend, so take profit ATR values (which work similar to the stoploss ones) are in a higher **5–10** range.
+
+* **Adaptive Mode:** This signals the bot is not looking for buy or sell positions specifically, but trading based off trend, so if the 5-minute trend is positive it enters long positions, and short positions for negative trends.
+* **ATR Filter:** This is a bit more nuanced and is designed to combat profit from small moves being killed by fees. ATR (Average True Range) is simply a volatility metric calculated on minute data, practically speaking it’s how much the stock is moving in dollars per minute on average.
+
+If Tesla stock is at \$200.00, the ATR is 0.05 (dead market, 5 cents per minute move) and the exchange fees are 3 cents, then you are paying \$200.03 to enter a long position. The stock moving 100 percent relative to the small ATR (5 cents) gives very small room for profit that usually gets eaten by fees. If you exit at stock price $200.05 and pay 3 cents in fees, then you net:
+
+$$
+\$200.02 - \$200.03 = -\$0.01
+$$
+
+You want the market to be volatile enough (ATR to be above a certain threshold) to combat “useless” or small loss trades due to fees since stoploss and take profit values are measured using ATR, so the ATR filter range of at least 20–40 cents combats this.
+
+**Optimization**
+
+A grid search for these values is run to find the absolute best combination. A grid search is simply trying every combination of values (e.g., 1,1,2 then 1,1,3 etc.) until all combinations are attempted, with a total of **4,500 combinations** (found by multiplying the number of combinations of each parameter together). This is run on 6 months of data, and every one of the 4,500 combinations outputs metrics like profit/loss, Sharpe ratio, and Sortino ratio for the 6 months of training data.
+
+
+### Part 4: Ratios & Optimization Results
+
+A Sharpe ratio answers the question “How stable is the profit I'm making” or in more formal terms what is the risk adjusted return of my strategy:
+
+$$
+\text{Sharpe Ratio} = \frac{R_p - R_f}{\sigma_p}
+$$
+
+- $R_p$ = Return of the portfolio  
+- $R_f$ = Risk-free rate (e.g., Government Bonds, can be ignored for this analysis)  
+- $\sigma_p$ = Volatility (standard deviation)
+
+From the formula above you can see the risk it measures is in respect to volatility, so higher volatility means higher risk and in result a lower Sharpe ratio, which is useful to know but there’s one caveat. Volatility is directionless so a 50 percent volatility could mean 50 percent gain or 50 percent loss, but for a strategy made for maximizing profit we don’t want to penalize upside volatility (since it's good to make money fast), only downside volatility, so we should use a similar metric that doesn’t penalize upside volatility and that metric is called the Sortino ratio:
+
+$$
+\text{Sortino Ratio} = \frac{R_p - T}{\sigma_d}
+$$
+
+- $R_f$ = Actual or expected portfolio return  
+- $R_f$ = risk-free rate  
+- $\sigma_d$ = Downside volatility (standard deviation of only the negative returns)
+
+To recap we are running a strategy based on a jump prediction model that has to meet some criteria to enter a trade, with 4500 possible combinations of criteria to check to see which one maximizes the Sortino ratio in the last 6 months worth of movement. We then pull the optimal parameters that correspond to the maximum Sortino ratio achieved in the 6 months of training:
+
+> **Params:** `{'entry_threshold': 0.9, 'holding_period': 50, 'cooldown': 20, 'atr_filter': 0.2, 'tp_atr': 10.0, 'sl_atr': 1.5, 'mode': 'adaptive'}`  
+> **Best Sortino:** 6.23 (Sharpe: 2.89)
+
+We use these parameters that we found worked on the previous 6 months of stock movement to test the whole system on new unseen monthly data (like deploying it in the live market) to see how it performs in terms of profit and loss. After running through the new month and outputting profit, loss and other metrics, the 6 month training window now slides by 1 month (now including the month it was just tested on), and it then tests on the next unseen month. This process continues until there are no months left in the data and is called walk forward optimization, which ensures a high quality backtest because every month it is tested on is one that was never seen before by the model:
+
+```txt
+================================================================================
+--- PHASE 1: PREPARING DATA (OPTIMIZED) ---
+================================================================================
+  > Data range: 2024-01-02 to 2025-10-17
+  > Precomputing features (optimized)...
+  > Precomputation complete.
+
+================================================================================
+--- PHASE 2: WALK-FORWARD OPTIMIZATION (OPTIMIZED) ---
+================================================================================
+  > Total parameter combinations: 4,500
+
+--- Step 1: Train 2024-01-02 to 2024-07-02 ---
+  > Training on 95,242 bars. Optimizing 4,500 combinations...
+  Optimizing: 100%|█████████████████████████████████████████████████| 65/65 [00:13<00:00,  4.82it/s]
+  > Best Sortino: 6.23 (Sharpe: 2.89)
+    Params: {'entry_threshold': 0.9, 'holding_period': 50, 'cooldown': 20, ...}
+--- Testing 2024-07-02 to 2024-08-02 ---
+  > OOS: 72 trades, 4.73% return
+
+--- Step 2: Train 2024-02-02 to 2024-08-02 ---
+  > Training on 95,558 bars. Optimizing 4,500 combinations...
+  Optimizing: 100%|█████████████████████████████████████████████████| 65/65 [00:03<00:00, 18.17it/s]
+  > Best Sortino: 7.01 (Sharpe: 3.23)
+    Params: {'entry_threshold': 0.85, 'holding_period': 50, 'cooldown': 60, 'atr_filter': 0.2, 'tp_atr': 6.0, 'sl_atr': 1.5, 'mode': 'adaptive'}
+--- Testing 2024-08-02 to 2024-09-02 ---
+  > OOS: 59 trades, 34.26% return
+
+--- Step 3: Train 2024-03-02 to 2024-09-02 ---
+  > Training on 96,695 bars. Optimizing 4,500 combinations...
+  Optimizing: 100%|█████████████████████████████████████████████████| 65/65 [00:03<00:00, 17.87it/s]
+  > Best Sortino: 7.23 (Sharpe: 3.37)
+    Params: {'entry_threshold': 0.85, 'holding_period': 70, 'cooldown': 40, 'atr_filter': 0.2, 'tp_atr': 6.0, 'sl_atr': 1.75, 'mode': 'adaptive'}
+--- Testing 2024-09-02 to 2024-10-02 ---
+  > OOS: 32 trades, 7.07% return
+
+--- Step 4: Train 2024-04-02 to 2024-10-02 ---
+  > Training on 94,899 bars. Optimizing 4,500 combinations...
+  Optimizing: 100%|█████████████████████████████████████████████████| 65/65 [00:03<00:00, 18.13it/s]
+  > Best Sortino: 5.95 (Sharpe: 2.90)
+    Params: {'entry_threshold': 0.85, 'holding_period': 50, 'cooldown': 40, 'atr_filter': 0.2, 'tp_atr': 7.0, 'sl_atr': 1.75, 'mode': 'adaptive'}
+--- Testing 2024-10-02 to 2024-11-02 ---
+  > OOS: 81 trades, -5.22% return
+
+... [Steps 5 - 14 Omitted for brevity] ...
+
+--- Step 15: Train 2025-03-02 to 2025-09-02 ---
+  > Training on 99,977 bars. Optimizing 4,500 combinations...
+  Optimizing: 100%|█████████████████████████████████████████████████| 65/65 [00:03<00:00, 17.54it/s]
+  > Best Sortino: 11.52 (Sharpe: 3.92)
+    Params: {'entry_threshold': 0.85, 'holding_period': 90, 'cooldown': 10, ...}
+--- Testing 2025-09-02 to 2025-10-02 ---
+  > OOS: 59 trades, 3.93% return
+
+================================================================================
+--- PHASE 3: OVERALL WALK-FORWARD PERFORMANCE ---
+================================================================================
+
+--- 🏆 OVERALL WALK-FORWARD OOS RESULTS 🏆 ---
+
+  >> Core Metrics:
+     Total Return: 536.61% | Sharpe: 2.96
+     Sortino: 6.11 | Calmar: 16.03
+     Profit Factor: 1.33 | Win Rate: 38.14%
+
+  >> Risk Metrics:
+     Max Drawdown: -33.48%
+     Max Consecutive Losses: 12
+     Longest Drawdown: 212 trades
+
+  >> Dollar Performance:
+     Initial Capital: $10,000.00
+     Final Capital:   $63,661.41
+     Net Profit:      $53,661.41
+     Total Trades:    1,062
+     Total Shares:    135,793
+```
+
+The portfolio value plot over the 2 year period gives us more insight on how the portfolio progressed:
+
+<ImageWithFullscreen src="/images/WalkForwardPNL.png" alt="Walk Forward Equity Curve" />
+
+Returns by month give us further insight into what periods worked best:
+
+<ImageWithFullscreen src="/images/MonthlyReturns.png" alt="Monthly Returns Heatmap" />
+
+
+## Part 5: Slippage, Math & Conclusion
+
+The results are relatively good and there are a few forces at work in the background that enhance the quality and speed of this backtest, the first of which being a backtest environment that has various factors contributing to the realism of the backtest. If you simply did this process without any market realism precautions your backtest results would probably mean little to nothing, since live trading has a ton of roadblocks that filter out most strategies, and I’ve pinpointed as many as I could to incorporate into the backtest to ensure as much accuracy to real life as possible, we can run through an example scenario of what I’ve modeled:
+
+<div className="border border-neutral-800 bg-neutral-900/50 rounded-xl p-6 my-8 space-y-6">
+  {/* --- 1. LATENCY --- */}
+  <div className="flex items-center gap-3 border-b border-neutral-800 pb-4">
+    <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold">1</div>
+    <div>
+      <h3 className="text-white font-bold text-sm">Latency</h3>
+    </div>
+  </div>
+  
+  <div className="text-sm text-neutral-300">
+    Suppose you place a trade, the first thing that happens is it takes time for the trade to go from your computer to the exchange and execute, this delay between placing trade and execution is called latency. I model latency by having order fills use price data from <code>latency_bars</code> ahead (set to +1 minute bar). So you placed the order at minute bar 10, it takes minute bar 11 as the execution bar.
+  </div>
+
+  {/* --- 2. PARTIAL FILLS --- */}
+  <div className="flex items-center gap-3 border-b border-neutral-800 pb-4 pt-2">
+    <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold">2</div>
+    <div>
+      <h3 className="text-white font-bold text-sm">Partial Fills</h3>
+    </div>
+  </div>
+
+  <div className="text-sm text-neutral-300">
+    You want to buy 200 shares of stock but get unlucky and only 100 of your buy orders are met with a sell order. I model this with partial fills: At entry there is a 15% chance that your share amount gets reduced to 40-90% of the intended (wanted 200 but got 80-180 shares).
+  </div>
+
+  {/* --- 3. SLIPPAGE & IMPACT --- */}
+  <div className="flex items-center gap-3 border-b border-neutral-800 pb-4 pt-2">
+    <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 font-bold">3</div>
+    <div>
+      <h3 className="text-white font-bold text-sm">Slippage & Market Impact</h3>
+    </div>
+  </div>
+
+  <div className="text-sm text-neutral-300 space-y-4">
+    <div>
+      You try to buy these remaining 100 shares but the market is volatile and price moves quick, so you get filled 3 cents above your desired price. This is called slippage and I simulated it for entries/exits, with the price the trade is actually executed being calculated by:
+    </div>
+    
+    $$
+    \text{Slippage Penalty} = \underbrace{(\text{High} - \text{Low})}_{\text{Bar Range}} \times \underbrace{0.02}_{\text{Slippage Factor}} \times \sqrt{\frac{\text{Trade Size}}{\text{Total Volume}}}
+    $$
+
+    <div>
+      The bar range gives how fast the market is moving (2$ a bar vs 5 cents), the slippage factor is how much of the bar’s total move you expect to lose to the quick move, and trade size over volume gives increased penalty if you make up a higher percentage of the bar’s volume.
+    </div>
+
+    <div>
+      On top of this if your order is large you consume all the cheap prices and part of your order is executed at a larger price (you push price up partly). I simulated this with the formula:
+    </div>
+
+    $$
+    \text{Penalty} = \text{Coeff} \times \left( \frac{\text{Your Shares}}{\text{Total Volume}} \right)^{\alpha} \times \text{Bar Range}
+    $$
+    
+    <div className="bg-neutral-800/30 border border-neutral-700/50 rounded-lg p-5 my-4 text-xs">
+      <div className="text-neutral-400 italic mb-2">
+        As an example scenario imagine a quiet minute data bar (50k shares traded), you place an order for 5k shares, you make up a good chunk of the volume:
+      </div>
+      
+      <div className="font-mono text-neutral-200 ml-4 mb-4">
+        Ratio = 5,000 / 50,000 = 0.10 (10%)
+      </div>
+      
+      <div className="text-neutral-400 italic mb-2">
+        The candle high was $201 and low was $200 meaning a bar range of $1... impact alpha captures the idea that the first few shares have the costliest impact:
+      </div>
+      
+      <div className="font-mono text-neutral-200 ml-4 space-y-1">
+        <div>Impact = 0.10 ^ 0.7 ≈ 0.1995</div>
+        <div>Penalty = 0.08 × 0.1995 × $1.00</div>
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-neutral-700/50">
+         <div className="text-red-400 font-bold">Penalty = \$0.016 Of added fees per share</div>
+         <div className="text-red-300/80 mt-1">For 5000 shares this cost you \$0.016 * 5000 = \$80 on top of everything else.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+Finally brokers take fees for trading, usually not a large amount but if this isn’t modeled then you can buy 1000 shares, sell for \$0.01 profit and make \$10, but in reality you pay \$5 to enter and \$5 to exit resulting in a profit of \$0. I model this with commissions: 0.005$ per share, applied to entry and exit.
+
+In terms of realism all of these combined mimic a trading environment with good accuracy, however there are always more market factors when trading live that can go unseen and unaccounted for in a backtest like this. These factors can best be uncovered with a true live deployment with paper trading from a broker (which I am currently working on).
+
+### Speed Optimization
+
+Another angle I addressed in the backtest was speed. The grid search process for every training period can also take hours if done inefficiently, so I incorporated a few features in the code to greatly speed up the process while remaining accurate:
+
+* **Vectorized pre-computation:** The most expensive part of the backtest can be calculating indicators like ATR, and running the jump prediction model for every bar, however if you have a dataset with all the bars already shown you can pre compute all these values once instead of repeating the loop every time. Prior to this the model would hit minute 10 in the data, look back 14 mins to calculate ATR, hit minute 11 and repeat. I implemented vectorization to calculate every minute bar in the 2 year dataset instantly and then used a fast lookup `atr[index]` to grab the pre-computed ATR value.
+* **Numba JIT compilation:** Python is easy to read for humans but this makes it slower for machines to process. I used a library called Numba that adds a tag `@njit(cache=True, fastmath=True)` that translates slower parts of the code into machine code (code that the machine can better understand) and in result runs significantly faster for huge computations like backtests.
+
+### Final Results
+
+As seen in the output before, the robust backtested strategy achieved solid results, turning a portfolio of **\$10,000 to \$63,661.41** in 2 years.
+
+```txt
+--- 🏆 OVERALL WALK-FORWARD OOS RESULTS 🏆 ---
+
+  >> Core Metrics:
+     Total Return: 536.61% | Sharpe: 2.96
+     Sortino: 6.11 | Calmar: 16.03
+     Profit Factor: 1.33 | Win Rate: 38.14%
+
+  >> Risk Metrics:
+     Max Drawdown: -33.48%
+     Max Consecutive Losses: 12
+     Longest Drawdown: 212 trades
+
+  >> Dollar Performance:
+     Initial Capital: $10,000.00
+     Final Capital:   $63,661.41
+     Net Profit:      $53,661.41
+     Total Trades:    1,062
+     Total Shares:    135,793
+```
+
+The next steps that I will be working on are setting up an AWS server, which is a server where my code can run without interruption (no WIFI disconnect, no computer sleeping) and execute paper trades with live data over a month. The code will connect to Alpaca API, where it can send requests like 
+```python
+api.submit_order('TSLA', qty=10, side='buy')
+```
+and I can track everything live from a broker app on my phone. The code will log all aspects of the trades and communicate info such as “Did slippage eat profits?”, so I can pinpoint and attempt to overcome roadblocks along the way to live deployment and remain open minded, since the market is always adapting and shifting, what worked yesterday is never guaranteed to work tomorrow.
+

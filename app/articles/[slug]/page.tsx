@@ -10,6 +10,9 @@ import Link from 'next/link';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import ImageWithFullscreen from '@/app/components/ImageWithFullscreen';
+import PCAMathAnimator from '@/app/components/PCAMathAnimator'; 
+import SigmoidVisualizer from '@/app/components/SigmoidVisualizer';
+import GradientDescentAnimator from '@/app/components/GradientDescentAnimator';
 
 type PageProps = {
   params: { slug: string };
@@ -40,7 +43,10 @@ export default async function ArticlePage({ params }: PageProps) {
  const { content } = await compileMDX({
     source: mdxSource,
     components: {
-      ImageWithFullscreen, // This makes the component available in your MDX files
+      ImageWithFullscreen, 
+      PCAMathAnimator, 
+      SigmoidVisualizer,
+      GradientDescentAnimator,
     },
     options: {
       parseFrontmatter: false,

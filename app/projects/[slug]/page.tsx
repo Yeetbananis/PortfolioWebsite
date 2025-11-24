@@ -12,6 +12,10 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import ImageWithFullscreen from '@/app/components/ImageWithFullscreen';
 import SmoothVideo from '@/app/components/SmoothVideo'; 
+import GradientDescentAnimator from '@/app/components/GradientDescentAnimator';
+import SigmoidVisualizer from '@/app/components/SigmoidVisualizer';
+import GradientLandscape from '@/app/components/GradientLandscape';
+import FinBERTViz from '@/app/components/FinBERTViz';
 
 type PageProps = {
   params: { slug: string };
@@ -59,6 +63,10 @@ export default async function ProjectPage({ params }: PageProps) {
     components: {
       ImageWithFullscreen, // This makes the component available in your MDX files
       SmoothVideo,
+      GradientDescentAnimator,
+      SigmoidVisualizer,
+      GradientLandscape,
+      FinBERTViz,
     },
   });
 

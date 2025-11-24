@@ -15,6 +15,13 @@ export const projects = [
     link: "/projects/dual-ai-forex-assistant",
     tags: ["Python", "PyTorch", "OANDA API", "Scikit-Learn", "NumPy"],
   },
+  {
+    title: "News Sentiment Model for Algorithmic Trading",
+    description: "A Logistic Regression volatility model classifies news headlines and price data to inform algorithmic trading decisions.",
+    image: "/images/GradientLandscape.png",
+    link: "/projects/news-sentiment-model-HFT",
+    tags: ["Python", "NLP", "BERT", "Logistic Regression", "Linear Algebra"],
+  }
 ];
 
 export const courses = [
