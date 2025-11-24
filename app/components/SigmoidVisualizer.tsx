@@ -10,7 +10,7 @@ interface SigmoidVisualizerProps {
 export default function SigmoidVisualizer({ mode = 'P' }: SigmoidVisualizerProps) {
   // --- MODE CONFIGURATION ---
   const config = mode === 'P' 
-    ? { targetZ: 6.72, targetPct: "99.98%" } 
+    ? { targetZ: 6.72, targetPct: "99.99%" } 
     : { targetZ: 0.45, targetPct: "61%" };
 
   // Start at 0 to show the "journey" to target

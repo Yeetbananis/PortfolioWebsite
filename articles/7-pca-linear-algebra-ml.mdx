@@ -1,8 +1,14 @@
-I’ve repeatedly heard the phrase “linear algebra is everywhere,” but while listening to my lectures I struggled to see how some of the more abstract topics connected to real life applications. This changed recently when, during a news sentiment machine learning project, I came across several practical uses of the concepts I’d been learning, one of the most significant being Principal Component Analysis (PCA).
+I’ve repeatedly heard the phrase “linear algebra is everywhere,” but while listening to my lectures I struggled to see how some of the more abstract topics connected to real life applications. This changed recently when, during a news sentiment machine learning project, I came across several practical uses of the concepts I’d been learning, one of the most significant being **Principal Component Analysis (PCA)**.
+
 To best explain principal component analysis I will break down where it comes into play in my project. I wanted to see whether or not certain big news articles had any correlation to large stock price jumps, like if an influx of “Trump declares 100 percent tariffs on China” articles caused the market to jump up or down quickly, or if the market already priced those in and jumped before the articles were released. I had fetched a couple years worth of relevant stock news data, and now had a JSON file with a column of news articles.
 
-Machine learning models don’t work with words, they work with numbers. Words are easy for humans to simply read and interpret but models need a lot more context because of all the possible nuances there could be. For example, is the word a noun, verb or adjective? Does “Apple” mean fruit or iPhone? Is the word sarcastic or formal? How does the word relate to the previous word? This list goes on, and each nuance/piece of context can be represented as a dimension in a vector space. The sentence “Tesla stock jumps on news” can be represented as:
+Machine learning models don’t work with words, they work with numbers. Words are easy for humans to simply read and interpret but models need a lot more context because of all the possible nuances there could be. For example:
+* Is the word a noun, verb or adjective?
+* Does “Apple” mean fruit or iPhone?
+* Is the word sarcastic or formal?
+* How does the word relate to the previous word?
 
+This list goes on, and each nuance/piece of context can be represented as a dimension in a vector space. The sentence “Tesla stock jumps on news” can be represented as:
 $$
 \begin{aligned}
 \text{Tesla} &\rightarrow [0.1, 0.9, \dots] \\
@@ -17,7 +23,7 @@ With the number of columns representing the dimension. You might ask how many di
 
 n = Number of headlines (e.g., 1,000 rows) 
 
-d = Original dimensions (768 features from BERT (Google model))
+d = Original dimensions (768 features from BERT (Google model that converts words to vectors))
 
 We can define the data matrix  X ∈ ℝ^(n × d).
 
@@ -36,9 +42,15 @@ $$
 \mathbf{x}_i ∈ ℝ^{768}
 $$
 
-But there’s a problem here, a standard machine learning model will get completely lost in all of these numbers, and most of these features are similar (urgency of something is usually correlated with necessity). In machine learning you want the model to learn the data, but in a bigger picture “zoomed out” way. Imagine a student who studies for a midterm and memorizes every small detail in the textbook from sentence order to the diagram color of a problem being red, and when midterm day comes he opens his paper in horror as the test problem’s diagram is green. A model works the same way, if there’s too many features then it’ll get lost in the tiny details and although it will learn your data very well, it’ll get lost the instant new stock data comes in (which is where it matters because you want to predict the future not the past).
+But there’s a problem here, a standard machine learning model will get completely lost in all of these numbers, and most of these features are similar (urgency of something is usually correlated with necessity). In machine learning you want the model to learn the data, but in a bigger picture “zoomed out” way.
 
-So now the question is “How can I reduce the dimension of this news headline data from 768 to a smaller number like 10, while losing the least amount of the important nuance of the words?”, so we want to squash a 768 dimension vector into a 10 dimension vector that captures 90%+ of the information of the 768 dimension vector.
+**Student Analogy:** Imagine a student who studies for a midterm and memorizes every small detail in the textbook from sentence order to the diagram color of a problem being red, and when midterm day comes he opens his paper in horror as the test problem’s diagram is green.
+
+A model works the same way, if there’s too many features then it’ll get lost in the tiny details and although it will learn your data very well, it’ll get lost the instant new stock data comes in (which is where it matters because you want to predict the future not the past).
+
+So now the question is: **“How can I reduce the dimension of this news headline data from 768 to a smaller number like 10, while losing the least amount of the important nuance of the words?”**
+
+We want to squash a 768 dimension vector into a 10 dimension vector that captures 90%+ of the information of the 768 dimension vector.
 
 $$
 \mathbb{R}^{768} \;\longrightarrow\; \mathbb{R}^{10}
@@ -81,8 +93,9 @@ $$
 A =\begin{bmatrix}8 & 8 \\8 & 8\end{bmatrix}
 $$
 
-What does this matrix tell us? The diagonals (8) show how each feature varies with itself, and the off diagonals (also 8) show that the two features x and y move exactly together. If we know features move together, we want to capture the largest amount of variance shared by those features since that’ll capture the most information. For example the words “good” and “bad” have the highest variance (are opposites) but lie on the same line (relate to the same concept). What gives a value for variation as a number without changing the direction (the topic/line)?
-That’s just an eigenvector (the topic/line) with the largest eigenvalue (the difference between the value good and value bad), because the eigenvalue measures how much the data stretches along that direction.
+What does this matrix tell us? The diagonals (8) show how each feature varies with itself, and the off diagonals (also 8) show that the two features x and y move exactly together. If we know features move together, we want to capture the largest amount of variance shared by those features since that’ll capture the most information.
+
+For example the words “good” and “bad” have the highest variance (are opposites) but lie on the same line (relate to the same concept). What gives a value for variation as a number without changing the direction (the topic/line)? That’s just an **eigenvector** (the topic/line) with the largest **eigenvalue** (the difference between the value good and value bad), because the eigenvalue measures how much the data stretches along that direction.
 
 <ImageWithFullscreen src="/images/PCAImage1.png" alt="Visualizing PCA: Eigenvectors & Variance" />
 
@@ -126,7 +139,9 @@ $$
 \lambda_1 = 16 \newline \lambda_2 = 0
 $$
 
-Remember these directly represent the amount of information captured, and looking back at the original two vectors (2,2) and (-2,-2) we saw that they were linearly dependent, meaning that vector 2 was on the same line as vector 1, so vector 1 with an eigenvalue of 16 captures 100 percent of the information and vector 2 with an eigenvalue of 0 captures 0 percent (it's redundant) which makes sense. We can now plug the eigenvalue 16 in the equation to find the eigenvector:
+Remember these directly represent the amount of information captured, and looking back at the original two vectors (2,2) and (-2,-2) we saw that they were linearly dependent, meaning that vector 2 was on the same line as vector 1, so vector 1 with an eigenvalue of 16 captures 100 percent of the information and vector 2 with an eigenvalue of 0 captures 0 percent (it's redundant) which makes sense.
+
+We can now plug the eigenvalue 16 in the equation to find the eigenvector:
 
 $$
 \left( \begin{bmatrix} 8 & 8 \\ 8 & 8 \end{bmatrix} - \begin{bmatrix} 16 & 0 \\ 0 & 16 \end{bmatrix} \right) \mathbf{v} = \mathbf{0}
@@ -140,7 +155,9 @@ $$
 -8x + 8y = 0 \implies 8y = 8x \implies y = x
 $$
 
-This means our eigenvector is simply the line y=x. Practically speaking we just found that the vector (1,1) captures 100 percent of the information we need to know about the 2 headlines regarding their panic and urgency. More specifically, an article had 2 nuances: It could be high/low panic, and high/low urgency, but we found that panic and urgency are dependent on each other, meaning if we only knew panic (eigenvalue 16) there was no need to know urgency (eigenvalue 0) since we already captured 100 percent of the information. This vector we found (eigenvector) (1,1) can be scaled to a unit vector:
+This means our eigenvector is simply the line $y=x$. Practically speaking we just found that the vector (1,1) captures 100 percent of the information we need to know about the 2 headlines regarding their panic and urgency. More specifically, an article had 2 nuances: It could be high/low panic, and high/low urgency, but we found that panic and urgency are dependent on each other, meaning if we only knew panic (eigenvalue 16) there was no need to know urgency (eigenvalue 0) since we already captured 100 percent of the information.
+
+This eigenvector we found (1,1) can be scaled to a unit vector:
 
 $$
 \mathbf{\hat{v}} = \frac{\mathbf{v}}{\|\mathbf{v}\|}
@@ -150,7 +167,7 @@ $$
 \mathbf{v}_1 = \begin{bmatrix} \frac{1}{\sqrt{2}} \\ \frac{1}{\sqrt{2}} \end{bmatrix} \approx \begin{bmatrix} 0.707 \\ 0.707 \end{bmatrix}
 $$
 
-and this unit vector is called the Principal Component, specifically “PC1” meaning principal component 1. We can now compress the original 2x2 matrix (dimension 2) into a 2x1 matrix (dimension 1):
+and this unit vector is called the **Principal Component**, specifically “PC1” meaning principal component 1. We can now compress the original 2x2 matrix (dimension 2) into a 2x1 matrix (dimension 1):
 
 $$
 Z = X \cdot \mathbf{v}_1
@@ -172,10 +189,34 @@ $$
 (-2 \times 0.707) + (-2 \times 0.707) = \mathbf{-2.828}
 $$
 
-The number 2.828 now represents “very urgent/panicky news”, and -2.828 represents “very calm/low panic news”. Why is this better than knowing panic is 2 and urgency is 2?
-Imagine a student who is learning for a linear algebra test. The key idea is that a matrix is not invertible if its determinant is zero. One student memorizes the single fact: determinant zero means matrix not invertible. Another student tries to memorize the logic separately since they don’t know the correlation, like determinant zero means columns dependent, columns dependent means rows dependent, rows dependent means null space nontrivial etc. When asked “If the determinant is zero, what does this say about invertibility?” the second student tries to follow all the separate chains, overcomplicates the reasoning, and might get confused or make mistakes. Memorizing every equivalent fact separately is a human version of overfitting your memory to redundant (linearly dependent) details, you spend effort on noise instead of the true clear signal.
-This is the power of a principal component, it's like memorizing one fact that describes a bunch of other facts, so the model can cleanly focus on the bigger picture. Scaling this up from compressing dimension 2 → 1 to doing dimension 768 → 10 is a similar process, you have 768 points that describe the headlines, a lot of them are redundant/correlated although not in a y=x clean way, and your goal is to get 10 principal components that capture ideally 90+ percent of the information. The first principal component PC1 is the largest eigenvalue, meaning it captures the biggest trend in the data, PC2 is the second largest eigenvalue and captures the second largest trend and so on:
+The number **2.828** now represents “very urgent/panicky news”, and **-2.828** represents “very calm/low panic news”.
 
+<div className="border border-neutral-800 bg-neutral-900/50 rounded-xl p-6 my-8">
+  <h3 className="text-white font-bold text-sm mb-4">Why is this better? The Student Analogy Revisited</h3>
+  
+  {/* CHANGED <p> TO <div> TO PREVENT HYDRATION ERRORS */}
+  <div className="text-sm text-neutral-300 mb-4">
+    Imagine a student who is studying for a linear algebra test. The key idea is that a matrix is not invertible if its determinant is zero.
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+    <div className="bg-green-900/20 border border-green-500/30 p-4 rounded">
+      <strong className="text-green-400 block mb-2">Student A (Uses PCA logic)</strong>
+      Memorizes one core fact: "Determinant Zero = Not Invertible." Simple, clean signal.
+    </div>
+    <div className="bg-red-900/20 border border-red-500/30 p-4 rounded">
+      <strong className="text-red-400 block mb-2">Student B (Overfitting)</strong>
+      Memorizes every logic chain separately: "Det 0 means columns dependent... which means rows dependent... which means null space nontrivial..."
+    </div>
+  </div>
+
+  {/* CHANGED <p> TO <div> */}
+  <div className="text-sm text-neutral-300 mt-4">
+    When asked a question, Student B tries to follow all separate chains, overcomplicates reasoning, and might get confused. Memorizing every equivalent fact separately is a human version of overfitting your memory to redundant details. Student A (PCA) spends effort on the true clear signal.
+  </div>
+</div>
+
+Scaling this up from compressing dimension 2 → 1 to doing dimension 768 → 10 is a similar process, you have 768 points that describe the headlines, a lot of them are redundant/correlated although not in a y=x clean way, and your goal is to get 10 principal components that capture ideally 90+ percent of the information. The first principal component PC1 is the largest eigenvalue, meaning it captures the biggest trend in the data, PC2 is the second largest eigenvalue and captures the second largest trend and so on:
 $$
 \text{PC1 } (\lambda = 50): \text{ Explains 30\% of the data - Massive Trend} \\
 \text{PC2 } (\lambda = 30): \text{ Explains 20\% of the data - Secondary Trend} \\
@@ -185,6 +226,7 @@ $$
 $$
 
 As you get to higher PC values, you capture less and less significant trends, the specific cutoff varies by data size and type (the eigenvalues and percent above are dummy variables), but for my project PC10 was the cutoff point that makes the most sense since the amounts of noise PC11 adds for the model to analyze compared to information it adds isn’t worth it.
+
 Another interesting fact is that the eigenvector PC2 is orthogonal (exactly 90 degrees) to PC1, it captures completely new and unrelated information while also capturing the second largest trend:
 
 <ImageWithFullscreen src="/images/PCAImage2.png" alt="PCA: Orthogonal Trends (PC1 & PC2)" />
@@ -230,12 +272,13 @@ $$
 $$
 
 PC3 would be orthogonal to both vector v1 and v2 (cross product of the two), and so on. The principal components capture more and more new trend info while squashing redundant dimensions, taking complicated vectors with 768 dimensions to just 10 dimensional efficient vectors that a model can learn on much easier to capture the bigger picture and find patterns.
-Now that I have 10 vectors that capture the essence of each new headline, I am able to feed them into my Logistic regression model, for it to learn and discover relationships between news headlines and stock movements (if any), and predict on live data as a new article comes in. Let’s run through a hypothetical scenario where the model found that news articles have high correlation to jumps:
-A news API call pulls a live news headline “Tesla halts Berlin production indefinitely due to arson attack”.
-The Google BERT model converts the article into a map of vectors of dimension 768, then this simple block of code:
 
+Now that I have 10 vectors that capture the essence of each new headline, I am able to feed them into my Logistic regression model, for it to learn and discover relationships between news headlines and stock movements (if any), and predict on live data as a new article comes in. Let’s run through a hypothetical scenario where the model found that news articles have high correlation to jumps: A news API call pulls a live news headline “Tesla halts Berlin production indefinitely due to arson attack”. The Google BERT model converts the article into a map of vectors of dimension 768, then this simple block of code:
+
+```python
 pca = PCA(n_components=10)
 embedding_pca = pca.fit_transform(embeddings)
+```
 uses PCA to transform it to a vector of dimension 10:
 
 $$
