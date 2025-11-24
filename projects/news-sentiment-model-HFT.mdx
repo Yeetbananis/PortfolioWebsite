@@ -425,6 +425,58 @@ For example the headline:
 is fed, the SVM has never seen the words buying and Twitter in the cluster before and the point is plotted very far from the center.
 The model then outputs a score of **+4.5** signaling “Extreme rare” headline, which the Logistic Regression model can learn to read as a potential signal for incoming volatility.
 
+I ran the feature engineering script to train the models and output 2 years worth of engineered features:
+```text
+--- Step 3: Engineering All Features on Combined Data ---
+  > [1/4] Engineering Price & Volume Features...
+  > [2/4] Engineering News Features...
+Device set to use cuda:0
+  -> FinBERT Sentiment: 100%|███████████████████████████████████████████████████████████████████████████████████████████████| 1049/1049 [00:00<?, ?it/s]
+Device set to use cuda:0
+  -> Topic Modeling: 100%|██████████████████████████████████████████████████████████████████████████████████████| 1049/1049 [00:00<00:00, 520073.86it/s]
+Batches: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████| 33/33 [00:00<00:00, 38.35it/s]
+    -> Fitting and Saving PCA...
+    -> Fitting and Saving SVM (High-Precision Mode)...
+  > [3/4] Fusing Price and News features...
+  > [4/4] Final cleaning and saving...
+```
+
+After training was complete I ran a confirmation sanity test on the SVM and PCA models (the ones that weren't pre-trained):
+```text
+STARTING MODEL CAPABILITIES DEMO
+========================================
+
+  > Loading Brains...
+  > System Ready.
+
+DEMO 1: PCA Contextual Mapping
+   (Comparing semantic meaning while controlling for the word 'Tesla')
+
+  Headline A: 'Tesla halts Berlin production due to fire'
+  Headline B: 'Tesla factory lines stopped after massive blaze'
+  Headline C: 'Tesla releases Q3 earnings report'
+
+  Mathematical Distance:
+     A <-> B (Synonyms):  0.2289
+     A <-> C (Different): 0.3956
+  SUCCESS: Synonyms are closer than different topics.
+
+
+DEMO 2: SVM Anomaly Detection
+     SCORE | STATUS     | HEADLINE
+  ------------------------------------------------------------
+  -0.8608 | [NORMAL]   | 'Tesla stock rises 0.5% in pre-market trading'
+  -0.5249 | [NORMAL]   | 'Analyst maintains Hold rating on Tesla stock'
+  -0.3008 | [NORMAL]   | 'S&P 500 closes slightly higher on Tuesday'
+  +0.5374 | [ALERT]   | 'Elon Musk challenges Zuckerberg to cage fight'
+  +0.3289 | [ALERT]   | 'Tesla factory destroyed by alien laser beam'
+  +0.4457 | [ALERT]   | 'Tesla CEO arrested for bank robbery'
+========================================
+
+(quant_news_model) PS C:\Users\timof\Desktop\quant_news_project> 
+```
+The PCA model correctly determined headline A was close to B (although not extremely precise), and the SVM model correctly classified all of the articles as either anomalies or boring.
+
 These 4 carefully engineered news features nudged the Logistic Regression model to improve even further:
 
 ```text
