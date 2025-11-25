@@ -74,6 +74,34 @@ export default function CommandTerminal() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [isOpen]);
 
+
+  // --- TRIPLE TAP LISTENER (MOBILE) ---
+  useEffect(() => {
+    let lastTapTime = 0;
+    let tapCount = 0;
+
+    const handleTouchEnd = () => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTapTime;
+
+      // 500ms threshold between taps
+      if (tapLength < 500 && tapLength > 0) {
+        tapCount++;
+        if (tapCount === 3) {
+          // If 3 taps happen quickly, open the terminal
+          setIsOpen(true); 
+          tapCount = 0; // Reset
+        }
+      } else {
+        tapCount = 1; // Reset if too slow
+      }
+      lastTapTime = currentTime;
+    };
+
+    window.addEventListener('touchend', handleTouchEnd);
+    return () => window.removeEventListener('touchend', handleTouchEnd);
+  }, []);
+  
   // Auto-focus input when opened
   useEffect(() => {
     if (isOpen) {
