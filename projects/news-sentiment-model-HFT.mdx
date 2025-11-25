@@ -414,7 +414,7 @@ For example the headline:
 
 <div className="bg-neutral-900 border border-neutral-700 p-4 rounded-lg my-6 max-w-md shadow-xl">
   <div className="flex items-center gap-3 mb-2">
-    <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
     <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Live News Feed</span>
   </div>
   <h3 className="text-white font-bold text-lg leading-tight">
@@ -422,7 +422,7 @@ For example the headline:
   </h3>
 </div>
 
-is fed, the SVM has never seen the words buying and Twitter in the cluster before and the point is plotted very far from the center.
+is fed, the SVM has never seen the words buying and Twitter in the same headline before and the point is plotted very far from the center of the cluster.
 The model then outputs a score of **+4.5** signaling “Extreme rare” headline, which the Logistic Regression model can learn to read as a potential signal for incoming volatility.
 
 I ran the feature engineering script to train the models and output 2 years worth of engineered features:
