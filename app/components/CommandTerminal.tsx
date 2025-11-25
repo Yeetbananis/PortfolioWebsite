@@ -1,12 +1,12 @@
-// app/components/CommandTerminal.tsx
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { projects, articles } from '@/data/content'; // Ensure this matches your data file path
-import { FiTerminal, FiCommand, FiCornerDownLeft } from 'react-icons/fi';
+import { FiTerminal, FiCornerDownLeft } from 'react-icons/fi';
 import HedgingSimulator from './interactive/HedgingSimulator';
+import { useNavigation } from '@/app/NavigationContext'; // Import Context
 
 type CommandHistory = {
   type: 'input' | 'output' | 'error' | 'success';
@@ -37,19 +37,23 @@ export default function CommandTerminal() {
   const [suggestion, setSuggestion] = useState('');
   const [showHedgeSim, setShowHedgeSim] = useState(false);
   
+  // --- NEW CONTEXT HOOK ---
+  const { setNavigating } = useNavigation(); 
+
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const searchableItems = useMemo(() => getSearchableItems(), []);
 
   // --- COMMAND LOGIC ---
   const commands = useMemo(() => ({
-    help: "Available commands: visit, clear, social, whoami, date, ls, run",
+    help: "Available: visit, navigate, clear, social, whoami, date, ls, run",
     clear: "Clears the terminal history.",
     whoami: "root@quant-portfolio (Tim Generalov)",
     date: new Date().toString(),
     social: "Try: visit linkedin | visit github",
     ls: "Lists all accessible pages, projects, and articles.",
-    run: "Executes interactive modules. Try: 'run hedging-game'", // <--- Added this
+    run: "Executes interactive modules. Try: 'run hedging-game'",
+    navigate: "Initiates Neural Navigation Mode (3D Site Map).", // Added
   }), []);
 
   // --- KEYBOARD LISTENERS ---
@@ -110,7 +114,7 @@ export default function CommandTerminal() {
       }
     }
 
-    // 3. Check 'run' command logic (NEW SECTION)
+    // 3. Check 'run' command logic
     if (lowerInput.startsWith('run ')) {
         const query = lowerInput.replace('run ', '');
         const apps = ['hedging-game']; // Registry of runnable apps
@@ -141,7 +145,15 @@ export default function CommandTerminal() {
       return;
     }
 
-    // 2. VISIT
+    // 2. NAVIGATE (New Logic)
+    if (action === 'navigate' || action === 'nav') {
+        setIsOpen(false); // Close terminal
+        setNavigating(true); // Trigger 3D Mode
+        setHistory(prev => [...prev, { type: 'success', content: 'Initiating Neural Link...' }]);
+        return;
+    }
+
+    // 3. VISIT
     if (action === 'visit' || action === 'cd' || action === 'go') {
       if (!argString) {
         setHistory(prev => [...prev, { type: 'error', content: "Usage: visit [page/project/article]" }]);
@@ -164,14 +176,14 @@ export default function CommandTerminal() {
       return;
     }
 
-    // 3. LS (List)
+    // 4. LS (List)
     if (action === 'ls') {
        const output = searchableItems.map(i => `[${i.type}] ${i.key}`).join('\n');
        setHistory(prev => [...prev, { type: 'output', content: output }]);
        return;
     }
 
-    // 4. RUN (Specific Apps) - MOVED UP HERE
+    // 5. RUN (Specific Apps)
     if (action === 'run') {
         if (args[0] === 'hedging-game') {
             setIsOpen(false);
@@ -179,17 +191,15 @@ export default function CommandTerminal() {
             setHistory(prev => [...prev, { type: 'success', content: 'Launching Delta Neutral Simulator...' }]);
             return;
         }
-        // If they just typed 'run' without arguments, let it fall through 
-        // to the next block so it prints the help text from your commands list.
     }
 
-    // 5. STANDARD COMMANDS (Help, Date, Whoami, etc.)
+    // 6. STANDARD COMMANDS (Help, Date, Whoami, etc.)
     if (action in commands) {
       setHistory(prev => [...prev, { type: 'output', content: commands[action as keyof typeof commands] }]);
       return;
     }
 
-    // 6. UNKNOWN
+    // 7. UNKNOWN
     setHistory(prev => [...prev, { type: 'error', content: `Command not found: ${action}. Type 'help'.` }]);
   };
 
