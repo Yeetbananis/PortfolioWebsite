@@ -75,7 +75,7 @@ export default function CommandTerminal() {
   }, [isOpen]);
 
 
-  // --- ROBUST LONG PRESS LISTENER (MOBILE) ---
+   // --- ROBUST LONG PRESS LISTENER (MOBILE) ---
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
     const holdDuration = 3000; // 3 seconds
@@ -88,7 +88,7 @@ export default function CommandTerminal() {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Safety: Only allow single-finger press to avoid conflicts with pinch/zoom
+      // Safety: Only allow single-finger press
       if (e.touches.length > 1) {
           clearTimer();
           return;
@@ -98,28 +98,31 @@ export default function CommandTerminal() {
 
       timer = setTimeout(() => {
         setIsOpen(true);
-        // Haptic feedback to confirm activation
+        // Haptic feedback
         if (navigator.vibrate) navigator.vibrate(50); 
       }, holdDuration);
     };
 
-    const handleTouchEnd = () => {
-      clearTimer(); // User lifted finger -> Cancel
+    const handleTouchEnd = () => clearTimer();
+    const handleTouchMove = () => clearTimer();
+    const handleTouchCancel = () => clearTimer();
+    
+    // Prevent Context Menu on long press (The "Select Text" popup)
+    const handleContextMenu = (e: Event) => {
+        // Only prevent if we are NOT inside the open terminal
+        if (!isOpen) e.preventDefault();
     };
 
-    const handleTouchMove = () => {
-      clearTimer(); // User moved/scrolled -> Cancel immediately
-    };
-
-    const handleTouchCancel = () => {
-        clearTimer(); // System interrupted touch (e.g. alert, tab switch) -> Cancel
-    };
-
-    // Passive listeners improve scroll performance
+    // Add listeners to WINDOW to catch everything
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('touchcancel', handleTouchCancel);
+    window.addEventListener('contextmenu', handleContextMenu, { passive: false });
+
+    // Add CSS class to body to prevent text selection globally while this component is mounted
+    document.body.style.userSelect = 'none';
+    document.body.style.webkitUserSelect = 'none'; // Safari support
 
     return () => {
       clearTimer();
@@ -127,8 +130,14 @@ export default function CommandTerminal() {
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchcancel', handleTouchCancel);
+      window.removeEventListener('contextmenu', handleContextMenu);
+      
+      // Cleanup CSS
+      document.body.style.userSelect = '';
+      document.body.style.webkitUserSelect = '';
     };
-  }, []);
+  }, [isOpen]); // Added isOpen dependency to correctly handle context menu logic
+
 
 
   // Auto-focus input when opened
