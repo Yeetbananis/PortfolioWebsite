@@ -38,7 +38,7 @@ export default function CommandTerminal() {
   const [showHedgeSim, setShowHedgeSim] = useState(false);
   
   // --- NEW CONTEXT HOOK ---
-  const { setNavigating, isChaosMode, setChaosMode } = useNavigation();
+  const { setNavigating, isChaosMode, setChaosMode, isTesseractMode, setTesseractMode } = useNavigation();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -75,40 +75,61 @@ export default function CommandTerminal() {
   }, [isOpen]);
 
 
-  // --- LONG PRESS LISTENER (MOBILE) ---
+  // --- ROBUST LONG PRESS LISTENER (MOBILE) ---
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: NodeJS.Timeout | null = null;
+    const holdDuration = 3000; // 3 seconds
 
-    const handleTouchStart = () => {
-      // Start a timer when user touches screen
+    const clearTimer = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Safety: Only allow single-finger press to avoid conflicts with pinch/zoom
+      if (e.touches.length > 1) {
+          clearTimer();
+          return;
+      }
+      
+      clearTimer(); // Clear any existing ghost timers
+
       timer = setTimeout(() => {
         setIsOpen(true);
-        // Optional: Vibrate phone to confirm opening (Android only usually)
+        // Haptic feedback to confirm activation
         if (navigator.vibrate) navigator.vibrate(50); 
-      }, 5000); // 5 seconds hold time
+      }, holdDuration);
     };
 
     const handleTouchEnd = () => {
-      // If they lift finger before 5s, cancel
-      clearTimeout(timer);
+      clearTimer(); // User lifted finger -> Cancel
     };
 
     const handleTouchMove = () => {
-      // If they scroll/move finger, cancel immediately
-      clearTimeout(timer);
+      clearTimer(); // User moved/scrolled -> Cancel immediately
     };
 
-    window.addEventListener('touchstart', handleTouchStart);
+    const handleTouchCancel = () => {
+        clearTimer(); // System interrupted touch (e.g. alert, tab switch) -> Cancel
+    };
+
+    // Passive listeners improve scroll performance
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchcancel', handleTouchCancel);
 
     return () => {
-      clearTimeout(timer);
+      clearTimer();
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchcancel', handleTouchCancel);
     };
   }, []);
+
 
   // Auto-focus input when opened
   useEffect(() => {
@@ -210,6 +231,21 @@ export default function CommandTerminal() {
         setIsOpen(false); 
         return;
     }
+
+     // --- TESSERACT MODE (NEW) ---
+    if (action === 'tesseract' || action === 'hypercube' || action === '4d') {
+        if (isTesseractMode) {
+            setTesseractMode(false);
+            setHistory(prev => [...prev, { type: 'success', content: 'Collapsing 4D Geometry...' }]);
+        } else {
+            if (isChaosMode) setChaosMode(false); // Turn off chaos if on
+            setTesseractMode(true);
+            setHistory(prev => [...prev, { type: 'success', content: 'Projecting 4D Hypercube Shadow...' }]);
+        }
+        setIsOpen(false);
+        return;
+    }
+
 
     // 3. VISIT
     if (action === 'visit' || action === 'cd' || action === 'go') {

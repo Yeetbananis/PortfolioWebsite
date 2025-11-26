@@ -9,6 +9,8 @@ interface NavigationContextType {
   setTargetNode: (node: string | null) => void;
   isChaosMode: boolean;
   setChaosMode: (v: boolean) => void;
+  isTesseractMode: boolean;
+  setTesseractMode: (v: boolean) => void;
 }
 
 
@@ -20,6 +22,8 @@ export const NavigationContext = createContext<NavigationContextType>({
   setTargetNode: () => {},
   isChaosMode: false,
   setChaosMode: () => {},
+    isTesseractMode: false,
+  setTesseractMode: () => {},
   
 });
 
@@ -29,9 +33,10 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
   const [isNavigating, setNavigating] = useState(false);
   const [targetNode, setTargetNode] = useState<string | null>(null);
   const [isChaosMode, setChaosMode] = useState(false);
+  const [isTesseractMode, setTesseractMode] = useState(false);
 
   return (
-    <NavigationContext.Provider value={{ isNavigating, setNavigating, targetNode, setTargetNode, isChaosMode, setChaosMode }}>
+    <NavigationContext.Provider value={{ isNavigating, setNavigating, targetNode, setTargetNode, isChaosMode, setChaosMode, isTesseractMode, setTesseractMode }}>
       {children}
     </NavigationContext.Provider>
   );
