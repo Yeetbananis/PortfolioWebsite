@@ -38,7 +38,7 @@ export default function CommandTerminal() {
   const [showHedgeSim, setShowHedgeSim] = useState(false);
   
   // --- NEW CONTEXT HOOK ---
-  const { setNavigating } = useNavigation(); 
+  const { setNavigating, isChaosMode, setChaosMode } = useNavigation();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -75,33 +75,41 @@ export default function CommandTerminal() {
   }, [isOpen]);
 
 
-  // --- TRIPLE TAP LISTENER (MOBILE) ---
+  // --- LONG PRESS LISTENER (MOBILE) ---
   useEffect(() => {
-    let lastTapTime = 0;
-    let tapCount = 0;
+    let timer: NodeJS.Timeout;
 
-    const handleTouchEnd = () => {
-      const currentTime = new Date().getTime();
-      const tapLength = currentTime - lastTapTime;
-
-      // 500ms threshold between taps
-      if (tapLength < 500 && tapLength > 0) {
-        tapCount++;
-        if (tapCount === 3) {
-          // If 3 taps happen quickly, open the terminal
-          setIsOpen(true); 
-          tapCount = 0; // Reset
-        }
-      } else {
-        tapCount = 1; // Reset if too slow
-      }
-      lastTapTime = currentTime;
+    const handleTouchStart = () => {
+      // Start a timer when user touches screen
+      timer = setTimeout(() => {
+        setIsOpen(true);
+        // Optional: Vibrate phone to confirm opening (Android only usually)
+        if (navigator.vibrate) navigator.vibrate(50); 
+      }, 5000); // 5 seconds hold time
     };
 
+    const handleTouchEnd = () => {
+      // If they lift finger before 5s, cancel
+      clearTimeout(timer);
+    };
+
+    const handleTouchMove = () => {
+      // If they scroll/move finger, cancel immediately
+      clearTimeout(timer);
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
     window.addEventListener('touchend', handleTouchEnd);
-    return () => window.removeEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchmove', handleTouchMove);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
   }, []);
-  
+
   // Auto-focus input when opened
   useEffect(() => {
     if (isOpen) {
@@ -178,6 +186,28 @@ export default function CommandTerminal() {
         setIsOpen(false); // Close terminal
         setNavigating(true); // Trigger 3D Mode
         setHistory(prev => [...prev, { type: 'success', content: 'Initiating Neural Link...' }]);
+        return;
+    }
+
+    if (action === 'resume' || action === 'cv') {
+        setHistory(prev => [...prev, { type: 'success', content: "Opening Resume (PDF)..." }]);
+        // CORRECT PATH: /images/..., not /public/images/...
+        window.open('/images/Tim_Generalov_Resume.pdf', '_blank'); 
+        setIsOpen(false);
+        return;
+    }
+
+    // --- CHAOS MODE TOGGLE ---
+    if (action === 'chaos') {
+        if (isChaosMode) {
+            setChaosMode(false);
+            setHistory(prev => [...prev, { type: 'success', content: 'Restoring Entropy...' }]);
+        } else {
+            setChaosMode(true);
+            setHistory(prev => [...prev, { type: 'success', content: 'Initiating Lorenz Attractor [Strange Attractor Detected]...' }]);
+        }
+        // ALWAYS Close terminal now (requested behavior)
+        setIsOpen(false); 
         return;
     }
 

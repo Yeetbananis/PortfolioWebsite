@@ -17,6 +17,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiGithub, FiLinkedin } from "react-icons/fi";
+import CareerSimulation from "./interactive/CareerSimulation";
 
 //=============================================================================
 // 1. D3 COURSE MAP COMPONENT (Self-Contained)
@@ -426,13 +427,14 @@ const SkillTag = ({ children }: { children: React.ReactNode }) => (
     </span>
 );
 
+// 2. Main Page Component Integration
 export default function PortfolioAboutSection() {
     return (
         <div className="w-full bg-transparent text-slate-300 font-sans p-4 sm:p-6 lg:p-8">
             <div className="mx-auto max-w-7xl rounded-2xl border border-white/10 bg-slate-900/1 p-4 shadow-2xl backdrop-blur-2xl sm:p-6 lg:p-8">
                 <main>
                     <div className="grid grid-cols-1 gap-10 lg:grid-cols-3">
-                        {/* LEFT COLUMN */}
+                        {/* LEFT COLUMN (About & Education) */}
                         <div className="lg:col-span-1 space-y-8">
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                                <GlassCard>
@@ -461,8 +463,13 @@ export default function PortfolioAboutSection() {
                             </motion.div>
                         </div>
 
-                        {/* RIGHT COLUMN */}
+                        {/* RIGHT COLUMN (Career Sim & Skills) */}
                         <div className="lg:col-span-2 space-y-8">
+                             {/* 3. CAREER SIMULATION INSERTED HERE */}
+                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+                                <CareerSimulation />
+                             </motion.div>
+
                              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
                                 <GlassCard>
                                     <h2 className="text-xl font-semibold text-white">Technologies & Skills</h2>

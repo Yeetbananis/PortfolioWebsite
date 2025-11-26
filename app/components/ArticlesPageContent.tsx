@@ -41,7 +41,7 @@ export default function ArticlesPageContent({ articles }: { articles: Article[] 
         </h1>
         <p className="mt-4 mx-auto max-w-2xl text-lg text-text-secondary">
           <AnimatedWords 
-            text="A collection of my thoughts and deep dives into quantitative finance, trading strategies, and technology."
+            text="A collection of my thoughts and deep dives into quantitative finance, trading concepts, and much more."
             delay={0.1}
           />
         </p>

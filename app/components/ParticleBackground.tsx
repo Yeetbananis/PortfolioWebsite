@@ -9,55 +9,64 @@ import * as THREE from 'three';
 import { useNavigation } from '../NavigationContext'; 
 import { useRouter } from 'next/navigation';
 
-// --- CONFIGURATION ---
-const THEME_PRIMARY = '#00f0ff'; 
+// --- THEME ENGINE ---
+const THEMES = [
+  { 
+    name: 'Deep Ocean', 
+    primary: '#00f0ff', 
+    // Starts at Green (0.33) -> Goes through Cyan -> Ends at Deep Blue/Purple (0.73)
+    hueBase: 0.33, 
+    hueRange: 0.4 
+  }, 
+  { 
+    name: 'Inferno', 
+    primary: '#ff4d00', 
+    // Starts at Red (0.0) -> Goes through Orange -> Ends at Bright Yellow/Gold (0.17)
+    hueBase: 0.0, 
+    hueRange: 0.17 
+  }, 
+  { 
+    name: 'Neon Cyberpunk', 
+    primary: '#d000ff', 
+    // Starts at Violet (0.75) -> Goes through Magenta -> Ends at Red/Pink (0.95)
+    hueBase: 0.72, 
+    hueRange: 0.3 
+  },
+  { 
+    name: 'Biohazard', 
+    primary: '#39ff14', 
+    // Starts at Lime Green (0.28) -> Hits Pure Neon Green -> Ends at Electric Emerald (0.4)
+    hueBase: 0.28, 
+    hueRange: 0.12 
+  }
+];
+
+// --- LORENZ CONSTANTS ---
+const LORENZ_SIGMA = 10;
+const LORENZ_RHO = 28;
+const LORENZ_BETA = 8 / 3;
+const LORENZ_DT = 0.01; 
+const LORENZ_MAX_POINTS = 3000;
+const LORENZ_SPEED = 8; 
+const LORENZ_SCALE = 0.5;
 
 // --- MAP DATA ---
-// Layout: Inverted Triangle (About Top, Projects Left, Articles Right)
-// This fits landscape screens better and keeps the camera neutral.
 const SITE_MAP: any = {
-  // --- MAIN HUBS ---
   about: { 
-    id: 'about', 
-    position: [0, 2.5, 0], // Top Center
-    label: 'ABOUT', 
-    type: 'category', // Acts as a category for visual weight
-    url: '/about',
+    id: 'about', position: [0, 2.5, 0], label: 'ABOUT', type: 'category', url: '/about',
     connections: ['projects', 'articles']
   },
   projects: { 
-    id: 'projects', 
-    position: [-4.0, -1.5, 0], // Bottom Left
-    label: 'PROJECTS', 
-    type: 'category',
-    connections: ['about', 'articles'],
-    children: ['quant', 'forex', 'sentiment']
+    id: 'projects', position: [-4.0, -1.5, 0], label: 'PROJECTS', type: 'category',
+    connections: ['about', 'articles'], children: ['quant', 'forex', 'sentiment']
   },
   articles: { 
-    id: 'articles', 
-    position: [4.0, -1.5, 0], // Bottom Right
-    label: 'ARTICLES', 
-    type: 'category',
-    connections: ['about', 'projects'],
-    children: ['art1', 'art2', 'art3', 'art4', 'art5', 'art6', 'art7']
+    id: 'articles', position: [4.0, -1.5, 0], label: 'ARTICLES', type: 'category',
+    connections: ['about', 'projects'], children: ['art1', 'art2', 'art3', 'art4', 'art5', 'art6', 'art7']
   },
-
-  // --- SUB NODES: PROJECTS ---
-  quant: { 
-    id: 'quant', position: [-6, -0.5, 1], label: 'Quant Platform', type: 'leaf', 
-    url: '/projects/quant-analysis-platform', parent: 'projects' 
-  },
-  forex: { 
-    id: 'forex', position: [-5.5, -3.5, 1], label: 'Forex AI', type: 'leaf', 
-    url: '/projects/dual-ai-forex-assistant', parent: 'projects' 
-  },
-  sentiment: { 
-    id: 'sentiment', position: [-2.5, -4.0, 0.5], label: 'News Sentiment', type: 'leaf', 
-    url: '/projects/news-sentiment-model-HFT', parent: 'projects' 
-  },
-
-  // --- SUB NODES: ARTICLES ---
-  // Spread out in a constellation around [4, -1.5, 0]
+  quant: { id: 'quant', position: [-6, -0.5, 1], label: 'Quant Platform', type: 'leaf', url: '/projects/quant-analysis-platform', parent: 'projects' },
+  forex: { id: 'forex', position: [-5.5, -3.5, 1], label: 'Forex AI', type: 'leaf', url: '/projects/dual-ai-forex-assistant', parent: 'projects' },
+  sentiment: { id: 'sentiment', position: [-2.5, -4.0, 0.5], label: 'News Sentiment', type: 'leaf', url: '/projects/news-sentiment-model-HFT', parent: 'projects' },
   art1: { id: 'art1', position: [6.0, 0.5, 1], label: 'Futures Basics', type: 'leaf', url: '/articles/1-futures-basics', parent: 'articles' },
   art2: { id: 'art2', position: [6.5, -1.0, 0], label: 'Intro to Options', type: 'leaf', url: '/articles/2-options-intro', parent: 'articles' },
   art3: { id: 'art3', position: [5.5, -3.0, 1], label: 'Moneyness (ITM/OTM)', type: 'leaf', url: '/articles/3-option-positioning', parent: 'articles' },
@@ -86,22 +95,17 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
   useFrame(() => {
     if (!sparkRef.current) return;
     const positions = sparkRef.current.geometry.attributes.position.array as Float32Array;
-
     sparks.forEach((spark, i) => {
       spark.progress += spark.speed;
       if (spark.progress > 1) {
         spark.progress = 0;
         spark.path = paths[Math.floor(Math.random() * paths.length)];
       }
-      
       const currentPointIndex = Math.floor(spark.progress * (spark.path.length - 1));
       const nextPointIndex = (currentPointIndex + 1) % spark.path.length;
-      
       const p1 = spark.path[currentPointIndex];
       const p2 = spark.path[nextPointIndex];
-      
       spark.position.lerpVectors(p1, p2, (spark.progress * (spark.path.length - 1)) % 1);
-
       positions[i * 3] = spark.position.x;
       positions[i * 3 + 1] = spark.position.y;
       positions[i * 3 + 2] = spark.position.z;
@@ -119,7 +123,7 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
 }
 
 // --- COMPONENT: INTERACTIVE NODE ---
-const InteractiveNode = ({ id, position, label, type, isTarget, onClick, isVisible, url }: any) => {
+const InteractiveNode = ({ id, position, label, type, isTarget, onClick, isVisible, url, themeColor }: any) => {
     const meshRef = useRef<THREE.Mesh>(null!);
     const [hovered, setHover] = useState(false);
     
@@ -127,24 +131,19 @@ const InteractiveNode = ({ id, position, label, type, isTarget, onClick, isVisib
         if (!meshRef.current) return;
         const time = state.clock.getElapsedTime();
         const pulse = Math.sin(time * 3) * 0.1 + 1;
-        
         const baseScale = hovered || isTarget ? 1.6 : 1.0;
         const targetScale = isVisible ? baseScale * pulse : 0;
         meshRef.current.scale.lerp(new Vector3(targetScale, targetScale, targetScale), 0.1);
     });
 
-    // Handle "Leaf" clicks (About or Sub-nodes) differently if needed
     const handleClick = (e: any) => {
         e.stopPropagation();
         onClick();
     }
 
-    const textSizeClass = type === 'category' ? 'text-2xl' : 'text-lg';
-
     return (
         <group position={position}>
              <Float speed={2} rotationIntensity={0.2} floatIntensity={0.2}>
-                {/* 1. HUGE INVISIBLE HITBOX (Radius 0.9 for easier clicking) */}
                 {isVisible && (
                     <mesh 
                         onClick={handleClick}
@@ -155,24 +154,20 @@ const InteractiveNode = ({ id, position, label, type, isTarget, onClick, isVisib
                         <meshBasicMaterial transparent opacity={0} side={THREE.DoubleSide} />
                     </mesh>
                 )}
-
-                {/* 2. Visible Node */}
                 <mesh ref={meshRef}>
                     <sphereGeometry args={[0.15, 32, 32]} />
                     <meshBasicMaterial 
-                        color={isTarget || hovered ? "white" : THEME_PRIMARY} 
+                        color={isTarget || hovered ? "white" : themeColor} 
                         toneMapped={false} 
                         transparent
                         opacity={isVisible ? 1 : 0} 
                     />
                 </mesh>
-
-                {/* 3. Glow */}
                 {isVisible && (
                     <mesh scale={1.2}>
                         <sphereGeometry args={[0.3, 32, 32]} />
                         <meshBasicMaterial 
-                            color={THEME_PRIMARY} 
+                            color={themeColor} 
                             transparent 
                             opacity={0.3} 
                             blending={AdditiveBlending} 
@@ -180,15 +175,17 @@ const InteractiveNode = ({ id, position, label, type, isTarget, onClick, isVisib
                         />
                     </mesh>
                 )}
-
-                {/* 4. Label - DYNAMIC SIZE */}
                 {isVisible && (
                     <Html position={[0, 0.6, 0]} center distanceFactor={8} style={{ pointerEvents: 'none' }}>
                         <div className={`
-                            font-mono ${textSizeClass} font-bold tracking-widest px-3 py-1
+                            font-mono ${type === 'category' ? 'text-2xl' : 'text-lg'} font-bold tracking-widest px-3 py-1
                             transition-all duration-300 whitespace-nowrap select-none
-                            ${hovered || isTarget ? 'text-white scale-110 drop-shadow-[0_0_20px_rgba(0,240,255,0.8)]' : 'text-cyan-300 opacity-80'}
-                        `}>
+                        `}
+                        style={{ 
+                            color: hovered || isTarget ? '#ffffff' : themeColor,
+                            textShadow: hovered || isTarget ? `0 0 20px ${themeColor}80` : 'none',
+                            opacity: hovered || isTarget ? 1 : 0.8
+                        }}>
                             {label}
                         </div>
                     </Html>
@@ -198,19 +195,138 @@ const InteractiveNode = ({ id, position, label, type, isTarget, onClick, isVisib
     );
 };
 
-// --- COMPONENT: THE NETWORK ---
-function NeuralNetwork() {
+function LorenzAttractor({ isActive, theme }: { isActive: boolean, theme: any }) {
+  const lineRef = useRef<any | null>(null);
+  const geometryRef = useRef<THREE.BufferGeometry | null>(null);
+  const headMeshRef = useRef<THREE.Mesh>(null!); 
   const groupRef = useRef<Group>(null!);
-  const { isNavigating, targetNode, setTargetNode, setNavigating } = useNavigation();
-  const router = useRouter();
 
-  // 1. Generate Background Cloud
+  const head = useRef({ x: 0.1, y: 0, z: 0 });
+  const points = useRef<Float32Array>(new Float32Array(LORENZ_MAX_POINTS * 3));
+  const colors = useRef<Float32Array>(new Float32Array(LORENZ_MAX_POINTS * 3));
+  const count = useRef(0);
+
+  useEffect(() => {
+    if (isActive && count.current === 0) {
+       head.current = { x: 0.1, y: 0, z: 0 };
+    }
+  }, [isActive]);
+
+  useFrame((state, delta) => {
+    if (!geometryRef.current || !lineRef.current) return;
+
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.2;
+    }
+
+    const positions = points.current;
+    const cols = colors.current;
+
+    if (isActive) {
+        let { x, y, z } = head.current;
+        for (let s = 0; s < LORENZ_SPEED; s++) {
+            const dx = LORENZ_SIGMA * (y - x) * LORENZ_DT;
+            const dy = (x * (LORENZ_RHO - z) - y) * LORENZ_DT;
+            const dz = (x * y - LORENZ_BETA * z) * LORENZ_DT;
+            x += dx; y += dy; z += dz;
+
+            if (count.current >= LORENZ_MAX_POINTS) {
+                positions.set(positions.subarray(3), 0);
+                cols.set(cols.subarray(3), 0);
+                count.current = LORENZ_MAX_POINTS - 1;
+            }
+
+            const idx = count.current;
+            positions[idx * 3] = x;
+            positions[idx * 3 + 1] = y;
+            positions[idx * 3 + 2] = z;
+
+            // --- REPLACED COLOR LOGIC FOR VIBRANCY ---
+            // We map Z (height) to the full hue range.
+            // Z goes approx 0 to 50. Dividing by 50 stretches the gradient fully.
+            const hue = theme.hueBase + (z / 50) * theme.hueRange; 
+            
+            // Saturation 1.0 (Full Color), Lightness 0.6 (Bright for Bloom)
+            const color = new THREE.Color().setHSL(hue, 1.0, 0.6);
+            
+            cols[idx * 3] = color.r;
+            cols[idx * 3 + 1] = color.g;
+            cols[idx * 3 + 2] = color.b;
+
+            count.current++;
+        }
+        head.current = { x, y, z };
+        
+        if (headMeshRef.current) {
+            headMeshRef.current.position.set(x, y, z);
+            headMeshRef.current.visible = true; 
+        }
+
+    } else {
+        if (count.current > 0) {
+            const rewindSpeed = 25; 
+            count.current = Math.max(0, count.current - rewindSpeed);
+            
+            if (headMeshRef.current) {
+                const idx = Math.floor(count.current);
+                const px = positions[idx * 3];
+                const py = positions[idx * 3 + 1];
+                const pz = positions[idx * 3 + 2];
+                headMeshRef.current.position.set(px, py, pz);
+                headMeshRef.current.visible = true;
+            }
+        } else {
+            if (headMeshRef.current) headMeshRef.current.visible = false;
+        }
+    }
+
+    geometryRef.current.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometryRef.current.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+    geometryRef.current.setDrawRange(0, count.current);
+    geometryRef.current.attributes.position.needsUpdate = true;
+    geometryRef.current.attributes.color.needsUpdate = true;
+  });
+
+  return (
+    <group ref={groupRef} scale={[LORENZ_SCALE, LORENZ_SCALE, LORENZ_SCALE]}>
+      <line ref={lineRef}>
+        <bufferGeometry ref={geometryRef}>
+          <bufferAttribute attach="attributes-position" count={LORENZ_MAX_POINTS} array={points.current} itemSize={3} />
+          <bufferAttribute attach="attributes-color" count={LORENZ_MAX_POINTS} array={colors.current} itemSize={3} />
+        </bufferGeometry>
+        <lineBasicMaterial vertexColors transparent opacity={0.8} blending={AdditiveBlending} />
+      </line>
+      <mesh ref={headMeshRef} position={[0.1, 0, 0]} visible={false}>
+         <sphereGeometry args={[0.7, 16, 16]} />
+         <meshBasicMaterial color="white" toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+// --- COMPONENT: THE NETWORK ---
+function NeuralNetwork({ theme }: { theme: any }) {
+  const standardGroupRef = useRef<Group>(null!);
+  const { isNavigating, targetNode, setTargetNode, setNavigating, isChaosMode } = useNavigation();
+  const router = useRouter();
+  const [shouldSquish, setShouldSquish] = useState(false);
+
+  useEffect(() => {
+    if (isChaosMode) {
+        setShouldSquish(true);
+    } else {
+        const timer = setTimeout(() => {
+            setShouldSquish(false);
+        }, 1200); 
+        return () => clearTimeout(timer);
+    }
+  }, [isChaosMode]);
+
   const { particles, lines, paths } = useMemo(() => {
     const numLayers = 5;
     const pointsPerLayer = 150;
     const layerDepth = 2;
-    const xySpread = 12; // Spread wider so camera doesn't clip when backing up
-    
+    const xySpread = 20; 
     const particles: Vector3[] = [];
     const connections: number[][] = Array.from({ length: numLayers * pointsPerLayer }, () => []);
 
@@ -222,20 +338,18 @@ function NeuralNetwork() {
         particles.push(new Vector3(x, y, z));
       }
     }
-
     const lines: Vector3[] = [];
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const p1 = particles[i];
         const p2 = particles[j];
-        if (p1.distanceTo(p2) < 2) { 
+        if (p1.distanceTo(p2) < 2) {
           lines.push(p1, p2);
           connections[i].push(j);
           connections[j].push(i);
         }
       }
     }
-
     const paths: Vector3[][] = [];
     for (let i = 0; i < 25; i++) {
       const path: Vector3[] = [];
@@ -248,77 +362,59 @@ function NeuralNetwork() {
       }
       if (path.length > 2) paths.push(path);
     }
-
     return { particles, lines, paths };
   }, []);
 
-  // 2. Generate Connections
   const { mainLines, satelliteLines, satellitePoints } = useMemo(() => {
       const mLines: Vector3[] = [];
       const sLines: Vector3[] = [];
       const sPoints: Vector3[] = [];
-      
       Object.values(SITE_MAP).forEach((node: any) => {
           const nodePos = new Vector3(...node.position);
-          
-          // A. Main Hub Connections (Distinct)
           if (node.connections) {
               node.connections.forEach((targetId: string) => {
                   const target = SITE_MAP[targetId];
-                  if(target) {
-                      mLines.push(nodePos);
-                      mLines.push(new Vector3(...target.position));
-                  }
+                  if(target) { mLines.push(nodePos); mLines.push(new Vector3(...target.position)); }
               });
           }
-
-          // B. Satellite Stems (Extended)
-          // Generate 8 random satellites extending far out into the void
-          for(let i=0; i<8; i++) {
-              const satellite = nodePos.clone().add(new Vector3(
-                  (Math.random() - 0.5) * 8.0, 
-                  (Math.random() - 0.5) * 8.0,
-                  (Math.random() - 0.5) * 6.0
-              ));
-              sLines.push(nodePos); 
-              sLines.push(satellite);
-              sPoints.push(satellite); 
+          let connectionsFound = 0;
+          for(const p of particles) {
+             const dist = nodePos.distanceTo(p);
+             if (dist < 4.5 && dist > 1.0) {
+                 sLines.push(nodePos); sLines.push(p); sPoints.push(p);
+                 connectionsFound++; if (connectionsFound >= 5) break; 
+             }
           }
-          
-          // Connect to children for visual clustering
           if (node.children) {
               node.children.forEach((childId: string) => {
                   const child = SITE_MAP[childId];
-                  if(child) {
-                      const childPos = new Vector3(...child.position);
-                      sLines.push(nodePos);
-                      sLines.push(childPos);
-                  }
+                  if(child) { const childPos = new Vector3(...child.position); sLines.push(nodePos); sLines.push(childPos); }
               });
           }
       });
       return { mainLines: mLines, satelliteLines: sLines, satellitePoints: sPoints };
-  }, []);
+  }, [particles]);
 
-  // Rotation Logic
   useFrame((state, delta) => {
-    if (groupRef.current) {
-        if(isNavigating) {
-             groupRef.current.rotation.y = MathUtils.lerp(groupRef.current.rotation.y, 0, delta * 3);
-             groupRef.current.rotation.x = MathUtils.lerp(groupRef.current.rotation.x, 0, delta * 3);
+    if (standardGroupRef.current) {
+        if (isNavigating) {
+            standardGroupRef.current.rotation.y = MathUtils.lerp(standardGroupRef.current.rotation.y, 0, delta * 3);
+            standardGroupRef.current.rotation.x = MathUtils.lerp(standardGroupRef.current.rotation.x, 0, delta * 3);
         } else {
-             groupRef.current.rotation.y += delta * 0.04;
-             groupRef.current.rotation.x += delta * 0.01;
+            standardGroupRef.current.rotation.y += delta * 0.04;
+            standardGroupRef.current.rotation.x += delta * 0.01;
         }
+        const targetScale = shouldSquish ? 0 : 1; 
+        const currentScale = standardGroupRef.current.scale.x;
+        const nextScale = MathUtils.lerp(currentScale, targetScale, delta * 3.5); 
+        standardGroupRef.current.scale.setScalar(nextScale);
+        standardGroupRef.current.visible = nextScale > 0.01;
     }
   });
 
   const handleNodeClick = (key: string) => {
       const node = SITE_MAP[key];
-      setTargetNode(key); // Triggers camera fly-in
-
-      // ONE-CLICK NAVIGATION Logic
-      // Reduced delay to 800ms for snappier feel
+      setTargetNode(key);
       if ((node.type === 'leaf' || key === 'about') && node.url) {
           setTimeout(() => {
              router.push(node.url);
@@ -328,122 +424,92 @@ function NeuralNetwork() {
   };
 
   return (
-    <group ref={groupRef}>
-      {/* --- BACKGROUND --- */}
-      <Points positions={particles as unknown as Float32Array} raycast={() => {}}>
-        <pointsMaterial color={THEME_PRIMARY} size={0.06} blending={AdditiveBlending} transparent opacity={0.6} />
-      </Points>
-      <Line points={lines} color="white" lineWidth={0.2} transparent opacity={0.1} raycast={() => {}} />
-      <Sparks count={50} paths={paths} />
-
-      {/* --- INTERACTIVE LAYER --- */}
-      
-      {/* 1. Main Structural Connections */}
-      <Line 
-        points={mainLines} 
-        color={THEME_PRIMARY} 
-        lineWidth={1.5} 
-        transparent 
-        opacity={isNavigating ? 0.4 : 0} 
-        raycast={() => {}}
-      />
-
-      {/* 2. Natural Extensions/Stems */}
-      <Line 
-        points={satelliteLines} 
-        color="white" 
-        lineWidth={0.5} 
-        transparent 
-        opacity={isNavigating ? 0.15 : 0} 
-        raycast={() => {}}
-      />
-
-      {/* 3. Satellite End Points */}
-      <Points positions={satellitePoints as unknown as Float32Array} raycast={() => {}}>
-        <pointsMaterial 
-            color={THEME_PRIMARY} 
-            size={0.06} 
-            blending={AdditiveBlending} 
-            transparent 
-            opacity={isNavigating ? 0.5 : 0} 
-        />
-      </Points>
-
-      {/* 4. Nodes */}
-      {Object.keys(SITE_MAP).map(key => {
-        const node = SITE_MAP[key];
-        let isVisible = false;
-
-        if (isNavigating) {
-            // Show Categories and About if no target is selected
-            if (!targetNode && (node.type === 'category' || key === 'about')) isVisible = true;
-            // Show Target + Siblings + Parent + Children if target is selected
-            if (targetNode) {
-                if (key === targetNode) isVisible = true;
-                if (node.parent === targetNode) isVisible = true;
-                if (SITE_MAP[targetNode].parent === node.parent) isVisible = true;
-            }
-        }
-
-        return (
-            <InteractiveNode 
-                key={key}
-                {...node}
-                isTarget={targetNode === key}
-                isVisible={isVisible}
-                onClick={() => handleNodeClick(key)}
-            />
-        );
-      })}
-    </group>
+    <>
+        <group ref={standardGroupRef}>
+            <Points positions={particles as unknown as Float32Array} raycast={() => {}}>
+                <pointsMaterial color={theme.primary} size={0.06} blending={AdditiveBlending} transparent opacity={0.3} />
+            </Points>
+            <Line points={lines} color="white" lineWidth={0.2} transparent opacity={0.05} raycast={() => {}} />
+            <Sparks count={50} paths={paths} />
+            <Line points={mainLines} color={theme.primary} lineWidth={1.5} transparent opacity={isNavigating ? 0.4 : 0} raycast={() => {}} />
+            <Line points={satelliteLines} color="white" lineWidth={0.5} transparent opacity={isNavigating ? 0.05 : 0} raycast={() => {}} />
+            <Points positions={satellitePoints as unknown as Float32Array} raycast={() => {}}>
+                <pointsMaterial color={theme.primary} size={0.06} blending={AdditiveBlending} transparent opacity={isNavigating ? 0.5 : 0} />
+            </Points>
+            {Object.keys(SITE_MAP).map(key => {
+                const node = SITE_MAP[key];
+                let isVisible = false;
+                if (isNavigating) {
+                    if (!targetNode && (node.type === 'category' || key === 'about')) isVisible = true;
+                    if (targetNode) {
+                        if (key === targetNode) isVisible = true;
+                        if (node.parent === targetNode) isVisible = true;
+                        if (SITE_MAP[targetNode].parent === node.parent) isVisible = true;
+                    }
+                }
+                return (
+                    <InteractiveNode 
+                        key={key}
+                        {...node}
+                        isTarget={targetNode === key}
+                        isVisible={isVisible && !isChaosMode} 
+                        onClick={() => handleNodeClick(key)}
+                        themeColor={theme.primary}
+                    />
+                );
+            })}
+        </group>
+        <LorenzAttractor isActive={isChaosMode} theme={theme} />
+    </>
   );
 }
 
 // --- SYSTEM: HYBRID CAMERA RIG ---
 function CameraRig() {
-    const { isNavigating, targetNode } = useNavigation();
+    const { isNavigating, targetNode, isChaosMode } = useNavigation();
     const { camera } = useThree();
     const controlsRef = useRef<any>(null);
-    
-    // Auto-pilot variables
     const isAutoPiloting = useRef(false);
+    const lastInteractionTime = useRef(0); 
+
+    useEffect(() => {
+        if (!targetNode || isNavigating || isChaosMode) {
+            lastInteractionTime.current = (performance.now() / 1000) - 100; 
+            isAutoPiloting.current = true;
+        }
+    }, [targetNode, isNavigating, isChaosMode]);
 
     useFrame((state, delta) => {
-        // 1. Determine Desired Position
-        const desiredPos = new Vector3(0, 0, 5); // Default Idle
+        const desiredPos = new Vector3(0, 0, 5);
         const desiredLook = new Vector3(0, 0, 0);
 
-        if (isNavigating) {
+        if (isChaosMode) {
+            desiredPos.set(0, 0, 15); 
+        } else if (isNavigating) {
             if (!targetNode) {
-                // Overview State: 
-                // Pull back to Z=7 and Up slightly (Y=0.5) to see the full triangle
-                // This ensures "About" (Top) and "Projects/Articles" (Bottom) are all in frame with 90 FOV
-                desiredPos.set(0, 0.5, 7); 
+                desiredPos.set(0, 0.5, 6); 
             } else {
-                // Focus State: Fly close to the node
                 const node = SITE_MAP[targetNode];
                 desiredPos.set(node.position[0], node.position[1], node.position[2] + 4);
                 desiredLook.set(node.position[0], node.position[1], node.position[2]);
             }
-        } else {
-            // Idle State
-            desiredPos.set(0, 0, 5);
         }
+        const timeNow = performance.now() / 1000;
+        const timeSinceInteraction = timeNow - lastInteractionTime.current;
+        let shouldEngage = false;
 
-        // 2. Auto-Pilot Logic
+        if (isChaosMode) shouldEngage = true; 
+        else if (!isNavigating) shouldEngage = true; 
+        else if (targetNode) shouldEngage = true; 
+        else if (timeSinceInteraction > 3.0) shouldEngage = true; 
+
         const dist = camera.position.distanceTo(desiredPos);
-        
-        if (dist > 0.5) {
-             isAutoPiloting.current = true;
-        } else if (dist < 0.1) {
-             isAutoPiloting.current = false;
-        }
+        if (shouldEngage && dist > 0.05) isAutoPiloting.current = true;
+        else if (!shouldEngage) isAutoPiloting.current = false;
 
         if (isAutoPiloting.current) {
-            // Increased speed to 4.0 for smoother/faster snapping
-            const speed = 4.0;
+            const speed = targetNode ? 4.0 : 1.5; 
             state.camera.position.lerp(desiredPos, delta * speed);
-            
             if (controlsRef.current) {
                 controlsRef.current.target.lerp(desiredLook, delta * speed);
                 controlsRef.current.update();
@@ -454,22 +520,34 @@ function CameraRig() {
     return (
         <OrbitControls 
             ref={controlsRef}
-            enabled={isNavigating} 
+            enabled={isNavigating || isChaosMode} 
             enableDamping
             dampingFactor={0.05}
             rotateSpeed={0.5}
-            zoomSpeed={0.5}
             minDistance={2}
-            maxDistance={20}
+            maxDistance={40}
+            onStart={() => {
+                isAutoPiloting.current = false;
+                lastInteractionTime.current = Infinity;
+            }}
+            onEnd={() => {
+                lastInteractionTime.current = performance.now() / 1000;
+            }}
         />
     );
 }
 
 // --- MAIN EXPORT ---
 const ParticleBackground = () => {
-  const { isNavigating, targetNode, setTargetNode } = useNavigation();
+  const { isNavigating, targetNode, setTargetNode, isChaosMode } = useNavigation();
+  const [themeIndex, setThemeIndex] = useState(0);
 
-  // 1. Add Escape Key Listener (Cleanest "Invisible" Interaction)
+  // 1. Get current theme
+  const theme = THEMES[themeIndex] || THEMES[0];
+  
+  // 2. Toggle Handler
+  const toggleTheme = () => setThemeIndex((prev) => (prev + 1) % THEMES.length);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && targetNode) {
@@ -482,12 +560,10 @@ const ParticleBackground = () => {
 
   return (
     <div className="fixed inset-0 z-[-1] bg-black">
-      <Canvas 
-        camera={{ position: [0, 0, 5], fov: 90 }} 
-        dpr={[1, 2]}
-      >
+      <Canvas camera={{ position: [0, 0, 5], fov: 90 }} dpr={[1, 2]}>
         <Suspense fallback={null}>
-          <NeuralNetwork />
+          {/* 3. PASS THEME PROP HERE to fix the error */}
+          <NeuralNetwork theme={theme} />
           <CameraRig />
         </Suspense>
         <EffectComposer>
@@ -495,7 +571,7 @@ const ParticleBackground = () => {
         </EffectComposer>
       </Canvas>
 
-      {/* 2. Visual "Return" Button - Only visible when a target is selected */}
+      {/* Return Button */}
       {targetNode && (
         <div className="absolute top-24 left-8 z-50 animate-fade-in">
             <button 
@@ -507,15 +583,27 @@ const ParticleBackground = () => {
                     transition-all duration-300
                     hover:bg-cyan-900/40 hover:border-cyan-400 hover:text-white hover:scale-105
                 "
+                style={{ color: theme.primary, borderColor: `${theme.primary}4D` }}
             >
                 {'< RETURN TO NETWORK'}
             </button>
         </div>
       )}
 
-      {/* Original Overlay */}
+      {/* EASTER EGG: Theme Switcher Arrow */}
+      <div 
+        className="absolute bottom-6 right-6 z-50 opacity-20 hover:opacity-100 transition-opacity duration-300 cursor-pointer p-4 group"
+        onClick={toggleTheme}
+        title={`Switch Theme: ${theme.name}`}
+      >
+         <div 
+            className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[10px] transform group-hover:-translate-y-1 transition-transform" 
+            style={{ borderBottomColor: theme.primary }} 
+         />
+      </div>
+
       <div className={`absolute inset-0 bg-background pointer-events-none transition-opacity duration-1000 ${
-          isNavigating ? 'opacity-0' : 'opacity-80'
+          isNavigating || isChaosMode ? 'opacity-0' : 'opacity-80'
       }`} />
     </div>
   );
