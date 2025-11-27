@@ -849,10 +849,17 @@ function CameraRig() {
             const focusZoom = isMobile ? 1.5 : 1; 
             desiredPos.set(node.position[0], node.position[1], node.position[2] + 4 * focusZoom);
             desiredLook.set(node.position[0], node.position[1], node.position[2]);
-        } else {
-            // Neural / Default: No autopilot (User drift)
+          }  else {
+        // [FIX] NEURAL DEFAULT: Fly back to "Home Base"
+        // isMobile check ensures it's not too close on phones
+        desiredPos.set(0, 0, isMobile ? 9 : 5);
+        
+        // Only stop autopilot if the user has explicitly grabbed the camera
+        // (hasUserInteracted is reset to false automatically when you click "Return")
+        if (hasUserInteracted.current) {
             isAutoPiloting.current = false;
         }
+    }
 
         // 2. ENGAGEMENT LOGIC
         // If we are in Galaxy mode and user moved camera, NEVER autopilot again (Total Freedom)
@@ -1011,9 +1018,8 @@ const ParticleBackground = () => {
       <div className="absolute bottom-6 right-6 z-50 opacity-20 hover:opacity-100 transition-opacity duration-300 cursor-pointer p-4 group" onClick={toggleTheme} title={`Switch Theme: ${theme.name}`}>
          <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[10px] transform group-hover:-translate-y-1 transition-transform" style={{ borderBottomColor: theme.primary }} />
       </div>
-      
-      {/* Background Dimmer - FIX: Added isGalaxyMode here to ensure page fades out */}
-      <div className={`absolute inset-0 bg-background pointer-events-none transition-opacity duration-1000 ${isNavigating || isChaosMode || isTesseractMode || isPendulumMode || isGalaxyMode ? 'opacity-0' : 'opacity-80'}`} />
+      {/* Background Dimmer: Only fully visible when navigating. Dims (80%) when reading content. */}
+        <div className={`absolute inset-0 bg-background pointer-events-none transition-opacity duration-1000 ${isNavigating ? 'opacity-0' : 'opacity-50'}`} />
     </div>
   );
 };

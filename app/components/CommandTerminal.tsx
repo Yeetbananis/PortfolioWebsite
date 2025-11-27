@@ -336,7 +336,7 @@ export default function CommandTerminal() {
             animate={{ y: '0%' }}
             exit={{ y: '-100%' }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed top-0 left-0 right-0 z-50 w-full bg-slate-900/95 shadow-2xl border-b border-white/10"
+            className="fixed top-0 left-0 right-0 z-50 w-full bg-black-800 shadow-2xl border-b border-white/10"
           >
             <div className="mx-auto max-w-3xl p-6 font-mono text-sm md:text-base">
               <div className="mb-4 flex items-center justify-between text-slate-500 text-xs uppercase tracking-widest border-b border-slate-800 pb-2">
