@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
 import { projects, articles } from '@/data/content'; 
 import { FiTerminal, FiCornerDownLeft } from 'react-icons/fi';
 import HedgingSimulator from './interactive/HedgingSimulator';
@@ -10,7 +10,7 @@ import { useNavigation } from '@/app/NavigationContext';
 
 type CommandHistory = {
   type: 'input' | 'output' | 'error' | 'success';
-  content: string;
+  content: string | React.ReactNode; // Allow JSX
 };
 
 // --- DATA PREPARATION ---
@@ -36,28 +36,66 @@ export default function CommandTerminal() {
   const [suggestion, setSuggestion] = useState('');
   const [showHedgeSim, setShowHedgeSim] = useState(false);
   
-  const { setNavigating, isChaosMode, setChaosMode, isTesseractMode, setTesseractMode, isPendulumMode, setPendulumMode, isGalaxyMode, setGalaxyMode, setTargetNode } = useNavigation();
+  const { isNavigating, setNavigating, isChaosMode, setChaosMode, isTesseractMode, setTesseractMode, isPendulumMode, setPendulumMode, isGalaxyMode, setGalaxyMode, setTargetNode } = useNavigation();
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const searchableItems = useMemo(() => getSearchableItems(), []);
+  const [ghostText, setGhostText] = useState("");
+
+
+  const pathname = usePathname(); // Get current URL
+
+  // LOGIC: Show ONLY if:
+  // 1. On Home Page ('/')
+  // 2. Terminal is Closed (!isOpen)
+  // 3. Not Navigating/Backdrop (!isNavigating)
+  // 4. No Simulations Active
+  const shouldShowGhost = 
+    pathname === '/' && 
+    !isOpen && 
+    !isNavigating && 
+    !isChaosMode && 
+    !isTesseractMode && 
+    !isPendulumMode && 
+    !isGalaxyMode;
 
   // --- COMMAND LOGIC ---
   const commands = useMemo(() => ({
-    help: "Available: visit, navigate, backdrop, chaos, tesseract, clear, social, run",
+    help: 
+`Available Commands:
+
+  [NAVIGATION]
+  visit <target>   : Navigate to a page or external link (e.g., 'visit about', 'visit quant').
+  navigate         : Enter the 3D Neural Site Map mode.
+  backdrop         : Open the Theme & Wallpaper Configurator.
+  ls               : List all valid targets for the 'visit' command.
+  resume           : Open PDF Resume in a new tab.
+
+  [SIMULATION]
+  chaos            : Toggle Lorenz Attractor (Entropy).
+  tesseract        : Toggle 4D Hypercube Projection.
+  pendulum         : Toggle Double Pendulum Physics.
+  galaxy           : Toggle Galactic Singularity.
+
+  [INTERACTIVE]
+  run hedging-game : Start the Delta Neutral Simulator.
+
+  [SYSTEM]
+  social           : Display social links (GitHub/LinkedIn).
+  whoami           : Display current session user.
+  date             : Display server time.
+  clear            : Clear terminal output.
+`,
     clear: "Clears the terminal history.",
     whoami: "root@quant-portfolio (Tim Generalov)",
     date: new Date().toString(),
-    social: "Try: visit linkedin | visit github",
-    ls: "Lists all accessible pages, projects, and articles.",
-    run: "Executes interactive modules. Try: 'run hedging-game'",
-    navigate: "Initiates Neural Navigation Mode (3D Site Map).",
-    backdrop: "Enters Wallpaper Configurator Mode.", 
-    chaos: "Toggle Entropy (Lorenz Attractor).",
-    tesseract: "Toggle 4D Hypercube Geometry.",
-    pendulum: "Toggle Pendulum Simulation.",
-    galaxy: "Initialize Galactic Singularity Simulation."
+    social: "Links:\n- LinkedIn: https://www.linkedin.com/in/tim-generalov/\n- GitHub: https://github.com/Yeetbananis",
+    // Note: 'ls', 'visit', 'run', 'navigate', etc. are handled by custom logic in handleCommand
   }), []);
+
+
 
   // --- KEYBOARD LISTENERS ---
   useEffect(() => {
@@ -136,54 +174,237 @@ export default function CommandTerminal() {
     }
   }, [isOpen]);
 
-  // --- AUTOCOMPLETE ENGINE ---
+  // --- ROBUST AUTOCOMPLETE ENGINE ---
   useEffect(() => {
+    // 1. Define ALL valid root commands explicitly
+    const MASTER_COMMAND_LIST = [
+      // Navigation
+      'help', 'clear', 'ls', 'visit', 'navigate', 'backdrop', 'resume', 
+      // Simulations
+      'chaos', 'tesseract', 'pendulum', 'galaxy',
+      // System
+      'social', 'whoami', 'date',
+      // Interactive
+      'run'
+    ];
+
     if (!input) {
       setSuggestion('');
       return;
     }
+
     const lowerInput = input.toLowerCase();
-    
-    const matchingCommand = Object.keys(commands).find(cmd => cmd.startsWith(lowerInput));
-    if (matchingCommand && matchingCommand !== lowerInput) {
-      setSuggestion(matchingCommand.slice(lowerInput.length));
+    const args = lowerInput.split(' ');
+    const rootCommand = args[0];
+    const isTypingArg = args.length > 1 || (args.length === 1 && input.endsWith(' '));
+
+    // A. Root Command Autocomplete (e.g. "nav" -> "navigate")
+    if (!isTypingArg) {
+      const match = MASTER_COMMAND_LIST.find(cmd => cmd.startsWith(lowerInput));
+      if (match) {
+        setSuggestion(match.slice(lowerInput.length));
+      } else {
+        setSuggestion('');
+      }
       return;
     }
 
-    if (lowerInput.startsWith('visit ')) {
-      const query = lowerInput.replace('visit ', '');
-      if (!query) return;
-      const match = searchableItems.find(item => item.key.includes(query));
+    // B. Argument Autocomplete (e.g. "visit abo" -> "about")
+    const currentArg = input.slice(input.indexOf(' ') + 1).toLowerCase();
+
+    // 1. Visit Logic
+    if (rootCommand === 'visit' || rootCommand === 'go' || rootCommand === 'cd') {
+      if (!currentArg) return; // Don't suggest until they type a letter
+      
+      const match = searchableItems.find(item => item.key.startsWith(currentArg));
       if (match) {
-        const fullKey = match.key;
-        const matchIndex = fullKey.indexOf(query);
-        if (matchIndex !== -1) {
-           const remaining = fullKey.slice(matchIndex + query.length);
-           setSuggestion(remaining);
-           return;
-        }
+        setSuggestion(match.key.slice(currentArg.length));
+        return;
       }
     }
 
-    if (lowerInput.startsWith('run ')) {
-        const query = lowerInput.replace('run ', '');
-        const apps = ['hedging-game']; 
-        const match = apps.find(app => app.startsWith(query));
-        if (match) {
-            setSuggestion(match.slice(query.length));
-            return;
-        }
+    // 2. Run Logic
+    if (rootCommand === 'run') {
+      const availableApps = ['hedging-game'];
+      const match = availableApps.find(app => app.startsWith(currentArg));
+      if (match) {
+        setSuggestion(match.slice(currentArg.length));
+        return;
+      }
     }
+
+    // No match found
     setSuggestion('');
-  }, [input, commands, searchableItems]);
+  }, [input, searchableItems]);
+
+  // --- UTILITY: FUZZY MATCHING (Levenshtein Distance) ---
+const getEditDistance = (a: string, b: string) => {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix = [];
+
+  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          Math.min(
+            matrix[i][j - 1] + 1, // insertion
+            matrix[i - 1][j] + 1 // deletion
+          )
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+};
+
+  // --- AUTO-SCROLL TO BOTTOM ---
+  useEffect(() => {
+    if (isOpen) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [history, isOpen]);
+
+ // --- SMART IDLE MONITOR (Active Detection) ---
+  useEffect(() => {
+    // If terminal is open, do nothing & clear text
+    if (isOpen) {
+      setGhostText("");
+      return;
+    }
+
+    // If not allowed to show (wrong page, open terminal, active simulation), clear and exit.
+    if (!shouldShowGhost) {
+      setGhostText("");
+      return;
+    }
+
+    const IDLE_TIMEOUT = 3000; // Time to wait before showing text (3s)
+    const phrases = [
+      "System_Idle...",
+      "Awaiting_Input...",
+      "Type 'help' to initialize...",
+      "Press '/' to begin_"
+    ];
+
+    let idleTimer: NodeJS.Timeout;
+    let typeTimer: NodeJS.Timeout;
+    
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+
+    // --- TYPING ENGINE ---
+    const typeLoop = () => {
+      const currentPhrase = phrases[phraseIndex];
+      const speed = isDeleting ? 30 : 100;
+
+      if (!isDeleting && charIndex <= currentPhrase.length) {
+        setGhostText(currentPhrase.substring(0, charIndex));
+        charIndex++;
+      } else if (isDeleting && charIndex >= 0) {
+        setGhostText(currentPhrase.substring(0, charIndex));
+        charIndex--;
+      }
+
+      if (charIndex === currentPhrase.length + 1) {
+        isDeleting = true;
+        typeTimer = setTimeout(typeLoop, 2000); 
+        return;
+      }
+
+      if (charIndex === -1) {
+        isDeleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        typeTimer = setTimeout(typeLoop, 500); 
+        return;
+      }
+
+      typeTimer = setTimeout(typeLoop, speed);
+    };
+
+    // --- ACTIVITY HANDLER ---
+    const handleUserActivity = () => {
+      // 1. CLEAR EVERYTHING IMMEDIATELY
+      if (charIndex > 0) setGhostText(""); 
+      clearTimeout(typeTimer);
+      clearTimeout(idleTimer);
+
+      // 2. RESET STATE
+      charIndex = 0;
+      isDeleting = false;
+
+      // 3. START IDLE TIMER
+      idleTimer = setTimeout(() => {
+        typeLoop(); 
+      }, IDLE_TIMEOUT);
+    };
+
+    // Attach Listeners (REMOVED 'mousemove' and 'click')
+    // Now it only hides if you actually DO something (Type, Scroll, Touch)
+    window.addEventListener('keydown', handleUserActivity);
+    window.addEventListener('scroll', handleUserActivity);
+    window.addEventListener('touchstart', handleUserActivity);
+
+    // Initial Start
+    handleUserActivity();
+
+    return () => {
+      clearTimeout(idleTimer);
+      clearTimeout(typeTimer);
+      window.removeEventListener('keydown', handleUserActivity);
+      window.removeEventListener('scroll', handleUserActivity);
+      window.removeEventListener('touchstart', handleUserActivity);
+    };
+  }, [isOpen, shouldShowGhost]);
 
   // --- EXECUTION HANDLER ---
   const handleCommand = (cmd: string) => {
     const cleanCmd = cmd.trim();
-    const [action, ...args] = cleanCmd.split(' ');
+    if (!cleanCmd) return;
+
+    const [rawAction, ...args] = cleanCmd.split(' ');
+    let action = rawAction.toLowerCase(); // Strip case immediately
     const argString = args.join(' ').toLowerCase();
 
-    setHistory(prev => [...prev, { type: 'input', content: cmd }]);
+    // 1. DEFINE ALL VALID COMMANDS
+    const VALID_COMMANDS = [
+      'help', 'clear', 'visit', 'navigate', 'backdrop', 'resume', 
+      'chaos', 'tesseract', 'pendulum', 'galaxy',
+      'social', 'whoami', 'date', 'run', 'ls'
+    ];
+
+    // 2. FUZZY MATCHING LOGIC
+    // If the action isn't perfect, look for a close match
+    if (!VALID_COMMANDS.includes(action)) {
+        // Find best match
+        const bestMatch = VALID_COMMANDS.find(valid => {
+            const distance = getEditDistance(action, valid);
+            // Tolerance: 1 typo for short words, 2 for long words
+            const threshold = valid.length > 4 ? 2 : 1; 
+            return distance <= threshold;
+        });
+
+        if (bestMatch) {
+            // Auto-correct!
+            setHistory(prev => [...prev, { type: 'input', content: cmd }]);
+            setHistory(prev => [...prev, { type: 'output', content: `➜ Auto-correcting '${action}' to '${bestMatch}'...` }]);
+            action = bestMatch; // Swap the invalid action for the valid one
+        } else {
+            // No close match found -> Let it fall through to error handling at bottom
+            setHistory(prev => [...prev, { type: 'input', content: cmd }]);
+        }
+    } else {
+        // Exact match
+        setHistory(prev => [...prev, { type: 'input', content: cmd }]);
+    }
 
     if (action === 'clear') { setHistory([]); return; }
 
@@ -266,6 +487,37 @@ export default function CommandTerminal() {
         return;
     }
 
+    // --- SOCIAL LINKS (CLICKABLE) ---
+    if (action === 'social') {
+        setHistory(prev => [...prev, { 
+            type: 'success', 
+            content: (
+                <div className="flex flex-col gap-1 mt-1">
+                    <span className="text-slate-400">Connect via:</span>
+                    <div className="pl-4 flex flex-col gap-1">
+                        <a 
+                            href="https://www.linkedin.com/in/tim-generalov/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 hover:underline w-fit flex items-center gap-2 transition-colors"
+                        >
+                            <span className="text-slate-500">[LINK]</span> LinkedIn Profile ↗
+                        </a>
+                        <a 
+                            href="https://github.com/Yeetbananis" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-emerald-400 hover:text-emerald-300 hover:underline w-fit flex items-center gap-2 transition-colors"
+                        >
+                            <span className="text-slate-500">[CODE]</span> GitHub Profile ↗
+                        </a>
+                    </div>
+                </div>
+            ) 
+        }]);
+        return;
+    }
+
     // --- STANDARD COMMANDS ---
     if (action === 'resume' || action === 'cv') {
         setHistory(prev => [...prev, { type: 'success', content: "Opening Resume (PDF)..." }]);
@@ -319,7 +571,49 @@ export default function CommandTerminal() {
     }
   };
 
+   // Add this if you don't have the tailwind-scrollbar plugin
+      const scrollbarStyles = {
+        scrollbarWidth: 'thin',
+        scrollbarColor: '#3f3f46 transparent', // Zinc-700 and Transparent
+      } as React.CSSProperties;
+
   return (
+    <>
+      {/* --- GHOST TEXT OVERLAY (Top-Left System Monitor Style) --- */}
+      {/* Only render if logic permits and text exists */}
+      {shouldShowGhost && ghostText && (
+        <div 
+            className="fixed top-16 left-6 z-40 pointer-events-auto cursor-pointer group"
+            onClick={() => setIsOpen(true)}
+        >
+            <div className="flex flex-col items-start gap-1">
+                {/* Status Indicator */}
+                <div className="flex items-center gap-2 mb-1">
+                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                    <span className="font-mono text-[10px] text-emerald-500/60 tracking-[0.2em] uppercase">
+                        System_Idle
+                    </span>
+                </div>
+
+                {/* The Typing Text - Clean & Minimal */}
+                <div className="font-mono text-sm text-slate-400/80 group-hover:text-white transition-colors duration-300">
+                    <span className="text-slate-600 mr-2 opacity-50">$</span>
+                    {ghostText}
+                    <span className="animate-pulse text-emerald-500 font-bold ml-[1px]">_</span>
+                </div>
+                
+                {/* Sub-hint (Only visible on hover) */}
+                <div className="h-4 overflow-hidden">
+                    <span className="font-mono text-[9px] text-slate-600 mt-1 block opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                        [ Click or Press / to Initialize ]
+                    </span>
+                </div>
+            </div>
+        </div>
+      )}
+
+   
+
     <AnimatePresence>
         {showHedgeSim && <HedgingSimulator onClose={() => setShowHedgeSim(false)} />}
       {isOpen && (
@@ -349,7 +643,10 @@ export default function CommandTerminal() {
                   <span className="flex items-center gap-1"><kbd className="bg-slate-800 px-1 rounded">ESC</kbd> Close</span>
                 </div>
               </div>
-              <div className="max-h-[300px] overflow-y-auto mb-4 space-y-1 scrollbar-thin scrollbar-thumb-slate-700">
+                  <div 
+                  style={scrollbarStyles} 
+                  className="max-h-[300px] overflow-y-auto mb-4 space-y-1"
+                >
                 {history.map((entry, i) => (
                   <div key={i} className={`${
                     entry.type === 'error' ? 'text-red-400' : 
@@ -360,6 +657,8 @@ export default function CommandTerminal() {
                     {entry.content}
                   </div>
                 ))}
+                {/* The Invisible Anchor */}
+                <div ref={bottomRef} /> 
               </div>
               <div className="relative flex items-center group">
                 <span className="mr-3 text-emerald-500 font-bold">➜</span>
@@ -389,5 +688,6 @@ export default function CommandTerminal() {
         </>
       )}
     </AnimatePresence>
+    </>
   );
 }

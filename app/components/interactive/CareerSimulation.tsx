@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigation } from '@/app/NavigationContext'; // Ensure path is correct
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -37,15 +38,25 @@ const MILESTONES: Milestone[] = [
 ];
 
 export default function CareerSimulation() {
-  // Default to the current state (Year 2) info so the box isn't empty
   const [activePoint, setActivePoint] = useState<Milestone | null>(MILESTONES[2]);
   const [isLoaded, setIsLoaded] = useState(false);
   const chartRef = useRef<any>(null);
+  
+  // --- THEME INTEGRATION ---
+  const { currentTheme } = useNavigation();
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Helper to make hex colors transparent
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
 
   // --- DATA GENERATION ---
   const chartData = useMemo(() => {
@@ -83,12 +94,11 @@ export default function CareerSimulation() {
         for (let t = 0; t <= steps; t++) {
              if (curr.x + t > 24) break;
              const progress = t / steps;
-             // Slight exponential curve for skill compounding
              const curve = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
              myPath[curr.x + t] = curr.y + (yDiff * curve);
         }
     }
-    myPath[24] = MILESTONES[2].y; // Ensure connection
+    myPath[24] = MILESTONES[2].y; 
 
     // 3. Projections
     const upperProjection = new Array(months).fill(null);
@@ -104,9 +114,9 @@ export default function CareerSimulation() {
 
     for(let t = startX + 1; t < months; t++) {
         const dt = t - startX;
-        upperProjection[t] = startY + (dt * 5.5); // High Upside
-        lowerProjection[t] = startY + (dt * 2.0); // Baseline
-        medianProjection[t] = startY + (dt * 3.8); // Target
+        upperProjection[t] = startY + (dt * 5.5); 
+        lowerProjection[t] = startY + (dt * 2.0); 
+        medianProjection[t] = startY + (dt * 3.8); 
     }
 
     return {
@@ -116,7 +126,7 @@ export default function CareerSimulation() {
         ...simulations.map((data) => ({
           label: 'Peer_Avg',
           data: data,
-          borderColor: '#1f2937', // Dark Gray
+          borderColor: '#1f2937', 
           borderWidth: 1,
           pointRadius: 0,
           tension: 0.1,
@@ -127,7 +137,7 @@ export default function CareerSimulation() {
             label: 'Learning_Velocity',
             data: upperProjection,
             borderColor: 'transparent',
-            backgroundColor: 'rgba(34, 211, 238, 0.1)', // Cyan Glow
+            backgroundColor: hexToRgba(currentTheme.primary, 0.1), // THEMED
             fill: '+1', 
             pointRadius: 0,
             tension: 0.2,
@@ -136,13 +146,13 @@ export default function CareerSimulation() {
         {
             label: 'Projected',
             data: medianProjection,
-            borderColor: '#0891b2', // Darker Cyan
+            borderColor: currentTheme.primary, // THEMED (Solid)
             borderWidth: 2,
             borderDash: [4, 4],
             pointRadius: 0,
             tension: 0.2,
             fill: '+1', 
-            backgroundColor: 'rgba(34, 211, 238, 0.05)',
+            backgroundColor: hexToRgba(currentTheme.primary, 0.05), // THEMED
         },
         {
             label: 'Lower',
@@ -155,15 +165,13 @@ export default function CareerSimulation() {
         {
           label: 'Realized_Skill',
           data: myPath,
-          borderColor: '#22d3ee', // Bright Cyan
+          borderColor: currentTheme.primary, // THEMED
           borderWidth: 2,
           pointBackgroundColor: '#000000',
-          pointBorderColor: '#22d3ee',
+          pointBorderColor: currentTheme.primary, // THEMED
           pointBorderWidth: 2,
-          // Make points clearly visible always
           pointRadius: (ctx: ScriptableContext<'line'>) => {
              const index = ctx.dataIndex;
-             // Show points for all past milestones + current
              return MILESTONES.some(m => m.x === index && !m.isFuture) || index === 24 ? 5 : 0;
           },
           pointHoverRadius: 8,
@@ -171,7 +179,7 @@ export default function CareerSimulation() {
         },
       ],
     };
-  }, []);
+  }, [currentTheme]);
 
   const options = {
     responsive: true,
@@ -187,7 +195,7 @@ export default function CareerSimulation() {
     },
     plugins: {
       legend: { display: false },
-      tooltip: { enabled: false }, // Disable floating tooltip
+      tooltip: { enabled: false }, 
     },
     scales: {
       x: {
@@ -209,8 +217,8 @@ export default function CareerSimulation() {
       {/* 1. Header & Status Bar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800 bg-slate-900/50">
          <div className="flex items-center gap-3">
-             <div className="h-3 w-3 rounded-full bg-cyan-500 animate-pulse" />
-             <h3 className="text-cyan-400 font-bold font-mono text-sm tracking-widest">
+             <div className="h-3 w-3 rounded-full animate-pulse" style={{ backgroundColor: currentTheme.primary }} />
+             <h3 className="font-bold font-mono text-sm tracking-widest" style={{ color: currentTheme.primary }}>
                 CAREER_SIMULATION <span className="text-slate-500">// LIVE</span>
              </h3>
          </div>
@@ -221,8 +229,7 @@ export default function CareerSimulation() {
 
       <div className="relative flex-1 w-full">
          
-         {/* 2. Fixed Data Panel (Not blocking graph) */}
-         {/* Positioned top-left, permanent place. Updates based on hover. */}
+         {/* 2. Fixed Data Panel */}
          <div className="absolute top-4 left-4 z-20 w-64">
             <AnimatePresence mode='wait'>
                 {activePoint ? (
@@ -231,11 +238,12 @@ export default function CareerSimulation() {
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
-                        className="bg-black/80 border-l-2 border-cyan-500 pl-4 py-2 backdrop-blur-sm"
+                        className="bg-black/80 border-l-2 pl-4 py-2 backdrop-blur-sm"
+                        style={{ borderColor: currentTheme.primary }}
                     >
                         <div className="flex items-baseline gap-2">
                              <h4 className="text-white font-mono font-bold text-lg">{activePoint.y.toFixed(2)}</h4>
-                             <span className="text-xs font-mono text-cyan-500">{activePoint.isFuture ? 'PROJ' : 'ACTUAL'}</span>
+                             <span className="text-xs font-mono" style={{ color: currentTheme.primary }}>{activePoint.isFuture ? 'PROJ' : 'ACTUAL'}</span>
                         </div>
                         <h5 className="text-slate-200 font-bold text-sm mt-1">{activePoint.label}</h5>
                         <p className="text-slate-400 text-xs mt-1 leading-snug font-mono">{activePoint.desc}</p>
@@ -258,15 +266,15 @@ export default function CareerSimulation() {
       {/* 4. Footer Legend */}
       <div className="flex justify-end gap-6 px-4 py-2 border-t border-slate-800 bg-black text-[10px] font-mono text-slate-500">
           <div className="flex items-center gap-1">
-              <div className="w-3 h-0.5 bg-cyan-400"></div>
+              <div className="w-3 h-0.5" style={{ backgroundColor: currentTheme.primary }}></div>
               <span>REALIZED</span>
           </div>
           <div className="flex items-center gap-1">
-              <div className="w-3 h-0.5 bg-[#0891b2] border-dashed border-t border-b border-transparent"></div>
+              <div className="w-3 h-0.5 border-dashed border-t border-b border-transparent" style={{ backgroundColor: currentTheme.primary }}></div>
               <span>PROJECTION</span>
           </div>
           <div className="flex items-center gap-1">
-              <div className="w-3 h-3 bg-cyan-900/30"></div>
+              <div className="w-3 h-3" style={{ backgroundColor: hexToRgba(currentTheme.primary, 0.3) }}></div>
               <span>VARIANCE</span>
           </div>
       </div>

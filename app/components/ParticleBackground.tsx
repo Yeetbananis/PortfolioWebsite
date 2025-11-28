@@ -9,34 +9,6 @@ import * as THREE from 'three';
 import { useRouter } from 'next/navigation';
 import { useNavigation } from '../NavigationContext';
 
-const THEMES = [
-  { 
-    name: 'Deep Ocean', 
-    primary: '#00f0ff', 
-    // Core = Bright center, Edge = Deep dark outer
-    galaxyColors: { core: '#e0ffff', edge: '#001eff' }, 
-    hueBase: 0.33, hueRange: 0.4 
-  }, 
-  { 
-    name: 'Inferno', 
-    primary: '#ff4d00', 
-    galaxyColors: { core: '#ffdd00', edge: '#8a0000' },
-    hueBase: 0.0, hueRange: 0.17 
-  }, 
-  { 
-    name: 'Neon Cyberpunk', 
-    primary: '#d000ff', 
-    galaxyColors: { core: '#ff00ea', edge: '#4800ff' },
-    hueBase: 0.72, hueRange: 0.23 
-  },
-  { 
-    name: 'Biohazard', 
-    primary: '#39ff14', 
-    galaxyColors: { core: '#ccff00', edge: '#005500' },
-    hueBase: 0.28, hueRange: 0.12 
-  }
-];
-
 // --- LORENZ CONSTANTS ---
 const LORENZ_SIGMA = 10;
 const LORENZ_RHO = 28;
@@ -421,10 +393,23 @@ function LorenzAttractor({ isActive, theme }: { isActive: boolean, theme: any })
             const dz = (x * y - LORENZ_BETA * z) * LORENZ_DT;
             x += dx; y += dy; z += dz;
             if (count.current >= LORENZ_MAX_POINTS) { positions.set(positions.subarray(3), 0); cols.set(cols.subarray(3), 0); count.current = LORENZ_MAX_POINTS - 1; }
-            const idx = count.current; positions[idx * 3] = x; positions[idx * 3 + 1] = y; positions[idx * 3 + 2] = z;
-            const hue = theme.hueBase + (z / 50) * theme.hueRange; 
-            const color = new THREE.Color().setHSL(hue, 1.0, 0.6);
-            cols[idx * 3] = color.r; cols[idx * 3 + 1] = color.g; cols[idx * 3 + 2] = color.b;
+            
+            const idx = count.current; 
+            positions[idx * 3] = x; positions[idx * 3 + 1] = y; positions[idx * 3 + 2] = z;
+            
+     
+            if (theme.name === 'Simple White') {
+                 // White theme should be pure white/grayscale, not HSL Red
+                 const c = new THREE.Color(theme.primary);
+                 cols[idx * 3] = c.r; cols[idx * 3 + 1] = c.g; cols[idx * 3 + 2] = c.b;
+            } else {
+                 // All other themes use the HSL Gradient logic
+                 const hue = theme.hueBase + (z / 50) * theme.hueRange; 
+                 const color = new THREE.Color().setHSL(hue, 1.0, 0.6);
+                 cols[idx * 3] = color.r; cols[idx * 3 + 1] = color.g; cols[idx * 3 + 2] = color.b;
+            }
+
+
             count.current++;
         }
         head.current = { x, y, z };
@@ -453,7 +438,7 @@ function LorenzAttractor({ isActive, theme }: { isActive: boolean, theme: any })
       </line>
       <mesh ref={headMeshRef} position={[0.1, 0, 0]} visible={false}>
          <sphereGeometry args={[0.7, 16, 16]} />
-         <meshBasicMaterial color="white" toneMapped={false} />
+         <meshBasicMaterial color={theme.primary} toneMapped={false} />
       </mesh>
     </group>
   );
@@ -771,10 +756,10 @@ function NeuralNetwork({ theme, isBackdropMode, isPendulumMode, isGalaxyMode }: 
     <>
         <group ref={standardGroupRef}>
             <Points positions={particles as unknown as Float32Array} raycast={() => {}}> <pointsMaterial color={theme.primary} size={0.06} blending={AdditiveBlending} transparent opacity={0.3} /> </Points>
-            <Line points={lines} color="white" lineWidth={0.2} transparent opacity={0.05} raycast={() => {}} />
-            <Sparks count={50} paths={paths} />
-            <Line points={mainLines} color="white" lineWidth={0.5} transparent opacity={isNavigating ? 0.05 : 0} raycast={() => {}} />
-            <Line points={satelliteLines} color="white" lineWidth={0.5} transparent opacity={isNavigating ? 0.05 : 0} raycast={() => {}} />
+            <Line points={lines} color={theme.primary} lineWidth={0.2} transparent opacity={0.05} raycast={() => {}} />
+            <Sparks count={50} paths={paths} themeColor={theme.primary} />
+            <Line points={mainLines} color={theme.primary} lineWidth={0.5} transparent opacity={isNavigating ? 0.05 : 0} raycast={() => {}} />
+            <Line points={satelliteLines} color={theme.primary} lineWidth={0.5} transparent opacity={isNavigating ? 0.05 : 0} raycast={() => {}} />
             <Points positions={satellitePoints as unknown as Float32Array} raycast={() => {}}> <pointsMaterial color={theme.primary} size={0.06} blending={AdditiveBlending} transparent opacity={isNavigating ? 0.5 : 0} /> </Points>
             {Object.keys(SITE_MAP).map(key => {
                 const node = SITE_MAP[key];
@@ -796,7 +781,7 @@ function NeuralNetwork({ theme, isBackdropMode, isPendulumMode, isGalaxyMode }: 
 
 
 // --- SYSTEM: SPARKS ---
-function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
+function Sparks({ count, paths, themeColor }: { count: number, paths: Vector3[][], themeColor: string }) {
   const sparks = useMemo(() => Array.from({ length: count }, () => ({ path: paths[Math.floor(Math.random() * paths.length)], progress: Math.random(), speed: Math.random() * 0.002 + 0.001, position: new Vector3() })), [count, paths]);
   const sparkRef = useRef<THREE.Points>(null!);
   useFrame(() => {
@@ -811,37 +796,40 @@ function Sparks({ count, paths }: { count: number, paths: Vector3[][] }) {
     });
     sparkRef.current.geometry.attributes.position.needsUpdate = true;
   });
-  return <Points ref={sparkRef} positions={new Float32Array(count * 3)} raycast={() => {}}> <pointsMaterial color="white" size={0.05} blending={AdditiveBlending} transparent opacity={0.9} depthWrite={false} /> </Points>;
+  return <Points ref={sparkRef} positions={new Float32Array(count * 3)} raycast={() => {}}> <pointsMaterial color={themeColor} size={0.05} blending={AdditiveBlending} transparent opacity={0.9} depthWrite={false} /> </Points>;
 }
 
-// --- FREEDOM CAMERA RIG (With Galaxy Safeguard) ---
-function CameraRig() {
+// --- FREEDOM CAMERA RIG (With Galaxy Safeguard & Menu Reset) ---
+function CameraRig({ isBackdropMode }: { isBackdropMode: boolean }) {
     const { isNavigating, targetNode, isChaosMode, isTesseractMode, isPendulumMode, isGalaxyMode } = useNavigation();
     const { camera, size } = useThree(); 
     const controlsRef = useRef<any>(null);
     const isAutoPiloting = useRef(false);
-    const hasUserInteracted = useRef(false); // New track for Galaxy freedom
+    const hasUserInteracted = useRef(false);
 
     const isMobile = size.width < 768; 
 
-    // Reset interaction flag when modes change
+    // Reset interaction flag when modes change OR backdrop menu opens
     useEffect(() => {
         hasUserInteracted.current = false;
         // Start autopilot to fly to the new mode's default view
         isAutoPiloting.current = true;
-    }, [targetNode, isChaosMode, isTesseractMode, isPendulumMode, isGalaxyMode]);
+    }, [targetNode, isChaosMode, isTesseractMode, isPendulumMode, isGalaxyMode, isBackdropMode]); // Added isBackdropMode dependency
 
     useFrame((state, delta) => {
         const desiredPos = new Vector3();
         const desiredLook = new Vector3(0, 0, 0);
 
         // 1. DETERMINE TARGET POSITIONS
-        if (isChaosMode || isTesseractMode || isPendulumMode) {
+        if (isBackdropMode) {
+            // [NEW] BACKDROP MENU OPEN: Force a clean "Preview" view
+            // Pull back far enough to see Galaxy/Chaos fully centered
+            desiredPos.set(0, 0, 14);
+        } else if (isChaosMode || isTesseractMode || isPendulumMode) {
             // Lab Modes: Fixed wide view
             desiredPos.set(0, 0, 15 * (isMobile ? 1.5 : 1));
         } else if (isGalaxyMode) {
-            // GALAXY: "Nice View" Default (High angle, pulled back)
-            // But strict safeguard prevents it from getting closer than minDistance
+            // GALAXY: "Nice View" Default
             desiredPos.set(0, 3, 12); 
         } else if (targetNode) {
             // Target Node: Zoom in
@@ -849,20 +837,16 @@ function CameraRig() {
             const focusZoom = isMobile ? 1.5 : 1; 
             desiredPos.set(node.position[0], node.position[1], node.position[2] + 4 * focusZoom);
             desiredLook.set(node.position[0], node.position[1], node.position[2]);
-          }  else {
-        // [FIX] NEURAL DEFAULT: Fly back to "Home Base"
-        // isMobile check ensures it's not too close on phones
-        desiredPos.set(0, 0, isMobile ? 9 : 5);
-        
-        // Only stop autopilot if the user has explicitly grabbed the camera
-        // (hasUserInteracted is reset to false automatically when you click "Return")
-        if (hasUserInteracted.current) {
-            isAutoPiloting.current = false;
+        } else {
+            // NEURAL DEFAULT
+            desiredPos.set(0, 0, isMobile ? 9 : 5);
+            
+            if (hasUserInteracted.current) {
+                isAutoPiloting.current = false;
+            }
         }
-    }
 
         // 2. ENGAGEMENT LOGIC
-        // If we are in Galaxy mode and user moved camera, NEVER autopilot again (Total Freedom)
         if (isGalaxyMode && hasUserInteracted.current) {
             isAutoPiloting.current = false;
         }
@@ -885,12 +869,9 @@ function CameraRig() {
             enableDamping 
             dampingFactor={0.05} 
             rotateSpeed={0.5} 
-            // DYNAMIC SAFEGUARDS
-            // 7.5 distance prevents the "Particle Overdraw" lag in Galaxy Mode
             minDistance={isGalaxyMode ? 7.5 : 2} 
             maxDistance={50}
             onStart={() => { 
-                // When user grabs camera, disable autopilot immediately
                 isAutoPiloting.current = false;
                 hasUserInteracted.current = true;
             }} 
@@ -899,16 +880,17 @@ function CameraRig() {
 }
 
 // --- MAIN EXPORT ---
+
 const ParticleBackground = () => {
   const { isNavigating, targetNode, setTargetNode, setNavigating, 
           isChaosMode, setChaosMode, 
           isTesseractMode, setTesseractMode, 
           isPendulumMode, setPendulumMode,
-          isGalaxyMode, setGalaxyMode 
+          isGalaxyMode, setGalaxyMode,
+          currentTheme, toggleTheme // NEW: Destructure theme from context
         } = useNavigation();
-  const [themeIndex, setThemeIndex] = useState(0);
-  const theme = THEMES[themeIndex] || THEMES[0];
-  const toggleTheme = () => setThemeIndex((prev) => (prev + 1) % THEMES.length);
+
+  const theme = currentTheme; 
 
   const [isBackdropMode, setIsBackdropMode] = useState(false);
 
@@ -952,7 +934,8 @@ const ParticleBackground = () => {
       <Canvas camera={{ position: [0, 0, 5], fov: 90 }} dpr={[1, 2]}>
         <Suspense fallback={null}>
           <NeuralNetwork theme={theme} isBackdropMode={isBackdropMode} isPendulumMode={isPendulumMode} isGalaxyMode={isGalaxyMode} />
-          <CameraRig /> 
+          {/* Pass the state prop here */}
+          <CameraRig isBackdropMode={isBackdropMode} /> 
         </Suspense>
         <EffectComposer>
           <Bloom luminanceThreshold={0.1} intensity={1.5} mipmapBlur radius={0.5} />
@@ -1014,12 +997,29 @@ const ParticleBackground = () => {
         </div>
       )}
 
-      {/* Theme Toggle */}
-      <div className="absolute bottom-6 right-6 z-50 opacity-20 hover:opacity-100 transition-opacity duration-300 cursor-pointer p-4 group" onClick={toggleTheme} title={`Switch Theme: ${theme.name}`}>
-         <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[10px] transform group-hover:-translate-y-1 transition-transform" style={{ borderBottomColor: theme.primary }} />
+      {/* Theme Toggle Button with Label - Hidden unless Navigating/Backdrop */}
+      <div 
+        className={`
+            absolute bottom-8 right-8 z-50 flex items-center gap-3 transition-all duration-500 group
+            ${(isNavigating || isBackdropMode) ? 'opacity-40 hover:opacity-100 cursor-pointer translate-y-0' : 'opacity-0 pointer-events-none translate-y-4'}
+        `}
+        onClick={toggleTheme}
+        title={`Switch Theme: ${theme.name}`}
+      >
+         <span 
+            className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.3em]"
+            style={{ color: theme.primary, textShadow: `0 0 10px ${theme.primary}40` }}
+         >
+            Theme Select
+         </span>
+         {/* The Arrow */}
+         <div 
+            className="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[8px] transform group-hover:-translate-y-1 transition-transform duration-300" 
+            style={{ borderBottomColor: theme.primary, filter: `drop-shadow(0 0 5px ${theme.primary})` }} 
+         />
       </div>
-      {/* Background Dimmer: Only fully visible when navigating. Dims (80%) when reading content. */}
-        <div className={`absolute inset-0 bg-background pointer-events-none transition-opacity duration-1000 ${isNavigating ? 'opacity-0' : 'opacity-50'}`} />
+      
+      <div className={`absolute inset-0 bg-background pointer-events-none transition-opacity duration-1000 ${isNavigating ? 'opacity-0' : 'opacity-30'}`} />
     </div>
   );
 };
