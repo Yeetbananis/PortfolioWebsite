@@ -36,7 +36,7 @@ export default function CommandTerminal() {
   const [suggestion, setSuggestion] = useState('');
   const [showHedgeSim, setShowHedgeSim] = useState(false);
   
-  const { isNavigating, setNavigating, isChaosMode, setChaosMode, isTesseractMode, setTesseractMode, isPendulumMode, setPendulumMode, isGalaxyMode, setGalaxyMode, setTargetNode } = useNavigation();
+  const { isNavigating, setNavigating, isChaosMode, setChaosMode, isTesseractMode, setTesseractMode, isPendulumMode, setPendulumMode, isGalaxyMode, setGalaxyMode, isBlackHoleMode, setBlackHoleMode, setTargetNode } = useNavigation();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -78,6 +78,7 @@ export default function CommandTerminal() {
   tesseract        : Toggle 4D Hypercube Projection.
   pendulum         : Toggle Double Pendulum Physics.
   galaxy           : Toggle Galactic Singularity.
+  horizon          : Toggle Black Hole Event Horizon.
 
   [INTERACTIVE]
   run hedging-game : Start the Delta Neutral Simulator.
@@ -176,12 +177,13 @@ export default function CommandTerminal() {
 
   // --- ROBUST AUTOCOMPLETE ENGINE ---
   useEffect(() => {
+
     // 1. Define ALL valid root commands explicitly
     const MASTER_COMMAND_LIST = [
       // Navigation
       'help', 'clear', 'ls', 'visit', 'navigate', 'backdrop', 'resume', 
       // Simulations
-      'chaos', 'tesseract', 'pendulum', 'galaxy',
+      'chaos', 'tesseract', 'pendulum', 'galaxy', 'horizon', // Added 'horizon'
       // System
       'social', 'whoami', 'date',
       // Interactive
@@ -374,10 +376,10 @@ const getEditDistance = (a: string, b: string) => {
     let action = rawAction.toLowerCase(); // Strip case immediately
     const argString = args.join(' ').toLowerCase();
 
-    // 1. DEFINE ALL VALID COMMANDS
+   // 1. DEFINE ALL VALID COMMANDS
     const VALID_COMMANDS = [
       'help', 'clear', 'visit', 'navigate', 'backdrop', 'resume', 
-      'chaos', 'tesseract', 'pendulum', 'galaxy',
+      'chaos', 'tesseract', 'pendulum', 'galaxy', 'horizon', // Added 'horizon'
       'social', 'whoami', 'date', 'run', 'ls'
     ];
 
@@ -408,15 +410,17 @@ const getEditDistance = (a: string, b: string) => {
 
     if (action === 'clear') { setHistory([]); return; }
 
-    // --- NAVIGATE ---
+// --- NAVIGATE ---
     if (action === 'navigate' || action === 'nav') {
         setIsOpen(false); 
-        setChaosMode(false); setTesseractMode(false); setPendulumMode(false); setGalaxyMode(false);
+        // FIX: Added setBlackHoleMode(false) to ensure we exit the singularity
+        setChaosMode(false); setTesseractMode(false); setPendulumMode(false); setGalaxyMode(false); setBlackHoleMode(false);
         window.dispatchEvent(new CustomEvent('PHANTOM_BACKDROP_OFF'));
         setNavigating(true); 
         setHistory(prev => [...prev, { type: 'success', content: 'Initiating Neural Link...' }]);
         return;
     }
+
 
     // --- BACKDROP ---
     if (action === 'backdrop' || action === 'bg') {
@@ -482,6 +486,26 @@ const getEditDistance = (a: string, b: string) => {
 
             setGalaxyMode(true);
             setHistory(prev => [...prev, { type: 'success', content: 'Triggering Big Bang.' }]);
+        }
+        setIsOpen(false);
+        return;
+    }
+
+    // --- BLACK HOLE MODE ---
+    if (action === 'horizon' || action === 'blackhole' || action === 'singular') {
+        if (isBlackHoleMode) {
+            setBlackHoleMode(false);
+            setHistory(prev => [...prev, { type: 'success', content: 'Exiting Event Horizon...' }]);
+        } else {
+            // Reset others
+            setChaosMode(false); setTesseractMode(false); setPendulumMode(false); setGalaxyMode(false);
+            
+            // Galaxy/Blackhole fix: Stop navigating so camera works
+            setNavigating(false);
+            setTargetNode(null);
+
+            setBlackHoleMode(true);
+            setHistory(prev => [...prev, { type: 'success', content: 'Approaching Gargantua. Gravity critical.' }]);
         }
         setIsOpen(false);
         return;

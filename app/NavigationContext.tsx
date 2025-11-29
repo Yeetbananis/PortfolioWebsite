@@ -33,6 +33,13 @@ export const THEMES = [
     primary: '#39ff14', 
     galaxyColors: { core: '#ccff00', edge: '#005500' },
     hueBase: 0.28, hueRange: 0.12 
+  },
+  // NEW 6TH THEME
+  { 
+    name: 'Event Horizon', 
+    primary: '#ff5500', // Deep Orange/Red heat
+    galaxyColors: { core: '#ffaa00', edge: '#ff0000' }, // Fallback colors
+    hueBase: 0.05, hueRange: 0.1 
   }
 ];
 
@@ -49,6 +56,9 @@ interface NavigationContextType {
   setPendulumMode: (v: boolean) => void;
   isGalaxyMode: boolean;
   setGalaxyMode: (v: boolean) => void;
+  // ADD NEW MODE STATE
+  isBlackHoleMode: boolean;
+  setBlackHoleMode: (v: boolean) => void;
   // --- THEME STATE ---
   currentTheme: typeof THEMES[0];
   toggleTheme: () => void;
@@ -67,6 +77,9 @@ export const NavigationContext = createContext<NavigationContextType>({
   setPendulumMode: () => {},
   isGalaxyMode: false,
   setGalaxyMode: () => {},
+  // ADD NEW STUB
+  isBlackHoleMode: false,
+  setBlackHoleMode: () => {},
   // Default Stub
   currentTheme: THEMES[0],
   toggleTheme: () => {},
@@ -81,9 +94,11 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
   const [isTesseractMode, setTesseractMode] = useState(false);
   const [isPendulumMode, setPendulumMode] = useState(false);
   const [isGalaxyMode, setGalaxyMode] = useState(false);
+  // ADD NEW STATE
+  const [isBlackHoleMode, setBlackHoleMode] = useState(false);
   
   // Theme Logic
-  const [themeIndex, setThemeIndex] = useState(0); // Defaults to White
+  const [themeIndex, setThemeIndex] = useState(0); 
   const currentTheme = THEMES[themeIndex];
   const toggleTheme = () => setThemeIndex((prev) => (prev + 1) % THEMES.length);
 
@@ -95,6 +110,8 @@ export const NavigationProvider = ({ children }: { children: ReactNode }) => {
         isTesseractMode, setTesseractMode, 
         isPendulumMode, setPendulumMode,
         isGalaxyMode, setGalaxyMode,
+        // PASS DOWN NEW STATE
+        isBlackHoleMode, setBlackHoleMode,
         currentTheme, toggleTheme
     }}>
       {children}
