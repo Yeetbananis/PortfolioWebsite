@@ -964,7 +964,6 @@ const ParticleBackground = () => {
           </Suspense>
         <EffectComposer enableNormalPass={false}> 
           <Bloom luminanceThreshold={0.2} intensity={0.4} mipmapBlur radius={0.5} />
-          <ChromaticAberration offset={new THREE.Vector2(0.002, 0.002)} radialModulation={true} modulationOffset={0} />
         </EffectComposer>
       </Canvas>
 

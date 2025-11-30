@@ -9,7 +9,7 @@ type ProjectCardProps = {
   description: string;
   image: string;
   link: string;
-  tags?: string[]; // 1. Add 'tags' to the props, making it an optional array of strings
+  tags?: string[];
 };
 
 const ProjectCard = ({ title, description, image, link, tags }: ProjectCardProps) => {
@@ -25,17 +25,16 @@ const ProjectCard = ({ title, description, image, link, tags }: ProjectCardProps
         className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
       />
       
+      {/* Gradient background for text readability */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
       
-      {/* This text container uses "group-hover" to appear when the Link is hovered */}
-      <div className="absolute inset-0 flex flex-col justify-end p-6 text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+      {/* FIXED: Removed 'opacity-0' and 'group-hover:opacity-100' so text is always visible */}
+      <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
         <div>
           <h3 className="text-2xl font-bold">{title}</h3>
           <p className="mt-1 text-lg">{description}</p>
         </div>
 
-        {/* 2. Add a new container for the tags. It appears with the rest of the text. */}
-        {/* We check if 'tags' exists and has items before rendering the container */}
         {tags && tags.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {tags.map((tag) => (
@@ -54,4 +53,3 @@ const ProjectCard = ({ title, description, image, link, tags }: ProjectCardProps
 };
 
 export default ProjectCard;
-
