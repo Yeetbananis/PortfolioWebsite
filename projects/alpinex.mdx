@@ -1,0 +1,224 @@
+# AlpineX: Tactical Route Intelligence
+
+## 1. Introduction & The Vision
+
+After a mentally tiring week at work you want to clear your mind and go on a mountaineering expedition. You're feeling lazy and your first instinct is to open up AllTrails. Some stats are given: "11km length, 1600m elevation gain". You read a warning: "CAUTION: This is a steep trail with crevasses. This route should only be attempted by those with mountaineering experience." You've got a few mountaineering trips under your belt so you brush it off. The weather is nice and you've got a free weekend so you gear up for the trip. 
+
+Given your speedy track record you start hiking at 8am, carefully make it across the glacier and summit by 1pm. Happy with the achievement you speed through the glacier you traversed earlier in the morning. After all, you just walked it a few hours ago so it feels safe. At the last stretch of the glacier you trace your footprints. A dull whump breaks the silent landscape and the familiar route collapses under your feet. You're alone, surrounded by 30 meter ice walls. Ironically left with an ice axe and crampons you brought for the summit, where did everything go wrong?
+
+The mountains aren't static. They're dynamic and always changing. The rock solid snow bridge you crossed at 10am got hit with solar radiation as the sun rose. By 2pm the bonds between the ice crystals melted and detached, leaving a weak but familiar and safe feeling trap for you to fall into. 
+
+You're going on a day hike. Now you don't need to worry about crevasses and snow bridges. You sleep in and start an hour late. You hit a steep, poorly maintained trail section slowing you down by 30 percent. You're now above the treeline by 2pm, the exact hour the atmospheric convective energy (CAPE) peaks and thunderstorms form. Now you have to run down the wet, slippery rock to get below the treeline. You misjudge your grip and fatally slip on a root, falling down the cliff below. That may seem almost too cookie cutter comical before reading: "The most common cause of death for hikers is trauma from accidental falls." 
+
+Most hiking and mountaineering accidents are misjudgments that snowball from a chain reaction of events, stemming from information gaps. AlpineX was built to run the math on that exact chain reaction before you leave your house. Other commercial apps tell you where the trail goes and vaguely what is on it. AlpineX models how and when those hazards can turn fatal.
+
+<SmoothVideo src="/videos/alpinexglobe.mp4" />
+
+---
+
+## 2. The Experience & The Data Pipeline
+
+You type in a destination and the camera flies to it. In the background it downloads a Digital Elevation Model (DEM) storing info like exact elevation, degree of slope, direction the slope faces, and what's on it. 
+
+<SmoothVideo src="/videos/alpinexpin.mp4" />
+
+---
+
+## 3. Physics-Aware Routing & Pacing
+
+You place a start pin and an end pin and the program runs a variety of calculations.
+
+The foundation is the route itself, which utilizes an A* pathfinding algorithm prioritizing the shortest path with least steepness to create a hikable route. If a pixel has a slope over 55 degrees the mathematical cost is infinity, meaning it has to find another route. The algorithm also snaps to any nearby trail that was downloaded in the initial data fetch, since hiking on a paved path is always easier than bushwhacking a new route:
+
+```python
+def calculate_hazard_weight(slope, elev_change, tpi, aspect, curvature, is_trail, is_glacier, wind_dir):
+    if slope > 55.0: 
+        return float('inf')  # Impassable granitic barrier
+    
+    cost = 1.0 + max(0.0, elev_change / 5.0)
+    
+    # Evaluate steepness and topographic shape
+    if slope > 25.0:
+        cost += 20.0 if slope > 45.0 else (10.0 if slope > 35.0 else 3.0)
+        cost += 15.0 if tpi < -5.0 else (-2.0 if tpi > 5.0 else 0.0)  # Penalize terrain traps (gullies)
+        
+        if curvature > 0.5: 
+            cost += 10.0  # Penalize convex rollover trigger points
+            
+    # Magnetic pull onto established infrastructure
+    if is_trail: 
+        cost *= 0.1  
+        
+    return cost
+```
+
+To calculate how long the route will take to hike it uses the Munter Method mixed with a dynamic rating: 
+
+> **Distance (km) + (Elevation Gain (m) / 100)**
+
+If a route is 10km long and climbs 1000m it requires 10 + (1000 / 100) = 20 effort units, which are divided by these different terrain zone rates: 
+* **Below-Treeline Timber (Rate 2.5):** Off-trail travel in sub-alpine forests is a lot slower. You are climbing over deadfall logs and bushwhacking, high friction, low speed.
+* **Treeline Scrub (Rate 3.2):** The trees thin out into shrubs and meadows. Friction drops, speed increases.
+* **Alpine Rock (Rate 4.0):** Above the trees, it's just solid granite and scree. Low friction, highest travel speed.
+
+---
+
+## 4. Time-of-Day Cutoffs & The MEW
+
+Now one of the simplest looking but most important parts is the turnaround time. It's really easy to not set a turnaround time because "you brought a headlamp" or to set an arbitrary turnaround time based on sunset. However, this does nothing against plummeting temperatures, changes in the physical landscape throughout the day, and hidden hazards that build up as time passes like the snow bridge example above. 
+
+If there are no hazards, the turnaround time is based on the last minute of light, which is calculated using Spencer's formula to compute the true astronomical sunset: 
+
+$$
+\delta = 23.45 \cdot \sin\left(\frac{360}{365} (d - 81)\right)
+$$
+
+The earth's atmosphere acts as a lens bending light around the curvature of the planet. As a result you can still see well when the sun is physically -0.833 degrees below the horizon, which is accounted for in the math to derive "Civil Twilight". The app takes Civil Twilight, subtracts the total Munter travel with a 20 percent safety buffer, and gives you an absolute turnaround time. 
+
+This turnaround time is overridden if the trail has any dynamic hazards, including: 
+* **Snow bridge/glacier crossing** for which the app calculates at what time of day solar radiation becomes physically too dangerous to traverse snow bridges. 
+* **Ice fall/serac and rock fall hazard**, for which the app calculates at what time of day ice melt can cause hazardous rock falls.
+* **Convective available potential energy:** high CAPE means hot air rises quick, which can cause spontaneous storms. If CAPE &gt; 500J/kg the app calculates the turnaround time needed to beat any potential storm.
+* **Any forecasted hazardous weather conditions** such as freezing rain, thunderstorms, snow storms, or heat waves. 
+
+If any conditions prevent a viable start and end window, the app lets you know why and tells you to replan the trip.
+
+<ImageWithFullscreen src="/images/MEWalpinex.png" alt="MEW turnaround image" />
+
+---
+
+## 5. Winter Hazards - Avalanches & Glaciers
+
+**Glacier Morphology:** Glaciers are basically slow moving rivers of shattered ice. The engine reads the 3D surface and determines exact bounds of any glaciers your route crosses. One of the most dangerous parts of a glacier is the Bergschrund: a deep overhanging trench of ice that forms at the top of a glacier, where moving ice is pulled by gravity away from stationary mountain rock.
+
+<ImageWithFullscreen src="/images/bergschrundIRL.jpg" alt="Bergschrund IRL" />
+<ImageWithFullscreen src="/images/bergschrundDGRM.svg" alt="Bergschrund Diagram" />
+
+The engine finds these by filtering for steep pixels labeled Ice (1) (Glacier), sitting right below pixels labeled Rock (0) (Mountain). 
+
+Another big hazard on glaciers is icefall and Seracs. Since ice can't bend, when the angle is steep enough (25 degrees+), the gravitational pull overcomes the ice's structural integrity causing it to snap and fall. These ice pieces can range from several tons to several thousand tons and easily result in a fatality, which is why the algorithm flags any pixel over 25 degrees on a glacier as an icefall. In an icefall zone, ice shatters in jagged patterns creating "Seracs", which are large towers of ice that are highly unstable and collapse randomly. The app labels this zone and warns you to minimize your time exposed to the hazard. 
+
+<ImageWithFullscreen src="/images/alpinexseracs.jpg" alt="AlpineX Seracs" />
+
+Crevasses don't only form on steep slopes. If the curvature is larger than 0.5 it means the ground below the ice is convex. As the glacier flows over this roll the top layer stretches and snaps, creating deep parallel crevasses running perpendicular to the direction the glacier flows (if it flows down the crevasses form horizontally left/right).
+
+<ImageWithFullscreen src="/images/alpinexcrevasseT.jpg" alt="AlpineX Crevasse" />
+
+Finally, a fatal assumption that mountaineers often make is that a flat glacier is safe to travel. When a glacier hits a flat valley floor, momentum stalls but millions of tons of ice from behind continue to push it, causing compression which tears the ice apart longitudinally (parallel to direction of flow). The engine detects when the slope &lt; 15 degrees, and flags it as lateral spread, warning that hidden crevasses exist there and to remain cautious. 
+
+The app also analyzes 14 days of recent snowfall to analyze the health/structural integrity of snow bridges (thick, weakened by rain, melted by sun).
+
+<SmoothVideo src="/videos/alpinexglaciers.mp4" />
+<ImageWithFullscreen src="/images/alpinexGC.png" alt="AlpineX Glacier Card" />
+
+**Wind slab modelling:** You can imagine sweeping dust off a large flat table. When the dust reaches the edge all of it dumps onto the floor creating a massive loose pile. The engine checks 72 hours worth of wind data, looks upwards 120 meters from any steep slope on your route, and checks if the terrain is flat (under 20 degree slope). If the conditions are met, that mountain acts as the table, with wind picking up snow and dumping it across the ridge. This creates unstable avalanche ready snow called a "wind slab", as well as overhanging clumps of snow called "Cornices". 
+
+<ImageWithFullscreen src="/images/alpinexwindslab.webp" alt="AlpineX Windslab" />
+
+---
+
+## 6. Summer Operations - Heat, Smoke, and Bears
+
+As snow melts, the hazard profile greatly changes from avalanches and snow bridges to dehydration, smoke fatigue, and potential predators. 
+
+When air quality is poor (AQI &gt; 150 from wildfires), your lungs have to work a lot harder to oxygenate your blood. The engine applies a 20 percent fatigue penalty to your Munter travel time. If temperatures exceed 28 C your sweat rate goes up, so the engine increases your required water carry weight by 50 percent and notifies you if there are creeks on your route to refill from.
+
+The app also checks your route's coordinates against biological predator bounding boxes for Grizzlies, black bears, and mountain lions. If you are hiking in the Swiss Alps, the app fully suppresses the warnings.
+
+You may be aware that bears or mountain lions could appear on your route, but what's the risk and where? The app evaluates the time of year and temperature data to determine risk levels, while also scanning for which parts of your route are in thick forest (high close encounter risk) and which parts cross avalanche berry paths (higher encounter risk).
+
+<ImageWithFullscreen src="/images/alpinexSummer.png" alt="AlpineX Summer" />
+
+---
+
+## 7. RF Dead-Zones & Cellular Blackouts
+
+Assuming you have service could be a fatal mistake. However, assuming you don't could prevent you from rescue in emergencies. The engine shoots 60 theoretical rays from verified cell tower coordinates across a 3D elevation grid to determine where service is physically possible in the first place. Strength of signal is determined from distance, as well as 2 other phenomena:
+
+* **Knife edge diffraction:** Radio waves aren't lasers, meaning if a sharp edge blocks the direct line of sight to a tower, but the rock is less than 35 meters above the ray, the radio wave will diffract (bend) over the top of the ridge. The code accounts for this, applying a -2.0 signal strength penalty instead of assuming signal drops to zero.
+* **Terrain wave bouncing:** Signals bounce and echo. If the route descends below the ray altitude, the surrounding walls can absorb and scatter the signal, creating a weaker but reachable signal that the engine maps. 
+
+The app maps this visually with red, orange and green colors for bad, marginal and good signal respectively, as well as a colored bar below your elevation chart to show which parts of your route have signal and how strong it is.
+
+<ImageWithFullscreen src="/images/alpinexCell.png" alt="AlpineX Cell Coverage" />
+
+```python 
+# Downsampled 3D raycasting loop evaluating signal obstruction
+for tr, tc, tz, t_range_px, max_range_m in tower_indices:
+    dist_px = np.sqrt((R - tr)**2 + (C - tc)**2)
+    in_range = (dist_px * 30.0 * STEP) < max_range_m
+    
+    max_obstacle_diff = np.full(elev.shape, -9999.0)
+    
+    # 60-step linear interpolation raycast along line of sight
+    for s in range(1, 60):
+        frac = s / 60.0
+        sr = (tr + frac * (R - tr)).astype(int).clip(0, rows - 1)
+        sc = (tc + frac * (C - tc)).astype(int).clip(0, cols - 1)
+        
+        # Expected altitude of the signal ray at this fraction
+        expected_z = tz + frac * (target_hiker_z - tz)
+        diff = elev[sr, sc] - expected_z
+        
+        # Track the MAXIMUM height an obstacle penetrates our signal ray
+        max_obstacle_diff = np.maximum(max_obstacle_diff, diff)
+        
+    los_clear = max_obstacle_diff <= 0.0
+```
+
+---
+
+## 8. Approach Logistics - Resource Roads
+
+Driving to the trailhead could be a large part of a hiking trip: deciding when to leave your house, how much gas that trip will take, and if your vehicle can even make it. 
+
+A lot of mountaineering expeditions and even easier hikes require forest service road (FSR) access. It can be a pain to research the condition of these roads and determine if your vehicle could even make it in the first place. This is why the app determines whether your trailhead needs FSR access, the condition of the road, recommended vehicle type, and other info such as freezing/snow level to notify you if chains are needed. 
+
+You can also enter your address and the app automatically calculates a wake up/leave time based on the Munter rate, as well as gas cost, and other useful facts.
+
+<ImageWithFullscreen src="/images/alpinexFSR.png" alt="AlpineX FSR" />
+
+---
+
+## 9. Escalation - Multi-Day Expeditions
+
+Now most mountaineering traverses or ambitious trips require multiple days. How is this handled? The app has a dedicated multi-day expedition mode where you can add multiple camps/legs. The app runs a deep analysis of your entire expedition to output a variety of useful data:
+
+* When you drop a camp pin, the system automatically scans an 80 meter radius of the slope matrix to determine the flattest spot for your tent to be placed, and warns you if the terrain is too steep. 
+* **Cold Air Sink Basins:** Freezing air flows similar to water, flowing downhill and pooling up in valleys. The app compares your camp's elevation to the surrounding grid. If conditions are met, it warns you that cold air pooling can occur, where temperatures plunge 3-5 degrees colder than regional forecasts predict. It also analyzes the forecast and elevation of your camp to accurately estimate the overnight low temperature of your camp overnight. 
+* The area around your camp is also scanned for a slope under 8 degrees over a 30 meter radius to notify if your camp is helicopter safe in the face of an emergency, as well as the nearest water source location (if any). 
+
+The A* pathfinding algorithm runs on each leg independently and is then pieced together for the entire route, so you can view stats/info on each leg as well as the entire expedition for a bigger picture. You can also toggle between point to point (start on one side and end on another) or return (start and end at the same point) modes.
+
+<SmoothVideo src="/videos/alpinexmulti-day.mp4" />
+
+## 10. The Interface & Additional Features
+
+Beyond the core hazard engines, AlpineX includes a variety of integrated tools to help you navigate and plan your backcountry missions smoothly. 
+
+Based on your specific route, the app generates a dynamic recommended equipment list. This loadout is filtered to match your exact trip type, adapting automatically for multi-day status, overnight temperature ranges, and whether you are crossing glaciers or entering avalanche terrain. 
+
+To supplement the physical data, the app intelligently identifies your route’s peak or trailhead name and provides direct links to AllTrails, local forums, and Peakbagger for community reviews. Official Avalanche Canada and FireSmoke.ca links are also surfaced for your specific region, making it easy to confirm intelligence and do deeper research before departure.
+
+<ImageWithFullscreen src="/images/alpinexMISC.png" alt="AlpineX Misc Features" />
+
+Zooming in on the route configuration UI you can see additonal customizations. You can swap the map's visual theme, options include the default *Tactical* mode, alongside *Stealth*, *Night Vision*, and a standard *Satellite* view. 
+
+A side search bar allows you to seamlessly jump to new locations across the globe. If you've found a route online, you can directly upload a GPX or KML file to run AlpineX's deep hazard analysis on a pre-confirmed track. When generating your own lines, you can toggle between two distinct routing styles: 
+* **On-Trail:** Aggressively snaps your path to nearby mapped routes.
+* **Off-Trail:** Ignores mapped trails and prioritizes minimizing distance and elevation for true backcountry travel.
+
+Inside the trip details, entering your starting address and vehicle type yields highly accurate gas and transit estimates. You can also input your body weight and pack weight to generate personalized caloric burn metrics for the effort. Once your plan is dialed in, you can save the route with custom notes to an archive that pulls up instantly whenever you reload the site. You can also generate a shareable link that displays your exact route and calculations on a partner's device.
+
+<ImageWithFullscreen src="/images/alpinexUI.png" alt="AlpineX UI Configuration" />
+
+For every generated route, a dedicated weather tab provides a highly readable summary of atmospheric conditions. This includes a scrollable 12 hour forecast strip, recent snowfall history, summit visibility estimates, and strict temperature and wind ranges for the elevation you will be traveling in.
+
+<ImageWithFullscreen src="/images/alpinexweather.png" alt="AlpineX Weather Tab" />
+
+Finally, the tactical map itself contains a suite of interactive overlays and tools. Using the bottom optics bar, you can enable or disable visible trail paths, backcountry huts, shaded terrain zones, and the cell coverage matrix. You can also adjust the display radius of nearby peaks, lakes, and points of interest. 
+
+A custom measuring tool lets you draw freehand lines that snap directly to the 3D ground mesh, accurately calculating drawn distance, elevation gained, and elevation lost on the fly. On the top right of the screen, the Trip Report button cleanly compiles all the generated intel, like the packing list and driving logistics, into a single, printable briefing. Just below that, a dynamic compass tracks your camera's bearing, allowing you to easily cross-reference your map orientation against data like *"wind is blowing 85 degrees East."*
+
+<ImageWithFullscreen src="/images/alpinexMAP.png" alt="AlpineX Interactive Map" />
+```eof

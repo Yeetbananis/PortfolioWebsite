@@ -17,9 +17,6 @@ export default function SmoothVideo({ src, poster }) {
           boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
         }}
       />
-      <p style={{ marginTop: "8px", fontSize: "0.9rem", color: "#666" }}>
-        Demo video showcasing the project environment and key features.
-      </p>
     </div>
   );
 }

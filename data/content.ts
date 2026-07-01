@@ -3,10 +3,18 @@
 export const projects = [
   {
     title: "Quant Analysis Platform",
-    description: "A full-featured desktop workstation for equity and derivatives trading and risk modeling.",
+    description: "Full-featured desktop workstation for equity and derivatives trading and risk modeling.",
     image: "/images/OptionsApp1.png",
     link: "/projects/quant-analysis-platform",
     tags: ["Python", "Pandas", "Monte Carlo", "Gemini API", "Matplotlib"],
+  },
+  { 
+    title: "AlpineX",
+    description: "Backcountry route-planning and mountain-intelligence platform for hikers, mountaineers, ski-tourers",
+    image: "/images/alpinexinterface.png",
+    link: "/projects/alpinex",
+    tags: ["Python", "FastAPI", "MapLibre GL JS", "NumPy"],
+
   },
   {
     title: "Dual-AI Forex Trading Assistant",
