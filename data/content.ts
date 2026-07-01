@@ -11,7 +11,7 @@ export const projects = [
   { 
     title: "AlpineX",
     description: "Backcountry route-planning and mountain-intelligence platform for hikers, mountaineers, ski-tourers",
-    image: "/images/alpinexinterface.png",
+    image: "/images/alpinexintro.png",
     link: "/projects/alpinex",
     tags: ["Python", "FastAPI", "MapLibre GL JS", "NumPy"],
 
